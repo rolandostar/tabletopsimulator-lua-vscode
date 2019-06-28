@@ -1,0 +1,145 @@
+{
+  "name": "tabletopsimulator-lua",
+  "displayName": "Tabletop Simulator LUA",
+  "author": "Rolando Romero <contact@rolandostar.com> (https://rolandostar.com/)",
+  "description": "Extension for VSCode to make writing Lua scripts for Tabletop Simulator easier.",
+  "version": "0.0.1",
+  "publisher": "rolandostar",
+  "license": "MIT",
+  "repository": "github:rolandostar/vscode-tabletopsimulator-lua",
+  "engines": {
+    "vscode": "^1.35.0"
+  },
+  "activationEvents": [
+    "onWebviewPanel:TTSConsole",
+    "onLanguage:TTS Lua",
+    "onCommand:ttslua.openConsole",
+    "workspaceContains:**/.ttslua"
+  ],
+  "main": "./src/extension",
+  "contributes": {
+    "languages": [
+      {
+        "id": "TTS Lua",
+        "aliases": [
+          "Tabletop Simulator Lua"
+        ],
+        "extensions": [
+          ".ttslua"
+        ],
+        "configuration": "./syntaxes/tts_lua-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "TTS Lua",
+        "scopeName": "source.tts.lua",
+        "path": "./syntaxes/tts_lua.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "ttslua.openConsole",
+        "title": "Open TTS Console++",
+        "category": "TTSLua"
+      },
+      {
+        "command": "ttslua.debugMsgSend",
+        "title": "[DEBUG] Send Messages to WebView",
+        "category": "TTSLua"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "ttslua.openConsole"
+        },
+        {
+          "command": "ttslua.debugMsgSend"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "TabletopSimulator Lua Configuration",
+      "properties": {
+        "ttslua.communicationMode": {
+          "title": "Communication with Tabletop Simulator",
+          "description": "Should vscode automatically open files received from the game?",
+          "type": "string",
+          "default": "all",
+          "enum": [
+            "all",
+            "global",
+            "none",
+            "disable"
+          ]
+        },
+        "ttslua.createXml": {
+          "title": "Create XML UI file when object sent from Tabletop Simulator",
+          "description": "When an individual object is sent from Tabletop Simulator which has no XML UI, generate a blank XML file for it.",
+          "type": "boolean",
+          "default": true
+        },
+        "ttslua.guidPostfix": {
+          "title": "GUID Postfix",
+          "description": "When guessing the getObjectFromGUID parameter this is appended to the name of the variable being assigned to",
+          "type": "string",
+          "default": "_GUID"
+        },
+        "ttslua.coroutinePostfix": {
+          "title": "Coroutine Postfix",
+          "description": "When automatically creating an internal coroutine function this is appended to the parent function's name",
+          "type": "string",
+          "default": "_routine"
+        },
+        "ttslua.parameterToDisplay": {
+          "title": "Function Parameters",
+          "description": "This will determine how autocomplete inserts parameters into your script",
+          "type": "string",
+          "default": "type",
+          "enum": [
+            "none",
+            "type",
+            "name",
+            "both"
+          ],
+          "enumDescriptions": [
+            "Do not insert most parameters",
+            "Insert parameters as TYPE",
+            "Insert parameters as NAME",
+            "Insert parameters as TYPE & NAME"
+          ]
+        },
+        "ttslua.parameterFormat": {
+          "title": "Parameter TYPE & NAME Format",
+          "markdownDescription": "If you select `TYPE & NAME` above it will format like this. You may vary the case, e.g. `typeName` or `name <TYPE>`",
+          "type": "string",
+          "default": "type_name"
+        },
+        "ttslua.delayLinter": {
+          "title": "Delay Linter When Loading",
+          "description": "Delay in ``ms`` before linting a newly loaded file.",
+          "type": "integer",
+          "default": 0,
+          "minimum": 0
+        }
+      }
+    }
+  },
+  "scripts": {
+    "lint": "eslint ./src --config .eslintrc.json",
+    "postinstall": "node ./node_modules/vscode/bin/install"
+  },
+  "devDependencies": {
+    "@types/mkdirp": "^0.5.2",
+    "@types/node": "^8.10.48",
+    "eslint": "^6.0.1",
+    "eslint-plugin-import": "^2.18.0",
+    "eslint-plugin-node": "^9.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.0",
+    "net": "^1.0.2",
+    "vscode": "^1.1.34",
+    "vscode-textmate": "^4.1.1"
+  }
+}

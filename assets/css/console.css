@@ -1,0 +1,39 @@
+body {
+  background: black;
+  color: white;
+  margin:0;
+  padding:0;
+  height:100%;
+}
+
+p {
+  font-family: var(--vscode-editor-font-family);
+  font-size: var(--vscode-editor-font-size);
+  font-weight: var(--vscode-editor-font-weight);
+  margin: 0;
+}
+
+#consoleOutput {
+  padding:10px;
+  /* padding-bottom:37px;   /* Height of the footer */
+}
+
+#consoleOutput * {
+  overflow-anchor: none;
+}
+
+#anchor {
+  /* allow the final child to be selected as an anchor node */
+  overflow-anchor: auto;
+
+  /* anchor nodes are required to have non-zero area */
+  height: 1px;
+}
+
+#commandInput {
+  position:fixed;
+  bottom:0;
+  width:100%;
+  height:37px;   /* Height of the footer */
+  background:#1F1F23;
+}
