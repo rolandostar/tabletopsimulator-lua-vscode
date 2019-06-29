@@ -1,5 +1,6 @@
 const vscode = require('vscode')
 const path = require('path')
+const net = require('net')
 
 module.exports = class TTSConsolePanel {
   constructor(panel, extensionPath) {
@@ -20,14 +21,26 @@ module.exports = class TTSConsolePanel {
     }, null, this._disposables)
 
     // TODO: Implement logic for receiving messages from the webview
-    // // Handle messages from the webview
-    // this._panel.webview.onDidReceiveMessage(message => {
-    //   switch (message.command) {
-    //       case 'alert':
-    //           vscode.window.showErrorMessage(message.text);
-    //           return;
-    //   }
-    // }, null, this._disposables);
+    // Handle messages from the webview
+    this._panel.webview.onDidReceiveMessage(message => {
+      switch (message.command) {
+          case 'customMessage':
+              console.log('connecting')
+              const client = net.connect(39999, 'localhost', function() {
+                client.write(JSON.stringify({
+                  messageID: 2,
+                  customMessage: {
+                    text: message.text
+                  }
+                }), 'UTF-8', () => console.log('finished writing'))
+              })
+              client.on('end', () => {
+                console.log('client destroy')
+                client.destroy()
+              })
+              break
+      }
+    }, null, this._disposables);
   }
 
   static createOrShow(extensionPath) {
@@ -40,7 +53,7 @@ module.exports = class TTSConsolePanel {
       return
     }
     // Otherwise, create it
-    const panel = vscode.window.createWebviewPanel(TTSConsolePanel.viewType, "Tabletop Simulator Console++", column || vscode.ViewColumn.One, {
+    const panel = vscode.window.createWebviewPanel('TTSConsole', "Tabletop Simulator Console++", column || vscode.ViewColumn.One, {
       enableScripts: true, // Enable javascript in the webview
       localResourceRoots: [vscode.Uri.file(path.join(extensionPath, 'assets'))],
       retainContextWhenHidden: true
@@ -71,10 +84,10 @@ module.exports = class TTSConsolePanel {
     return
   }
 
-  send(object) {
+  append(htmlString) {
     // Send a message to the webview webview.
     // You can send any JSON serializable data.
-    this._panel.webview.postMessage(object);
+    this._panel.webview.postMessage(htmlString);
   }
 
   getHtmlForWebview() {
@@ -93,14 +106,17 @@ module.exports = class TTSConsolePanel {
             Here's a content security policy that allows loading local scripts and stylesheets, and loading images over https
             This content security policy also implicitly disables inline scripts and styles. It is a best practice to extract all inline styles and scripts to external files so that they can be properly loaded without relaxing the content security policy.
             -->
-            <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src vscode-resource: https:; script-src vscode-resource: https:; style-src vscode-resource:;"/>
+            <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src vscode-resource: https:; script-src vscode-resource: https:; style-src vscode-resource: 'unsafe-inline';"/>
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
             <title>Tabletop Simulator Console++</title>
         </head>
         <body>
+            <div id="commandInput">
+              <input type="textbox" value=">"/>
+            </div>
             <div id="data"></div>
-            <script src="${scriptUri}"></script>
+            <script type="module" src="${scriptUri}"></script>
         </body>
         </html>`
   }

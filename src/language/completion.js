@@ -136,7 +136,7 @@ class CompletionProvider {
                 completionItems.push(item);
             }
             else if (line.includes('function') && line.endsWith(')')) {
-                const coroutinePostfix = vscode.workspace.getConfiguration('ttslua').get('coroutinePostfix');
+                const coroutinePostfix = vscode.workspace.getConfiguration('TTSLua').get('coroutinePostfix');
                 let funcName = thisToken.substring(0, thisToken.lastIndexOf('('));
                 funcName = funcName.substring(funcName.lastIndexOf(' ') + 1);
                 funcName = funcName + coroutinePostfix;
@@ -284,7 +284,7 @@ class CompletionProvider {
                     let item = completionItems[index];
                     if (item.insertText.value.startsWith('getObjectFromGUID')) {
                         let identifier = line.match(/([^\s]+)\s*=[^=]*$/)[1];
-                        const guidString = vscode.workspace.getConfiguration('ttslua').get('guidPostfix');
+                        const guidString = vscode.workspace.getConfiguration('TTSLua').get('guidPostfix');
                         let insertionPoint = index;
                         if (identifier.match(/.*\w$/)) {
                             insertionPoint++;
@@ -323,12 +323,12 @@ class CompletionProvider {
             }
             // Convert function parameters to user desired output
             const matchPattern = /\${([0-9]+):([0-9a-zA-Z_]+)\|([0-9a-zA-Z_]+)}/g;
-            const replaceType = vscode.workspace.getConfiguration('ttslua').get('parameterToDisplay');
+            const replaceType = vscode.workspace.getConfiguration('TTSLua').get('parameterToDisplay');
             let replacePattern;
             if (replaceType === 'both') {
                 replacePattern = function (_match, index, parameterType, parameterName) {
                     let capitalize = (s) => s.substring(0, 1).toUpperCase() + s.substring(1);
-                    let format = vscode.workspace.getConfiguration('ttslua').get('parameterFormat');
+                    let format = vscode.workspace.getConfiguration('TTSLua').get('parameterFormat');
                     format = format.replace("TYPE", parameterType.toUpperCase());
                     format = format.replace("Type", capitalize(parameterType));
                     format = format.replace("type", parameterType);

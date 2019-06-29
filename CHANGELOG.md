@@ -12,7 +12,8 @@ All notable changes to the "tabletopsimulator-lua" extension will be documented 
 - Feature Progress: Integration with Console++ by onelivesleft
   - Added WebPanelView for output
   - Added CSS/JS for WebPanelView
+  - Added Command Input to be sent via CustomMessage
 - Feature Progress: Get Scripts
-  - Added basic server implementation
+  - Added Print/Debug Message Communication
 - Added Feature: Syntax Highlight
 - Added Feature: Code autocompletion based on OliPro007's Extension

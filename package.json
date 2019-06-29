@@ -42,10 +42,13 @@
         "command": "ttslua.openConsole",
         "title": "Open TTS Console++",
         "category": "TTSLua"
-      },
-      {
-        "command": "ttslua.debugMsgSend",
-        "title": "[DEBUG] Send Messages to WebView",
+      },{
+        "command": "ttslua.getScripts",
+        "title": "Get Lua Scripts",
+        "category": "TTSLua"
+      },{
+        "command": "ttslua.saveAndPlay",
+        "title": "Save And Play",
         "category": "TTSLua"
       }
     ],
@@ -53,50 +56,82 @@
       "commandPalette": [
         {
           "command": "ttslua.openConsole"
-        },
+        },{
+          "command": "ttslua.getScripts"
+        },{
+          "command": "ttslua.saveAndPlay"
+        }
+      ],
+      "editor/context":[
         {
-          "command": "ttslua.debugMsgSend"
+          "command": "ttslua.getScripts",
+          "when": "editorLangId == TTS Lua",
+          "group": "TTSLua@1"
+        },{
+          "command": "ttslua.saveAndPlay",
+          "when": "editorLangId == TTS Lua",
+          "group": "TTSLua@1"
+        },{
+          "command": "ttslua.openConsole",
+          "when": "editorLangId == TTS Lua",
+          "group": "TTSLua@1"
         }
       ]
     },
+    "keybindings":[
+      {
+        "command": "ttslua.openConsole",
+        "key": "ctrl+alt+`"
+      },{
+        "command": "ttslua.getScripts",
+        "key": "ctrl+alt+l"
+      },{
+        "command": "ttslua.saveAndPlay",
+        "key": "ctrl+alt+s"
+      }
+    ],
     "configuration": {
-      "title": "TabletopSimulator Lua Configuration",
+      "title": "Tabletop Simulator Lua Configuration",
       "properties": {
-        "ttslua.communicationMode": {
+        "TTSLua.autoOpenPushedScripts": {
           "title": "Communication with Tabletop Simulator",
           "description": "Should vscode automatically open files received from the game?",
           "type": "string",
-          "default": "all",
+          "default": "global",
           "enum": [
             "all",
             "global",
-            "none",
-            "disable"
+            "none"
+          ],
+          "enumDescriptions": [
+            "Open all received files when getting scripts",
+            "Only open global script",
+            "Do not open any file (Will still show files in explorer panel)"
           ]
         },
-        "ttslua.createXml": {
+        "TTSLua.createXml": {
           "title": "Create XML UI file when object sent from Tabletop Simulator",
           "description": "When an individual object is sent from Tabletop Simulator which has no XML UI, generate a blank XML file for it.",
           "type": "boolean",
-          "default": true
+          "default": false
         },
-        "ttslua.guidPostfix": {
+        "TTSLua.guidPostfix": {
           "title": "GUID Postfix",
           "description": "When guessing the getObjectFromGUID parameter this is appended to the name of the variable being assigned to",
           "type": "string",
           "default": "_GUID"
         },
-        "ttslua.coroutinePostfix": {
+        "TTSLua.coroutinePostfix": {
           "title": "Coroutine Postfix",
           "description": "When automatically creating an internal coroutine function this is appended to the parent function's name",
           "type": "string",
           "default": "_routine"
         },
-        "ttslua.parameterToDisplay": {
+        "TTSLua.parameterToDisplay": {
           "title": "Function Parameters",
           "description": "This will determine how autocomplete inserts parameters into your script",
           "type": "string",
-          "default": "type",
+          "default": "both",
           "enum": [
             "none",
             "type",
@@ -110,18 +145,11 @@
             "Insert parameters as TYPE & NAME"
           ]
         },
-        "ttslua.parameterFormat": {
+        "TTSLua.parameterFormat": {
           "title": "Parameter TYPE & NAME Format",
           "markdownDescription": "If you select `TYPE & NAME` above it will format like this. You may vary the case, e.g. `typeName` or `name <TYPE>`",
           "type": "string",
-          "default": "type_name"
-        },
-        "ttslua.delayLinter": {
-          "title": "Delay Linter When Loading",
-          "description": "Delay in ``ms`` before linting a newly loaded file.",
-          "type": "integer",
-          "default": 0,
-          "minimum": 0
+          "default": "TYPE_name"
         }
       }
     }
@@ -138,6 +166,7 @@
     "eslint-plugin-node": "^9.1.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.0",
+    "js-bbcode-parser": "^3.0.0",
     "net": "^1.0.2",
     "vscode": "^1.1.34",
     "vscode-textmate": "^4.1.1"

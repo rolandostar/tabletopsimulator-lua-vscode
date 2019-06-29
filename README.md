@@ -26,6 +26,7 @@ Extension for VSCode to make writing Lua scripts for  <a href="https://store.ste
   - Send commands from VSCode
   - Receive output and debug information on VSCode Panel
   - (Optional) Automatic installation of Console++
+- Highly Configurable
 
 ## Requirements
 
@@ -40,10 +41,18 @@ Extension for VSCode to make writing Lua scripts for  <a href="https://store.ste
 
 ## Usage
 
+* `ctrl+alt+\``: Open TTS Console++
+* `ctrl+alt+l`: Get Lua Scripts
+* `ctrl+alt+s`: Save And Play
+
 ## Extension Settings
 
 clear on reload: clear terminal history when opening new game or reloading
 autosave notification: coose if you wish to show autosave on log
+terminal font size, command input height
+clear command on double click?
+open terminal beside or same?
+createxml?
 
 Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
 
@@ -56,7 +65,7 @@ This extension contributes the following settings:
 
 ## Known Issues
 
-Custom Messages not supported.
+Execute Lua Code is not supported.
 
 ## Release Notes
 
