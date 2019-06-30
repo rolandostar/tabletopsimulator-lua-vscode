@@ -325,7 +325,7 @@ class CompletionProvider {
             const matchPattern = /\${([0-9]+):([0-9a-zA-Z_]+)\|([0-9a-zA-Z_]+)}/g;
             const replaceType = vscode.workspace.getConfiguration('TTSLua').get('parameterToDisplay');
             let replacePattern;
-            if (replaceType === 'both') {
+            if (replaceType === 'Both') {
                 replacePattern = function (_match, index, parameterType, parameterName) {
                     let capitalize = (s) => s.substring(0, 1).toUpperCase() + s.substring(1);
                     let format = vscode.workspace.getConfiguration('TTSLua').get('parameterFormat');
@@ -340,10 +340,10 @@ class CompletionProvider {
             }
             else {
                 replacePattern = {
-                    'type': '$${$1:$2}',
-                    'name': '$${$1:$3}',
-                    'both': '$${$1:$2_$3}',
-                    'none': '$${$1:}',
+                    'Type': '$${$1:$2}',
+                    'Name': '$${$1:$3}',
+                    'Both': '$${$1:$2_$3}',
+                    'None': '$${$1:}',
                 }[replaceType];
             }
             for (let item of completionItems) {

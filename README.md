@@ -25,6 +25,7 @@ Extension for VSCode to make writing Lua scripts for  <a href="https://store.ste
 - Integration with [Console++](https://github.com/onelivesleft/Console) by onelivesleft ([Tutorial](http://blog.onelivesleft.com/2017/09/debugging-your-tts-mods-with-console.html))
   - Send commands from VSCode
   - Receive output and debug information on VSCode Panel
+  - BBCode Support! (Including nested colors)
   - (Optional) Automatic installation of Console++
 - Highly Configurable
 

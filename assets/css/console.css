@@ -10,13 +10,21 @@ body {
   font-family: var(--vscode-editor-font-family);
   font-size: calc(var(--vscode-editor-font-size) * 1px);
   font-weight: var(--vscode-editor-font-weight);
-}
-
-#data {
-  padding: 0 20px;
+  padding: 0;
   padding-top: 15px;
   padding-bottom:37px;
   margin-bottom:3px;
+}
+
+#data > div {
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.error {
+  background-color: rgb(196, 20, 0);
+  color: rgb(255, 255, 0);
+  padding: 4px 20px !important;
 }
 
 #commandInput {

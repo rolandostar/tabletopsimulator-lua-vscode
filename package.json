@@ -14,6 +14,8 @@
     "onWebviewPanel:TTSConsole",
     "onLanguage:TTS Lua",
     "onCommand:ttslua.openConsole",
+    "onCommand:ttslua.getScripts",
+    "onCommand:ttslua.saveAndPlay",
     "workspaceContains:**/.ttslua"
   ],
   "main": "./src/extension",
@@ -42,11 +44,13 @@
         "command": "ttslua.openConsole",
         "title": "Open TTS Console++",
         "category": "TTSLua"
-      },{
+      },
+      {
         "command": "ttslua.getScripts",
         "title": "Get Lua Scripts",
         "category": "TTSLua"
-      },{
+      },
+      {
         "command": "ttslua.saveAndPlay",
         "title": "Save And Play",
         "category": "TTSLua"
@@ -56,36 +60,42 @@
       "commandPalette": [
         {
           "command": "ttslua.openConsole"
-        },{
+        },
+        {
           "command": "ttslua.getScripts"
-        },{
+        },
+        {
           "command": "ttslua.saveAndPlay"
         }
       ],
-      "editor/context":[
+      "editor/context": [
         {
           "command": "ttslua.getScripts",
           "when": "editorLangId == TTS Lua",
           "group": "TTSLua@1"
-        },{
+        },
+        {
           "command": "ttslua.saveAndPlay",
           "when": "editorLangId == TTS Lua",
           "group": "TTSLua@1"
-        },{
+        },
+        {
           "command": "ttslua.openConsole",
           "when": "editorLangId == TTS Lua",
           "group": "TTSLua@1"
         }
       ]
     },
-    "keybindings":[
+    "keybindings": [
       {
         "command": "ttslua.openConsole",
         "key": "ctrl+alt+`"
-      },{
+      },
+      {
         "command": "ttslua.getScripts",
         "key": "ctrl+alt+l"
-      },{
+      },
+      {
         "command": "ttslua.saveAndPlay",
         "key": "ctrl+alt+s"
       }
@@ -93,15 +103,15 @@
     "configuration": {
       "title": "Tabletop Simulator Lua Configuration",
       "properties": {
-        "TTSLua.autoOpenPushedScripts": {
-          "title": "Communication with Tabletop Simulator",
-          "description": "Should vscode automatically open files received from the game?",
+        "TTSLua.autoOpen": {
+          "title": "Automatic Open",
+          "description": "Which files should vscode automatically open when receiving them from the game.",
           "type": "string",
-          "default": "global",
+          "default": "Global",
           "enum": [
-            "all",
-            "global",
-            "none"
+            "All",
+            "Global",
+            "None"
           ],
           "enumDescriptions": [
             "Open all received files when getting scripts",
@@ -131,12 +141,12 @@
           "title": "Function Parameters",
           "description": "This will determine how autocomplete inserts parameters into your script",
           "type": "string",
-          "default": "both",
+          "default": "Both",
           "enum": [
-            "none",
-            "type",
-            "name",
-            "both"
+            "None",
+            "Type",
+            "Name",
+            "Both"
           ],
           "enumDescriptions": [
             "Do not insert most parameters",
@@ -167,6 +177,7 @@
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.0",
     "js-bbcode-parser": "^3.0.0",
+    "mkdirp": "^0.5.1",
     "net": "^1.0.2",
     "vscode": "^1.1.34",
     "vscode-textmate": "^4.1.1"

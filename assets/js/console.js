@@ -6,6 +6,10 @@ const vscode = acquireVsCodeApi();
 // console.log(oldState);
 // vscode.setState({ count: currentCount });
 
+// $( document ).ready(function() {
+//   vscode.postMessage({ command: 'done' })
+// })
+
 function jumpToPageBottom() {
   $('html, body').scrollTop( $(document).height()-$(window).height());
 }
@@ -16,8 +20,11 @@ function isAtBottom() {
 
 // Handle messages sent from the extension to the webview
 window.addEventListener('message', event => {
-  var wasAtBottom = isAtBottom()
-  $("<div />").append($.parseHTML(event.data)).appendTo("#data")
+
+  let wasAtBottom = isAtBottom()
+  let newDiv = $("<div />").append($.parseHTML(event.data.htmlString))
+  if(event.data.class) newDiv.addClass(event.data.class)
+  newDiv.appendTo("#data")
   if (wasAtBottom) jumpToPageBottom()
 })
 

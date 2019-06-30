@@ -1,68 +1,72 @@
 'use strict'
 
 const vscode = require('vscode')
-
-const TTSConsolePanel = require('./TTSConsolePanel')
-const TTSServer = require('./server')
-
-const { TTSLuaDir } = require('./filehandler')
+const TTSAdapter = require('./TTSAdapter')
+const { tryCreateWorkspaceFolder } = require('./filehandler')
 const completion = require('./language/completion')
 
 /**
  * @param {vscode.ExtensionContext} context
  */
-function activate (context) {
-/* ----------------------------- Initialization ----------------------------- */
-  console.log('Tabletop Simulator Extension Loaded')
-  completion.activate(context)
-  console.log('Directory: ' + TTSLuaDir)
-  var server = new TTSServer(TTSConsolePanel)
-  TTSConsolePanel.server = server;
+function activate(context) {
 /* -------------------------- Command Registration -------------------------- */
+  // Open Panel
+  context.subscriptions.push(
+    vscode.commands.registerCommand('ttslua.openConsole', () => {
+      adapter.createOrShowPanel()
+    })
+  )
+  // Get Scripts
+  context.subscriptions.push(
+    vscode.commands.registerCommand('ttslua.getScripts', () => {
+      vscode.window.showQuickPick([
+        {
+          label: 'Get Scripts',
+          description: '$(alert) This will erase any changes since the last Save & Play.'
+        },
+        { label: 'Cancel' },
+      ],{
+        placeHolder: 'Get Lua Scripts from game?'
+      })
+      .then( option => {
+        if(option.label == 'Get Scripts') adapter.getScripts() })
+      .then( undefined, err => {} )
 
-// Open Panel
-context.subscriptions.push(
-  vscode.commands.registerCommand('ttslua.openConsole', () => {
-    TTSConsolePanel.createOrShow(context.extensionPath)
-  })
-)
+      // // Alternative confirmation dialog
+      // const Choice = 'Get Scripts';
+      // let chosen = await vscode.window.showInformationMessage(
+      //   'Get Lua Scripts from game?\n\nThis will erase any changes that you have made in Visual Studio Code since the last Save & Play.',
+      //   { modal: true },
+      //   'Get Scripts'
+      // )
+      // if(chosen === 'Get Scripts') adapter.getScripts()
+    })
+  )
+  // Save And Play
+  context.subscriptions.push(
+    vscode.commands.registerCommand('ttslua.saveAndPlay', () => {
+      adapter.saveAndPlay()
+    })
+  )
 
-// Open Panel
-context.subscriptions.push(
-  vscode.commands.registerCommand('ttslua.getScripts', () => {
-    //
-  })
-)
-
-// Open Panel
-context.subscriptions.push(
-  vscode.commands.registerCommand('ttslua.saveAndPlay', () => {
-    //
-  })
-)
-
-/* ------------------------------- Serializers ------------------------------ */
-
+/* -------------------------------------------------------------------------- */
   if (vscode.window.registerWebviewPanelSerializer) {
-    // Make sure we register a serializer in activation event
-    vscode.window.registerWebviewPanelSerializer(TTSConsolePanel.viewType, {
+    vscode.window.registerWebviewPanelSerializer('TTSConsole', {
       async deserializeWebviewPanel(webviewPanel, state) {
           // `state` is the state persisted using `setState` inside the webview
-          console.log(`Got state: ${state}`)
-          // Restore the content of our webview.
-          //
-          // Make sure we hold on to the `webviewPanel` passed in here and
-          // also restore any event listeners we need on it.
-          TTSConsolePanel.revive(webviewPanel, context.extensionPath)
+          // console.log(`Got state: ${state}`)
+          adapter.revivePanel(webviewPanel) // Restore the content of our webview.
       }
     })
   }
+/* ----------------------------- Initialization ----------------------------- */
+  tryCreateWorkspaceFolder()
+  completion.activate(context) // Activate autoCompletion
+  let adapter = new TTSAdapter(context.extensionPath)
+  console.debug('[TTSLua] Tabletop Simulator Extension Loaded')
 }
 
-// this method is called when your extension is deactivated
-function deactivate () {
-  console.log('Tabletop Simulator Extension Unloaded')
-}
+function deactivate() { console.debug('Tabletop Simulator Extension Unloaded') }
 
 module.exports = {
   activate,
