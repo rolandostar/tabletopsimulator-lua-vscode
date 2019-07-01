@@ -1,14 +1,19 @@
 {
   "name": "tabletopsimulator-lua",
-  "displayName": "Tabletop Simulator LUA",
+  "displayName": "Tabletop Simulator Lua",
   "author": "Rolando Romero <contact@rolandostar.com> (https://rolandostar.com/)",
   "description": "Extension for VSCode to make writing Lua scripts for Tabletop Simulator easier.",
   "version": "0.0.1",
   "publisher": "rolandostar",
   "license": "MIT",
-  "repository": "github:rolandostar/vscode-tabletopsimulator-lua",
+  "repository": "github:rolandostar/tabletopsimulator-lua-vscode",
   "engines": {
     "vscode": "^1.35.0"
+  },
+  "icon": "assets/marketplace/icon.png",
+  "galleryBanner": {
+    "color": "#1F1F23",
+    "theme": "dark"
   },
   "activationEvents": [
     "onWebviewPanel:TTSConsole",
@@ -54,6 +59,11 @@
         "command": "ttslua.saveAndPlay",
         "title": "Save And Play",
         "category": "TTSLua"
+      },
+      {
+        "command": "ttslua.installConsole",
+        "title": "Install Console++",
+        "category": "TTSLua"
       }
     ],
     "menus": {
@@ -66,6 +76,9 @@
         },
         {
           "command": "ttslua.saveAndPlay"
+        },
+        {
+          "command": "ttslua.installConsole"
         }
       ],
       "editor/context": [
@@ -119,10 +132,46 @@
             "Do not open any file (Will still show files in explorer panel)"
           ]
         },
+        "TTSLua.clearOnReload": {
+          "title": "Clear on Reload",
+          "description": "Enable to clear Console++ history when opening new game or reloading.",
+          "type": "boolean",
+          "default": false
+        },
+        "TTSLua.consoleFontFamily": {
+          "title": "Console++ Font Family",
+          "description": "Controls the Console Font Family",
+          "type:": "string",
+          "default": "Amaranth"
+        },
+        "TTSLua.consoleFontSize": {
+          "title": "Console++ Font Size",
+          "description": "Font size for console panel in pixels. Can also be changed with Ctrl+Scroll.",
+          "type:": "integer",
+          "default": 16
+        },
+        "TTSLua.consoleInputHeight": {
+          "title": "Console++ Input Height",
+          "description": "Height of the command input bar at the bottom in pixels.",
+          "type:": "integer",
+          "default": 27
+        },
+        "TTSLua.coroutinePostfix": {
+          "title": "Coroutine Postfix",
+          "description": "When automatically creating an internal coroutine function this is appended to the parent function's name",
+          "type": "string",
+          "default": "_routine"
+        },
         "TTSLua.createXml": {
           "title": "Create XML UI file when object sent from Tabletop Simulator",
           "description": "When an individual object is sent from Tabletop Simulator which has no XML UI, generate a blank XML file for it.",
           "type": "boolean",
+          "default": false
+        },
+        "TTSLua.doubleClickClear": {
+          "title": "Reset to caret (>) on double click",
+          "description": "Enable to clear the command input bar when using double click to focus it.",
+          "type:": "boolean",
           "default": false
         },
         "TTSLua.guidPostfix": {
@@ -131,15 +180,27 @@
           "type": "string",
           "default": "_GUID"
         },
-        "TTSLua.coroutinePostfix": {
-          "title": "Coroutine Postfix",
-          "description": "When automatically creating an internal coroutine function this is appended to the parent function's name",
+        "TTSLua.includeOtherFiles": {
+          "title": "Insert other files specified in source code",
+          "markdownDescription": "Convert lua lines containing ``#include <FILE>``, and xml lines containing ``<Include src=\"filename.xml\"/>``, into the specified file's contents''",
+          "type": "boolean",
+          "default": true
+        },
+        "TTSLua.logSave": {
+          "title": "Log Saves",
+          "description": "Enable to log a message to the Console when a save occurs.",
+          "type": "boolean",
+          "default": true
+        },
+        "TTSLua.parameterFormat": {
+          "title": "Parameter TYPE & NAME Format",
+          "markdownDescription": "If you select `TYPE & NAME` above it will format like this. You may vary the case, e.g. `typeName` or `name <TYPE>`",
           "type": "string",
-          "default": "_routine"
+          "default": "TYPE_name"
         },
         "TTSLua.parameterToDisplay": {
           "title": "Function Parameters",
-          "description": "This will determine how autocomplete inserts parameters into your script",
+          "description": "This will determine how autocomplete inserts parameters into your script.",
           "type": "string",
           "default": "Both",
           "enum": [
@@ -154,12 +215,6 @@
             "Insert parameters as NAME",
             "Insert parameters as TYPE & NAME"
           ]
-        },
-        "TTSLua.parameterFormat": {
-          "title": "Parameter TYPE & NAME Format",
-          "markdownDescription": "If you select `TYPE & NAME` above it will format like this. You may vary the case, e.g. `typeName` or `name <TYPE>`",
-          "type": "string",
-          "default": "TYPE_name"
         }
       }
     }
@@ -168,18 +223,41 @@
     "lint": "eslint ./src --config .eslintrc.json",
     "postinstall": "node ./node_modules/vscode/bin/install"
   },
-  "devDependencies": {
-    "@types/mkdirp": "^0.5.2",
-    "@types/node": "^8.10.48",
-    "eslint": "^6.0.1",
-    "eslint-plugin-import": "^2.18.0",
-    "eslint-plugin-node": "^9.1.0",
-    "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^4.0.0",
-    "js-bbcode-parser": "^3.0.0",
+  "dependencies": {
+    "fs-extra": "^8.1.0",
     "mkdirp": "^0.5.1",
     "net": "^1.0.2",
     "vscode": "^1.1.34",
     "vscode-textmate": "^4.1.1"
-  }
+  },
+  "devDependencies": {
+    "eslint": "^6.0.1",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.18.0",
+    "eslint-plugin-node": "^9.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.0"
+  },
+  "badges": [
+    {
+      "url": "https://badgen.net/badge/build/should be ok/green",
+      "href": "https://github.com/rolandostar/tabletopsimulator-lua-vscode",
+      "description": "Should build correctly most of the time..."
+    },
+    {
+      "url": "https://badgen.net/badge/uses/JS/yellow",
+      "href": "https://github.com/rolandostar/tabletopsimulator-lua-vscode",
+      "description": ""
+    },
+    {
+      "url": "https://badgen.net/badge/designed in/MS Paint/blue",
+      "href": "https://github.com/rolandostar/tabletopsimulator-lua-vscode",
+      "description": ""
+    },
+    {
+      "url": "https://badgen.net/badge/made%20with/%E2%9D%A4/red",
+      "href": "https://github.com/rolandostar/tabletopsimulator-lua-vscode",
+      "description": "<3"
+    }
+  ]
 }

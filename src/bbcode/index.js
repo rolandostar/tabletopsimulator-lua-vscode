@@ -2,10 +2,10 @@ module.exports = class BBCode {
   /**
    * @param {Object} codes
    */
-  constructor(codes) {
-      this.codes = [];
+  constructor (codes) {
+    this.codes = []
 
-      this.setCodes(codes);
+    this.setCodes(codes)
   }
 
   /**
@@ -14,8 +14,8 @@ module.exports = class BBCode {
    * @param {String} text
    * @returns {String}
    */
-  parse(text) {
-      return this.codes.reduce((text, code) => text.replace(code.regexp, code.replacement), text);
+  parse (text) {
+    return this.codes.reduce((text, code) => text.replace(code.regexp, code.replacement), text)
   }
 
   /**
@@ -25,13 +25,13 @@ module.exports = class BBCode {
    * @param {String} replacement
    * @returns {BBCode}
    */
-  add(regex, replacement) {
-      this.codes.push({
-          regexp:      new RegExp(regex, 'igm'),
-          replacement: replacement
-      });
+  add (regex, replacement) {
+    this.codes.push({
+      regexp: new RegExp(regex, 'igm'),
+      replacement: replacement
+    })
 
-      return this;
+    return this
   }
 
   /**
@@ -40,16 +40,16 @@ module.exports = class BBCode {
    * @param {Object} codes
    * @returns {BBCode}
    */
-  setCodes(codes) {
-      this.codes = Object.keys(codes).map(function (regex) {
-          const replacement = codes[regex];
+  setCodes (codes) {
+    this.codes = Object.keys(codes).map(function (regex) {
+      const replacement = codes[regex]
 
-          return {
-              regexp:      new RegExp(regex, 'igm'),
-              replacement: replacement
-          };
-      }, this);
+      return {
+        regexp: new RegExp(regex, 'igm'),
+        replacement: replacement
+      }
+    }, this)
 
-      return this;
+    return this
   }
 }
