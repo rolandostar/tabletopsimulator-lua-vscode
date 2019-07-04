@@ -6,7 +6,11 @@
   "version": "1.0.0",
   "publisher": "rolandostar",
   "license": "MIT",
-  "repository": "github:rolandostar/tabletopsimulator-lua-vscode",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rolandostar/tabletopsimulator-lua-vscode"
+  },
+  "qna": "false",
   "engines": {
     "vscode": "^1.35.0"
   },
