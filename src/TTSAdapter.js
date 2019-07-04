@@ -12,7 +12,6 @@ class TTSAdapter {
     this._dir = vscode.Uri.file(TTSLuaDir)
     this._disposables = [] // Temporary Resources
     this._extensionPath = extensionPath
-    this._savedAndPlayed = false
     this._ttsMsg = { // Poor man's enum
       pushObject: 0,
       NewGame: 1,
@@ -23,6 +22,14 @@ class TTSAdapter {
       GameSaved: 6,
       ObjectCreated: 7
     }
+    this._timeout = setTimeout(() => {
+      this._savedAndPlayed = false
+    }, 3000)
+    this._initServer()
+    this._executeWhenDone = function () {}
+  }
+
+  _initServer () {
     // Initialize Server for incoming TTS Messages
     this._server = net.createServer((socket) => {
       const chunks = []
@@ -54,7 +61,6 @@ class TTSAdapter {
     if (!vsFolders || vsFolders.findIndex(val => val.uri.fsPath === this._dir.fsPath) === -1) {
       vscode.workspace.updateWorkspaceFolders(0, vsFolders ? vsFolders.length : null, { uri: this._dir })
     }
-    this._savedAndPlayed = false
     this._sendToTTS(0)
   }
 
@@ -64,7 +70,7 @@ class TTSAdapter {
       vscode.window.showErrorMessage('The workspace is not opened on the Tabletop Simulator folder.\nGet Lua Scripts from game before trying to Save and Play.')
       return
     }
-    vscode.workspace.saveAll(false).then(() => {
+    vscode.workspace.saveAll(false).then(async () => {
       let objects = new Map()
       try {
         fs.readdirSync(TTSLuaDir).forEach(file => {
@@ -96,20 +102,22 @@ class TTSAdapter {
         vscode.window.showErrorMessage(error.message)
         return
       }
-      if (this._webviewPanel) {
-        this.createOrShowPanel()
+      // Hackish way to detect when panel is cleared.
+      this._executeWhenDone = () => {
+        this._sendToTTS(1, { scriptStates: [...objects.values()] })
+        this._savedAndPlayed = true
+        this._timeout.refresh()
       }
-      this._savedAndPlayed = true
-      this._sendToTTS(1, { scriptStates: [...objects.values()] });
-      // setTimeout(this._set.bind(this), 1000)
+      if (vscode.workspace.getConfiguration('TTSLua').get('clearOnReload')) {
+        this.clearPanel()
+      } else {
+        let f = this._executeWhenDone; f()
+        this._executeWhenDone = function () {}
+      }
     }, (_, err) => {
       console.error('Unable to save all opened files')
     })
   }
-
-  // _set() {
-  //   this._savedAndPlayed = false
-  // }
 
   _uncompressIncludes (luaScript, baseFolder, includePath, alreadyInserted) {
     alreadyInserted = alreadyInserted || []
@@ -133,7 +141,6 @@ class TTSAdapter {
         sharedFilePath = path.join(includePath, baseFolder)
         newBaseFolder = path.dirname(path.join(baseFolder, includeFileName))
       }
-      // let newBaseFolder = this._ExtractBaseFolder(baseFolder, includeFileName)
       let sharedFullFile = path.join(sharedFilePath, includeFileName + '.ttslua')
       if (!alreadyInserted.includes(sharedFullFile)) {
         alreadyInserted.push(sharedFullFile)
@@ -176,11 +183,7 @@ class TTSAdapter {
         break
       case this._ttsMsg.NewGame:
         if (this._savedAndPlayed) break
-        if (vscode.workspace.getConfiguration('TTSLua').get('clearOnReload')) {
-          this.clearPanel()
-        }
         this.readFilesFromTTS(ttsMessage.scriptStates)
-        this._savedAndPlayed = false
         break
       case this._ttsMsg.Print:
         this.appendToPanel(TTSParser.parse(ttsMessage.message))
@@ -275,7 +278,7 @@ class TTSAdapter {
     client.on('error', (err) => {
       if (err.code === 'ECONNREFUSED') {
         console.error('[TTSLua] Error: Unable to connect to TTS. Is the game open and a save loaded?\n' + err)
-      } else console.error('[TTSLua] Error: ' + err)
+      } else console.error('[TTSLua] Client ' + err)
     })
     client.on('end', () => client.destroy())
   }
@@ -319,6 +322,10 @@ class TTSAdapter {
           break
         case 'input':
           this.customMessage({ input: message.text })
+          break
+        case 'done':
+          let f = this._executeWhenDone; f()
+          this._executeWhenDone = function () {}
           break
       }
     }, null, this._disposables)
@@ -374,7 +381,6 @@ class TTSAdapter {
               --ttslua-console-input-height: ${vscode.workspace.getConfiguration('TTSLua').get('consoleInputHeight')};
             }
             </style>
-            <link href="https://fonts.googleapis.com/css?family=Amaranth&display=swap" rel="stylesheet">
             <link rel="stylesheet" type="text/css" href="${styleUri}">
             <!--
             Here's a content security policy that allows loading local scripts and stylesheets, and loading images over https
@@ -390,7 +396,7 @@ class TTSAdapter {
               <input type="textbox" placeholder=">command"/>
             </div>
             <div id="data"></div>
-            <script id="mainScript" type="module" src="${scriptUri}" doubleClickClear="${vscode.workspace.getConfiguration('TTSLua').get('doubleClickClear')}"></script>
+            <script id="mainScript" type="module" src="${scriptUri}" clearOnFocus="${vscode.workspace.getConfiguration('TTSLua').get('clearOnFocus')}"></script>
         </body>
         </html>`
   }

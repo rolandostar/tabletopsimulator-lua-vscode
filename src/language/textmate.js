@@ -31,10 +31,10 @@ let registry = new tm.Registry({
       return new Promise((resolve, reject) => {
         fs.readFile(p, (error, content) => {
           if (error) {
-            resolve(error)
+            reject(error)
           } else {
             let grammar = tm.parseRawGrammar(content.toString(), p)
-            reject(grammar)
+            resolve(grammar)
           }
         })
       })

@@ -9,7 +9,7 @@ const completion = require('./language/completion')
  * @param {vscode.ExtensionContext} context
  */
 function activate (context) {
-/* -------------------------- Command Registration -------------------------- */
+  /* ------------------------- Command Registration ------------------------- */
   // Open Panel
   context.subscriptions.push(
     vscode.commands.registerCommand('ttslua.openConsole', () => {

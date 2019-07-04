@@ -2,18 +2,23 @@
 
 All notable changes to the "tabletopsimulator-lua" extension will be documented in this file.
 
-## [Unreleased]
+## [1.0.0]
 
 - Initial release
 - Added LICENCE
 - Added README.md
-- Added documentation assets with sources:
-  - Logo.[pdn|png]
-- Feature Progress: Integration with Console++ by onelivesleft
+- Added documentation assets
+- Feature Complete: Integration with Console++ by onelivesleft
   - Added WebPanelView for output
   - Added CSS/JS for WebPanelView
   - Added Command Input to be sent via CustomMessage
-- Feature Progress: Get Scripts
+- Feature Complete: Get Scripts / Save And Play
   - Added Print/Debug Message Communication
+  - Added Error Messages with special formatting
+- Feature Complete: #include Support
+  - Handling of nested includes
+  - Root includes
+  - Scoped includes
 - Added Feature: Syntax Highlight
 - Added Feature: Code autocompletion based on OliPro007's Extension
+- Bundled default Console++ and expanded it to add onExternalCommand()

@@ -1,7 +1,7 @@
 <div align="center">
 <h2>Tabletop Simulator Lua Extension for VSCode</h2>
 <br>
-<img width="500" src="https://github.com/rolandostar/vscode-tabletopsimulator-lua/blob/master/assets/docs/banner.png?raw=true" alt="VSCode-TabletopSimulator-Lua">
+<img width="500" src="https://raw.githubusercontent.com/rolandostar/tabletopsimulator-lua-vscode/master/assets/docs/banner.png" alt="VSCode-TabletopSimulator-Lua">
 <br>
 <br>
 </div>
@@ -22,7 +22,7 @@ Extension for VSCode to make writing Lua scripts for  <a href="https://store.ste
 - Get Scripts
 - Send Scripts
 - Syntax Highlight based on the official [Atom plugin](https://github.com/Berserk-Games/atom-tabletopsimulator-lua)
-- Code autocompletion based on OliPro007's [Extension](https://github.com/OliPro007/vscode-tabletopsimulator-lua)
+- Code autocompletion based on OliPro007's [Extension](https://github.com/OliPro007/tabletopsimulator-lua-vscode)
 - #include support with nested, root, and scoped includes ([Read more](http://blog.onelivesleft.com/2017/08/atom-tabletop-simulator-package.html)) 
 - Highly Configurable
 - Built-in Console
@@ -31,7 +31,7 @@ Extension for VSCode to make writing Lua scripts for  <a href="https://store.ste
   - Receive output and debug information on VSCode Panel
   - BBCode and nested colors support!
 
-![Demo Reel](https://raw.githubusercontent.com/rolandostar/vscode-tabletopsimulator-lua/master/assets/docs/demo.gif)
+![Demo Reel](https://raw.githubusercontent.com/rolandostar/tabletopsimulator-lua-vscode/master/assets/docs/demo.gif)
 
 ## Requirements
 
@@ -48,9 +48,9 @@ Launch VS Code Quick Open (`Ctrl+P`), paste the following command, and type ente
 
 #### From package:
 
-You can also Install from the VSIX Package, you can find it under [Releases](https://github.com/rolandostar/vscode-tabletopsimulator-lua/releases/latest)
+You can also Install from the VSIX Package, you can find it under [Releases](https://github.com/rolandostar/tabletopsimulator-lua-vscode/releases/latest)
 
-![VSIX Install Menu](https://raw.githubusercontent.com/rolandostar/tabletopsimulator-lua-vscode/master/assets/docs/vsix.png?raw=true)
+![VSIX Install Menu](https://raw.githubusercontent.com/rolandostar/tabletopsimulator-lua-vscode/master/assets/docs/vsix.png)
 
 ## Manual Installation
 
@@ -66,7 +66,7 @@ Download or clone this repository and place it under:
 * `Ctrl+Alt+L`: Get Lua Scripts
 * `Ctrl+Alt+S`: Save And Play
 
-###### Tip: Double click on the Console++ Panel to focus the command input at the bottom.
+###### Tip: Press enter or double click on the Console++ Panel to focus the command input at the bottom.
 
 --------
 
@@ -110,7 +110,7 @@ This extension contributes the following settings:
 * `TTSLua.consoleInputHeight`: Set Height for command input in pixels. (Default: `15`) 
 * `TTSLua.coroutinePostfix`: Postfix to be appended to coroutine functions. (Default: `_routine`)
 * `TTSLua.createXml`: Create XML UI File for each Lua received. (Default: `false`)
-* `TTSLua.doubleClickClear`: Enable to clear command input on double click. (Default: `false`) 
+* `TTSLua.clearOnFocus`: Enable to clear command input on input focus. (Default: `false`) 
 * `TTSLua.guidPostfix`: Postfix of variable when guessing `getObjectFromGUID`. (Default: `_GUID`)
 * `TTSLua.includeOtherFiles`: Insert other files specified in source code (Default: `true`)
 * `TTSLua.logSave`: Enable to log a message when a save occurs. (Default: `true`) 
@@ -123,18 +123,22 @@ Execute Lua Code is not supported.
 
 Partial theme support. Needs more testing.
 
-#include doesn't work for XML UI Files.
+\#include doesn't work for XML UI Files.
+
+Line numbers on error are mismatched when using \#include.
 
 Command Input has no history. (`Arrow Up`)
 
 Unable to add more Include Paths. (Only supports `%USERPROFILE%/Documents/Tabletop Simulator`)
 
+Console panel sometimes displays print messages out of order.
+
 ## Release Notes
 
-Check [CHANGELOG.md](https://github.com/rolandostar/vscode-tabletopsimulator-lua/blob/master/CHANGELOG.md)
+Check [CHANGELOG.md](https://github.com/rolandostar/tabletopsimulator-lua-vscode/blob/master/CHANGELOG.md)
 
 ## About
-This project was motivated on trying out different solutions to communicate VSCode with TTS and being rather unsuccessful at that. I tried using [OliPro007's Extension](https://github.com/OliPro007/vscode-tabletopsimulator-lua) and was a bit finicky for me, I also checked out [dustinlacewell's vatts](https://github.com/dustinlacewell/vatts) and was able to retrieve scripts but not send them. I guess I'm just inexperienced setting up these extensions which is why I wanted to dive into it by making my own and hoped to streamline the process for someone else.
+This project was motivated on trying out different solutions to communicate VSCode with TTS and being rather unsuccessful at that. I tried using [OliPro007's Extension](https://github.com/OliPro007/tabletopsimulator-lua-vscode) and was a bit finicky for me, I also checked out [dustinlacewell's vatts](https://github.com/dustinlacewell/vatts) and was able to retrieve scripts but not send them. I guess I'm just inexperienced setting up these extensions which is why I wanted to dive into it by making my own and hoped to streamline the process for someone else.
 
 I kind of ended up doing my own thing.
 
