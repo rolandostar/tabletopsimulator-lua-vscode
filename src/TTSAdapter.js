@@ -78,20 +78,21 @@ class TTSAdapter {
           if (!fs.statSync(filePath).isDirectory()) {
             let tokens = file.split('.')
             let name = tokens[0]
+            let guid = tokens[1]
             // If guid is not present in objects, create placeholder
-            if (!objects.has(name)) {
-              objects.set(name, { name, guid: tokens[1], script: '', ui: '' })
+            if (!objects.has(guid)) {
+              objects.set(guid, { name, guid, script: '', ui: '' })
             }
             // Complete the object placeholder with the content of the file
             if (filePath.endsWith('.ttslua')) {
-              let obj = objects.get(name)
+              let obj = objects.get(guid)
               // include system
               let luaScript = fs.readFileSync(filePath, 'utf8')
               obj.script = vscode.workspace.getConfiguration('TTSLua').get('includeOtherFiles')
                 ? this._uncompressIncludes(luaScript, '', docsFolder)
                 : luaScript
             } else if (filePath.endsWith('.xml')) {
-              let obj = objects.get(name)
+              let obj = objects.get(guid)
               // let horizontalWhitespaceSet = '\\t\\v\\f\\r \u00a0\u2000-\u200b\u2028-\u2029\u3000'
               // let insertXmlFileRegexp = RegExp('(^|\\n)([' + horizontalWhitespaceSet + ']*)(.*)<Include\\s+src=(\'|")(.+)\\4\\s*/>', 'g')
               obj.ui = fs.readFileSync(filePath, 'utf8')
@@ -114,7 +115,7 @@ class TTSAdapter {
         let f = this._executeWhenDone; f()
         this._executeWhenDone = function () {}
       }
-    }, (_, err) => {
+    }, (_, _err) => {
       console.error('Unable to save all opened files')
     })
   }
@@ -311,7 +312,7 @@ class TTSAdapter {
   _webviewPanelInit (webviewPanel) {
     webviewPanel.webview.html = this._getHtmlForWebview() // Set webview content
     webviewPanel.onDidDispose(() => this.disposePanel(), null, this._disposables)
-    webviewPanel.onDidChangeViewState(e => {
+    webviewPanel.onDidChangeViewState(_e => {
       if (webviewPanel.visible) webviewPanel.webview.html = this._getHtmlForWebview()
     }, null, this._disposables)
     // Handle messages from the webview

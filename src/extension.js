@@ -58,7 +58,7 @@ function activate (context) {
   /* -------------------------------------------------------------------------- */
   if (vscode.window.registerWebviewPanelSerializer) {
     vscode.window.registerWebviewPanelSerializer('TTSConsole', {
-      async deserializeWebviewPanel (webviewPanel, state) {
+      async deserializeWebviewPanel (webviewPanel, _state) {
         // `state` is the state persisted using `setState` inside the webview
         // console.log(`Got state: ${state}`)
         adapter.revivePanel(webviewPanel) // Restore the content of our webview.

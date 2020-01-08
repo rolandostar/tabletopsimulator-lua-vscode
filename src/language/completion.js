@@ -78,7 +78,7 @@ class CompletionProvider {
             throw new Error('Method not implemented.');
         } */
   }
-  provideCompletionItems (document, position, token, context) {
+  provideCompletionItems (document, position, _token, context) {
     return __awaiter(this, void 0, void 0, function * () {
       let line = document.lineAt(position).text.substr(0, position.character)
       let scopes = yield tm.getScopes(line, position.character)
