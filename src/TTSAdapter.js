@@ -123,7 +123,7 @@ class TTSAdapter {
   _uncompressIncludes (luaScript, baseFolder, includePath, alreadyInserted) {
     alreadyInserted = alreadyInserted || []
     let insertLuaFileRegexp = RegExp('^(\\s*%include\\s+([^\\s].*))', 'm')
-    luaScript = luaScript.replace('#include ', '%include ')
+    luaScript = luaScript.replace(/#include /g, '%include ')
     while (true) {
       let match = luaScript.match(insertLuaFileRegexp)
       if (match === null) break
