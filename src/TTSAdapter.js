@@ -157,7 +157,7 @@ class TTSAdapter {
           '---- #include ' + match[2] + '\n',
           doBlock ? 'do\n' : '',
           sharedFileContents,
-          doBlock ? 'end\n' : '',
+          doBlock ? '\nend\n' : '',
           '\n---- #include ' + match[2],
           luaScript.slice(match.index + match[0].length)
         ].join('')
@@ -252,19 +252,28 @@ class TTSAdapter {
   }
 
   _compressScripts (luaScript) {
-    let match
-    let storage = {}
-    let insertedLuaFileRegexp = RegExp('^----(\\s*#include\\s+([^\\s].*))', 'mg')
-    while ((match = insertedLuaFileRegexp.exec(luaScript)) !== null) {
-      if (Object.keys(storage).length === 0) storage = { file: match[2], loc: match.index }
-      else if (storage.file === match[2]) { // found pair
-        luaScript = [
-          luaScript.slice(0, storage.loc),
-          '#include ' + match[2],
-          luaScript.slice(match.index + match[2].length + 14)
-        ].join('')
-        storage = {}
+    let storage = []
+    let insertedLuaFileRegexp = RegExp('^----(\\s*#include\\s+([^\\s].*))', 'm')
+    let match = insertedLuaFileRegexp.exec(luaScript)
+    while (match !== null) {
+      if(storage.length == 0) storage.push(match)
+      else {
+        if (storage[storage.length - 1][2] === match[2]) {//found pair
+          let last_match = storage.pop();
+          luaScript = [
+            luaScript.slice(0, last_match.index - 1),
+            '\n#include ' + match[2],
+            luaScript.slice(match.index + match[0].length)
+          ].join('')
+          match = insertedLuaFileRegexp.exec(luaScript)
+          continue
+        }
       }
+      luaScript = [
+        luaScript.slice(0, match.index - 1),
+        luaScript.slice(match.index + match[0].length)
+      ].join('')
+      match = insertedLuaFileRegexp.exec(luaScript)
     }
     return luaScript
   }
