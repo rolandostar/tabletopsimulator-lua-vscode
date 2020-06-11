@@ -2,6 +2,12 @@
 
 All notable changes to the "tabletopsimulator-lua" extension will be documented in this file.
 
+## [1.0.5]
+- Fixed published packaging versioning issue
+
+## [1.0.4]
+- Fixes multiple includes (Thanks to @jonahwh)
+
 ## [1.0.3]
 
 - Fixed issue where multiple objects with same object name would overwrite each other. (Thanks stom66 @ GitHub)
