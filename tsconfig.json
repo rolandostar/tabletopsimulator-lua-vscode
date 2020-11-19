@@ -1,0 +1,41 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es6",
+    "outDir": "out",
+    "lib": [
+      "es6"
+    ],
+    "noUnusedLocals": true,
+    "noImplicitThis": true,
+    "noImplicitReturns": true,
+    "strictNullChecks": true,
+    "sourceMap": true,
+    "baseUrl": "./",
+    "rootDir": "src",
+    "paths": {
+      "*": [
+        "node_modules/vscode/*",
+        "*"
+      ]
+    },
+    "strict": true,
+    // "noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */
+    /* Additional Checks */
+    // "noImplicitReturns": true, /* Report error when not all code paths in function return a value. */
+    // "noUnusedParameters": true,  /* Report errors on unused parameters. */
+  },
+  "exclude": [
+    "generateSnippets",
+    "node_modules",
+    ".vscode-test"
+  ],
+  "include": [
+    "src/**/*.ts",
+    "./node_modules/vscode/vscode.d.ts",
+    "./node_modules/vscode/lib/*",
+    "src/utils/getCoreNodeModule.js",
+    "webpack.config.js",
+    "assets/webView/js/console.js",
+  ]
+}

@@ -1,4 +1,4 @@
-#include console
+require("Console/console")
 
 if not console.plusplus then
     console.plusplus = true

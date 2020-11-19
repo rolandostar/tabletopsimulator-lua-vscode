@@ -21,12 +21,13 @@ body {
   font-size: calc(var(--ttslua-console-font-size) * 1px);
   padding: 0;
   padding-top: 15px;
-  padding-bottom: calc((var(--ttslua-console-input-height) * 1px) + 13px);
+  padding-bottom: calc((var(--ttslua-console-input-height) * 1px) + 13px + 10px);
   margin-bottom:3px;
+  white-space:pre;
 }
 
 #data > div {
-  padding-left: 20px;
+  padding-left: 10px;
   padding-right: 20px;
 }
 
@@ -60,4 +61,30 @@ body {
 
 #commandInput > input:focus {
   outline: none;
+}
+
+.bold {
+  font-weight: bold
+}
+
+.italic {
+  font-style: italic
+}
+
+.underline {
+  text-decoration: underline
+}
+
+.lineThrough {
+  text-decoration: line-through
+}
+
+.sub {
+  vertical-align: sub;
+  font-size: smaller;
+}
+
+.sup {
+  vertical-align: super;
+  font-size: smaller;
 }

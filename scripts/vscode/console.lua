@@ -1,4 +1,4 @@
-#include <!/Console/console++>
+require("Console/console++")
 
 -- function prototype
 function onExternalCommand(command) end

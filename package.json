@@ -1,285 +1,325 @@
 {
-	"name": "tabletopsimulator-lua",
-	"displayName": "Tabletop Simulator Lua",
-	"author": "Rolando Romero <contact@rolandostar.com> (https://rolandostar.com/)",
-	"description": "Extension for VSCode to make writing Lua scripts for Tabletop Simulator easier.",
-	"version": "1.0.5",
-	"publisher": "rolandostar",
-	"license": "MIT",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/rolandostar/tabletopsimulator-lua-vscode"
-	},
-	"qna": "false",
-	"engines": {
-		"vscode": "1.46.x"
-	},
-	"categories": [
-		"Programming Languages",
-		"Other"
-	],
-	"icon": "assets/marketplace/icon.png",
-	"galleryBanner": {
-		"color": "#1F1F23",
-		"theme": "dark"
-	},
-	"activationEvents": [
-		"onWebviewPanel:TTSConsole",
-		"onLanguage:TTS Lua",
-		"onCommand:ttslua.openConsole",
-		"onCommand:ttslua.getScripts",
-		"onCommand:ttslua.saveAndPlay",
-		"onCommand:ttslua.installConsole",
-		"workspaceContains:**/.ttslua"
-	],
-	"main": "./src/extension",
-	"contributes": {
-		"languages": [
-			{
-				"id": "TTS Lua",
-				"aliases": [
-					"Tabletop Simulator Lua"
-				],
-				"extensions": [
-					".ttslua"
-				],
-				"configuration": "./syntaxes/tts_lua-configuration.json"
-			}
-		],
-		"grammars": [
-			{
-				"language": "TTS Lua",
-				"scopeName": "source.tts.lua",
-				"path": "./syntaxes/tts_lua.json"
-			}
-		],
-		"commands": [
-			{
-				"command": "ttslua.openConsole",
-				"title": "Open TTS Console++",
-				"category": "TTSLua"
-			},
-			{
-				"command": "ttslua.getScripts",
-				"title": "Get Lua Scripts",
-				"category": "TTSLua"
-			},
-			{
-				"command": "ttslua.saveAndPlay",
-				"title": "Save And Play",
-				"category": "TTSLua"
-			},
-			{
-				"command": "ttslua.installConsole",
-				"title": "Install Console++",
-				"category": "TTSLua"
-			}
-		],
-		"menus": {
-			"commandPalette": [
-				{
-					"command": "ttslua.openConsole"
-				},
-				{
-					"command": "ttslua.getScripts"
-				},
-				{
-					"command": "ttslua.saveAndPlay"
-				},
-				{
-					"command": "ttslua.installConsole"
-				}
-			],
-			"editor/context": [
-				{
-					"command": "ttslua.getScripts",
-					"when": "editorLangId == TTS Lua",
-					"group": "TTSLua@1"
-				},
-				{
-					"command": "ttslua.saveAndPlay",
-					"when": "editorLangId == TTS Lua",
-					"group": "TTSLua@1"
-				},
-				{
-					"command": "ttslua.openConsole",
-					"when": "editorLangId == TTS Lua",
-					"group": "TTSLua@1"
-				}
-			]
-		},
-		"keybindings": [
-			{
-				"command": "ttslua.openConsole",
-				"key": "ctrl+alt+`"
-			},
-			{
-				"command": "ttslua.getScripts",
-				"key": "ctrl+alt+l"
-			},
-			{
-				"command": "ttslua.saveAndPlay",
-				"key": "ctrl+alt+s"
-			}
-		],
-		"configuration": {
-			"title": "Tabletop Simulator Lua Configuration",
-			"properties": {
-				"TTSLua.autoOpen": {
-					"title": "Automatic Open",
-					"description": "Which files should vscode automatically open when receiving them from the game.",
-					"type": "string",
-					"default": "Global",
-					"enum": [
-						"All",
-						"Global",
-						"None"
-					],
-					"enumDescriptions": [
-						"Open all received files when getting scripts",
-						"Only open global script",
-						"Do not open any file (Will still show files in explorer panel)"
-					]
-				},
-				"TTSLua.clearOnReload": {
-					"title": "Clear on Reload",
-					"description": "Enable to clear Console++ history when opening new game or reloading.",
-					"type": "boolean",
-					"default": false
-				},
-				"TTSLua.consoleFontFamily": {
-					"title": "Console++ Font Family",
-					"description": "Controls the Console Font Family",
-					"type": "string",
-					"default": "Amaranth"
-				},
-				"TTSLua.consoleFontSize": {
-					"title": "Console++ Font Size",
-					"description": "Font size for console panel in pixels. Can also be changed with Ctrl+Scroll.",
-					"type": "integer",
-					"default": 16
-				},
-				"TTSLua.consoleInputHeight": {
-					"title": "Console++ Input Height",
-					"description": "Height of the command input bar at the bottom in pixels.",
-					"type": "integer",
-					"default": 27
-				},
-				"TTSLua.coroutinePostfix": {
-					"title": "Coroutine Postfix",
-					"description": "When automatically creating an internal coroutine function this is appended to the parent function's name",
-					"type": "string",
-					"default": "_routine"
-				},
-				"TTSLua.createXml": {
-					"title": "Create XML UI file when object sent from Tabletop Simulator",
-					"description": "When an individual object is sent from Tabletop Simulator which has no XML UI, generate a blank XML file for it.",
-					"type": "boolean",
-					"default": false
-				},
-				"TTSLua.clearOnFocus": {
-					"title": "Reset to caret (>) on input focus",
-					"markdownDescription": "Enable to clear the command input bar when using ``double click`` or ``Enter`` to focus it.",
-					"type": "boolean",
-					"default": false
-				},
-				"TTSLua.guidPostfix": {
-					"title": "GUID Postfix",
-					"description": "When guessing the getObjectFromGUID parameter this is appended to the name of the variable being assigned to",
-					"type": "string",
-					"default": "_GUID"
-				},
-				"TTSLua.includeOtherFiles": {
-					"title": "Insert other files specified in source code",
-					"markdownDescription": "Convert lua lines containing ``#include <FILE>`` into the specified file's contents",
-					"type": "boolean",
-					"default": true
-				},
-				"TTSLua.logSave": {
-					"title": "Log Saves",
-					"description": "Enable to log a message to the Console when a save occurs.",
-					"type": "boolean",
-					"default": true
-				},
-				"TTSLua.parameterFormat": {
-					"title": "Parameter TYPE & NAME Format",
-					"markdownDescription": "If you select `TYPE & NAME` above it will format like this. You may vary the case, e.g. `typeName` or `name <TYPE>`",
-					"type": "string",
-					"default": "TYPE_name"
-				},
-				"TTSLua.parameterToDisplay": {
-					"title": "Function Parameters",
-					"description": "This will determine how autocomplete inserts parameters into your script.",
-					"type": "string",
-					"default": "Both",
-					"enum": [
-						"None",
-						"Type",
-						"Name",
-						"Both"
-					],
-					"enumDescriptions": [
-						"Do not insert most parameters",
-						"Insert parameters as TYPE",
-						"Insert parameters as NAME",
-						"Insert parameters as TYPE & NAME"
-					]
-				}
-			}
-		}
-	},
-	"scripts": {
-    "package": "vsce package",
-		"lint": "eslint ./src --config .eslintrc.json",
-		"test": "node ./test/runTest.js"
-	},
-	"dependencies": {
-		"fs-extra": "^9.0.1",
-		"mkdirp": "^1.0.4",
-		"net": "^1.0.2",
-		"vscode-textmate": "^5.1.1"
-	},
-	"devDependencies": {
-		"@types/glob": "^7.1.2",
-		"@types/mocha": "^7.0.2",
-		"@types/node": "^14.0.13",
-		"@types/vscode": "1.46.x",
-		"eslint": "^7.2.0",
-		"eslint-config-standard": "^14.1.1",
-		"eslint-plugin-import": "^2.21.2",
-		"eslint-plugin-node": "^11.1.0",
-		"eslint-plugin-promise": "^4.2.1",
-		"eslint-plugin-standard": "^4.0.1",
-		"glob": "^7.1.6",
-		"mocha": "^8.0.1",
-		"typescript": "^3.9.5",
-		"vscode-test": "^1.4.0"
-	},
-	"badges": [
-		{
-			"url": "https://badgen.net/badge/build/should be ok/green",
-			"href": "https://github.com/rolandostar/tabletopsimulator-lua-vscode",
-			"description": "Should build correctly most of the time..."
-		},
-		{
-			"url": "https://badgen.net/badge/uses/JS/yellow",
-			"href": "https://github.com/rolandostar/tabletopsimulator-lua-vscode",
-			"description": ""
-		},
-		{
-			"url": "https://badgen.net/badge/designed in/MS Paint/blue",
-			"href": "https://github.com/rolandostar/tabletopsimulator-lua-vscode",
-			"description": ""
-		},
-		{
-			"url": "https://badgen.net/badge/made%20with/%E2%9D%A4/red",
-			"href": "https://github.com/rolandostar/tabletopsimulator-lua-vscode",
-			"description": "<3"
-		}
-	],
-	"__metadata": {
-		"id": "0d2c6449-7895-4837-aad4-bb90deb5b47a",
-		"publisherDisplayName": "rolandostar",
-		"publisherId": "409bdebf-bb4b-4a76-a60a-8fa2dc343024"
-	}
+  "name": "tabletopsimulator-lua",
+  "displayName": "Tabletop Simulator Lua",
+  "author": "Rolando Romero <contact@rolandostar.com> (https://rolandostar.com/)",
+  "description": "Extension for VSCode to make writing Lua scripts for Tabletop Simulator easier.",
+  "version": "1.1.0",
+  "publisher": "rolandostar",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.50.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rolandostar/tabletopsimulator-lua-vscode"
+  },
+  "qna": "false",
+  "categories": [
+    "Programming Languages",
+    "Other"
+  ],
+  "icon": "assets/marketplace/icon.png",
+  "galleryBanner": {
+    "color": "#1F1F23",
+    "theme": "dark"
+  },
+  "activationEvents": [
+    "onWebviewPanel:TTSConsole",
+    "onLanguage:lua",
+    "onCommand:ttslua.openConsole",
+    "onCommand:ttslua.getScripts",
+    "onCommand:ttslua.saveAndPlay",
+    "onCommand:ttslua.installConsole",
+    "onCommand:ttslua.addDocsFolderToWorkspace",
+    "workspaceContains:**/.lua"
+  ],
+  "main": "dist/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "lua",
+        "aliases": [
+          "Lua"
+        ],
+        "extensions": [
+          ".lua"
+        ],
+        "configuration": "dist/syntaxes/language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "lua",
+        "scopeName": "source.lua",
+        "path": "dist/syntaxes/lua.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "ttslua.openConsole",
+        "title": "Open TTS Console++",
+        "category": "TTSLua"
+      },
+      {
+        "command": "ttslua.getScripts",
+        "title": "Get Lua Scripts",
+        "category": "TTSLua"
+      },
+      {
+        "command": "ttslua.saveAndPlay",
+        "title": "Save And Play",
+        "category": "TTSLua"
+      },
+      {
+        "command": "ttslua.installConsole",
+        "title": "Install Console++",
+        "category": "TTSLua"
+      },
+      {
+        "command": "ttslua.addDocsFolderToWorkspace",
+        "title": "Add include folder to workspace",
+        "category": "TTSLua"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "ttslua.openConsole"
+        },
+        {
+          "command": "ttslua.getScripts"
+        },
+        {
+          "command": "ttslua.saveAndPlay"
+        },
+        {
+          "command": "ttslua.installConsole"
+        },
+        {
+          "command": "ttslua.addDocsFolderToWorkspace"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "ttslua.getScripts",
+          "when": "editorLangId == lua",
+          "group": "TTSLua@1"
+        },
+        {
+          "command": "ttslua.saveAndPlay",
+          "when": "editorLangId == lua",
+          "group": "TTSLua@1"
+        },
+        {
+          "command": "ttslua.openConsole",
+          "when": "editorLangId == lua",
+          "group": "TTSLua@1"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "ttslua.openConsole",
+        "key": "ctrl+alt+`"
+      },
+      {
+        "command": "ttslua.getScripts",
+        "key": "ctrl+alt+l"
+      },
+      {
+        "command": "ttslua.saveAndPlay",
+        "key": "ctrl+alt+s"
+      }
+    ],
+    "configuration": {
+      "title": "Tabletop Simulator Lua Configuration",
+      "properties": {
+        "TTSLua.autoOpen": {
+          "title": "Automatic Open",
+          "description": "Which files should vscode automatically open when receiving them from the game.",
+          "type": "string",
+          "default": "Global",
+          "enum": [
+            "All",
+            "Global",
+            "None"
+          ],
+          "enumDescriptions": [
+            "Open all received files when getting scripts",
+            "Only open global script",
+            "Do not open any file (Will still show files in explorer panel)"
+          ]
+        },
+        "TTSLua.clearOnReload": {
+          "title": "Clear on Reload",
+          "description": "Enable to clear Console++ history when opening new game or reloading.",
+          "type": "boolean",
+          "default": false
+        },
+        "TTSLua.consoleFontFamily": {
+          "title": "Console++ Font Family",
+          "description": "Controls the Console Font Family",
+          "type": "string",
+          "default": "Amaranth"
+        },
+        "TTSLua.consoleFontSize": {
+          "title": "Console++ Font Size",
+          "description": "Font size for console panel in pixels. Can also be changed with Ctrl+Scroll.",
+          "type": "integer",
+          "default": 16
+        },
+        "TTSLua.consoleInputHeight": {
+          "title": "Console++ Input Height",
+          "description": "Height of the command input bar at the bottom in pixels.",
+          "type": "integer",
+          "default": 27
+        },
+        "TTSLua.coroutinePostfix": {
+          "title": "Coroutine Postfix",
+          "description": "When automatically creating an internal coroutine function this is appended to the parent function's name",
+          "type": "string",
+          "default": "_routine"
+        },
+        "TTSLua.createXml": {
+          "title": "Create XML UI file when object sent from Tabletop Simulator",
+          "description": "When an individual object is sent from Tabletop Simulator which has no XML UI, generate a blank XML file for it.",
+          "type": "boolean",
+          "default": false
+        },
+        "TTSLua.clearOnFocus": {
+          "title": "Reset to caret (>) on input focus",
+          "markdownDescription": "Enable to clear the command input bar when using ``double click`` or ``Enter`` to focus it.",
+          "type": "boolean",
+          "default": false
+        },
+        "TTSLua.guidPostfix": {
+          "title": "GUID Postfix",
+          "description": "When guessing the getObjectFromGUID parameter this is appended to the name of the variable being assigned to",
+          "type": "string",
+          "default": "_GUID"
+        },
+        "TTSLua.includeOtherFiles": {
+          "title": "Insert other files specified in source code",
+          "markdownDescription": "Convert lua lines containing ``require(\"<FILE>\")`` into the specified file's contents",
+          "type": "boolean",
+          "default": true
+        },
+        "TTSLua.includeOtherFilesPaths": {
+          "title": "Additional paths to search for files",
+          "markdownDescription": "`~/Documents/Tabletop Simulator` is always included.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "TTSLua.bundleSearchPattern": {
+          "title": "Pattern used to look for additional files",
+          "markdownDescription": "Described in Lua's [search path patterns](https://www.lua.org/pil/8.1.html)",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "?.ttslua",
+            "?.lua"
+          ]
+        },
+        "TTSLua.logSave": {
+          "title": "Log Saves",
+          "description": "Enable to log a message to the Console when a save occurs.",
+          "type": "boolean",
+          "default": true
+        },
+        "TTSLua.parameterFormat": {
+          "title": "Parameter TYPE & NAME Format",
+          "markdownDescription": "If you select `TYPE & NAME` above it will format like this. You may vary the case, e.g. `typeName` or `name <TYPE>`",
+          "type": "string",
+          "default": "TYPE_name"
+        },
+        "TTSLua.parameterToDisplay": {
+          "title": "Function Parameters",
+          "description": "This will determine how autocomplete inserts parameters into your script.",
+          "type": "string",
+          "default": "Both",
+          "enum": [
+            "None",
+            "Type",
+            "Name",
+            "Both"
+          ],
+          "enumDescriptions": [
+            "Do not insert most parameters",
+            "Insert parameters as TYPE",
+            "Insert parameters as NAME",
+            "Insert parameters as TYPE & NAME"
+          ]
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "lint": "eslint src --ext ts",
+    "watch": "webpack --mode development --watch",
+    "watch:ts": "tsc -p ./ --watch",
+    "pretest": "yarn run compile && yarn run lint",
+    "test": "node ./out/test/runTest.js",
+    "vscode:prepublish": "webpack --mode production",
+    "package": "vsce package"
+  },
+  "badges": [
+    {
+      "url": "https://badgen.net/badge/build/should be ok/green",
+      "href": "https://github.com/rolandostar/tabletopsimulator-lua-vscode",
+      "description": "Should build correctly most of the time..."
+    },
+    {
+      "url": "https://badgen.net/badge/uses/TS/blue",
+      "href": "https://github.com/rolandostar/tabletopsimulator-lua-vscode",
+      "description": ""
+    },
+    {
+      "url": "https://badgen.net/badge/designed in/MS Paint/grey",
+      "href": "https://github.com/rolandostar/tabletopsimulator-lua-vscode",
+      "description": ""
+    },
+    {
+      "url": "https://badgen.net/badge/made%20with/%E2%9D%A4/red",
+      "href": "https://github.com/rolandostar/tabletopsimulator-lua-vscode",
+      "description": "<3"
+    }
+  ],
+  "__metadata": {
+    "id": "0d2c6449-7895-4837-aad4-bb90deb5b47a",
+    "publisherDisplayName": "rolandostar",
+    "publisherId": "409bdebf-bb4b-4a76-a60a-8fa2dc343024"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^9.0.3",
+    "@types/glob": "^7.1.3",
+    "@types/mkdirp": "^1.0.1",
+    "@types/mocha": "^8.0.3",
+    "@types/node": "^14.14.6",
+    "@types/vscode": "^1.50.0",
+    "@typescript-eslint/eslint-plugin": "^4.6.1",
+    "@typescript-eslint/parser": "^4.6.1",
+    "copy-webpack-plugin": "^6.3.0",
+    "eslint": "^7.12.1",
+    "eslint-config-airbnb-typescript": "^12.0.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-tsdoc": "^0.2.7",
+    "glob": "^7.1.6",
+    "mocha": "^8.2.1",
+    "terser-webpack-plugin": "^5.0.3",
+    "ts-loader": "^8.0.8",
+    "typescript": "^4.0.5",
+    "vscode-test": "^1.4.1",
+    "webpack": "^5.4.0",
+    "webpack-cli": "^4.1.0"
+  },
+  "dependencies": {
+    "html-escaper": "^3.0.0",
+    "luabundle": "^1.6.0"
+  }
 }
