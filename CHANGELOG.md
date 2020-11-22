@@ -2,6 +2,10 @@
 
 All notable changes to the "tabletopsimulator-lua" extension will be documented in this file.
 
+## [1.1.1]
+
+- Fixed bug where installing Console++ would delete entire workspace folder
+
 ## [1.1.0]
 
 - Refactored to use Typescript and AirBnB Linting ✨

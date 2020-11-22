@@ -23,10 +23,14 @@ export async function addDocsFolderToWorkspace() {
 }
 
 export async function installConsole(extensionPath: string) {
-  const sourceUri = Uri.file(join(extensionPath, 'scripts'));
-  const targetUri = Uri.file(docsFolder);
+  const srcUri1 = Uri.file(join(extensionPath, 'scripts', 'Console'));
+  const dstUri1 = Uri.file(join(docsFolder, 'Console'));
+
+  const srcUri2 = Uri.file(join(extensionPath, 'scripts', 'vscode'));
+  const dstUri2 = Uri.file(join(docsFolder, 'vscode'));
   try {
-    await ws.fs.copy(sourceUri, targetUri, { overwrite: true });
+    await ws.fs.copy(srcUri1, dstUri1, { overwrite: true });
+    await ws.fs.copy(srcUri2, dstUri2, { overwrite: true });
   } catch (reason: any) { wd.showErrorMessage(`Console++ Installation Failed: ${reason}`); }
   wd.showInformationMessage('Console++ Installation Successful');
 }

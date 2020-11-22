@@ -3,7 +3,7 @@
   "displayName": "Tabletop Simulator Lua",
   "author": "Rolando Romero <contact@rolandostar.com> (https://rolandostar.com/)",
   "description": "Extension for VSCode to make writing Lua scripts for Tabletop Simulator easier.",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "publisher": "rolandostar",
   "license": "MIT",
   "engines": {
