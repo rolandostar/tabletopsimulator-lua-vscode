@@ -2,6 +2,10 @@
 
 All notable changes to the "tabletopsimulator-lua" extension will be documented in this file.
 
+## [1.1.2]
+
+- Fixed command mode not triggering on vscode panel
+
 ## [1.1.1]
 
 - Fixed bug where installing Console++ would delete entire workspace folder

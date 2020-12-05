@@ -99,6 +99,8 @@ export default class TTSAdapter {
 
   private webviewPanel: WebviewPanel | null = null;
 
+  private commandMode: boolean = false;
+
   /**
    * Builds new TTSAdapter instance
    * @param extensionPath - Path where the extension is running, should be passed down from context
@@ -414,7 +416,11 @@ export default class TTSAdapter {
           TTSAdapter.customMessage({ command: message.text });
           break;
         case 'input':
-          TTSAdapter.customMessage({ input: message.text });
+          TTSAdapter.customMessage(
+            this.commandMode
+              ? { command: message.text }
+              : { input: message.text },
+          );
           break;
         case 'done': {
           this.executeWhenDone();
@@ -422,6 +428,9 @@ export default class TTSAdapter {
         }
         default: break;
       }
+      if (this.commandMode) {
+        if (['>', 'exit'].includes(message.text)) this.commandMode = false;
+      } else if (['>', '>>', '>cmd'].includes(message.text)) this.commandMode = true;
     }, null, this.disposables);
     return wp;
   }
