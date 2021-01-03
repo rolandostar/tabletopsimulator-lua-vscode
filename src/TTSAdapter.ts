@@ -10,9 +10,13 @@ import {
   Uri,
   FileType,
   ViewColumn,
+  Range,
+  TextEditor,
 } from 'vscode';
 import { join, posix } from 'path';
 import bundle from 'luabundle';
+import { NoBundleMetadataError } from 'luabundle/errors';
+import { resolveModule } from 'luabundle/bundle/process';
 import { readFileSync } from 'fs';
 
 import parse from './bbcode/tabletop';
@@ -100,6 +104,8 @@ export default class TTSAdapter {
   private webviewPanel: WebviewPanel | null = null;
 
   private commandMode: boolean = false;
+
+  private lastSentScripts: { [key: string]: ScriptState } | undefined;
 
   /**
    * Builds new TTSAdapter instance
@@ -216,6 +222,9 @@ export default class TTSAdapter {
       wd.showErrorMessage('Global Script must not be empty');
       return;
     }
+
+    this.lastSentScripts = scripts;
+
     // Once the scripts content has been built, send to game
     // Depending on config, send after clearing panel (Hack)
     this.executeWhenDone = () => {
@@ -265,6 +274,8 @@ export default class TTSAdapter {
         break;
       case RxMsgType.Error:
         this.appendToPanel(ttsMessage.errorMessagePrefix, { class: 'error' });
+        this.goToTTSError(ttsMessage)
+          .catch((err) => wd.showErrorMessage(err.message));
         break;
       case RxMsgType.CustomMessage: break; // Can be used instead of print for console++
       case RxMsgType.Return: break; // Not implemented
@@ -281,6 +292,73 @@ export default class TTSAdapter {
       case RxMsgType.ObjectCreated: break; // Not Implemented
       default: break;
     }
+  }
+
+  /**
+   * Shows an error from TTS and a button to jump to the line it came from
+   * @param message - Error Message received from TTS
+   */
+  private async goToTTSError(message: TTSMessage): Promise<TextEditor | undefined> {
+    const text = message.errorMessagePrefix! + message.error!;
+    const re = /:\((?<line>\d*),(?<startChar>\d*)-(?<endChar>\d*)\):/;
+    const m = re.exec(message.error!);
+    if (!m) { // not a jumpable error message, just show it
+      wd.showErrorMessage(text);
+      return undefined;
+    }
+    const line = parseInt(m.groups!.line, 10);
+    const startChar = parseInt(m.groups!.startChar, 10);
+    const endChar = parseInt(m.groups!.endChar, 10);
+
+    const errorRange = new Range(line - 1, startChar, line - 1, endChar);
+
+    const option = await wd.showErrorMessage(text, 'Go to Error');
+    if (!option) return undefined;
+    if (!this.lastSentScripts) throw Error('No saved scripts found.');
+
+    const script = this.lastSentScripts[message.guid!];
+    if (!script) throw Error('No such script loaded.');
+    try {
+      const unbundled = bundle.unbundleString(script.script);
+
+      const modules = Object.values(unbundled.modules);
+      for (let i = 0; i < modules.length; i += 1) {
+        const module = modules[i];
+        const moduleRange = new Range(
+          module.start.line,
+          module.start.column,
+          module.end.line,
+          module.end.column,
+        );
+
+        if (moduleRange.contains(errorRange)) {
+          const config = ws.getConfiguration('TTSLua');
+          const path = resolveModule(
+            module.name,
+            getSearchPaths(config.get('bundleSearchPattern') as string[]),
+          );
+          if (!path) throw Error('Module containing error not found in search paths.');
+
+          return wd.showTextDocument(Uri.file(path), {
+            selection: new Range(
+              moduleRange.start.line - errorRange.start.line + 1,
+              errorRange.start.character,
+              moduleRange.start.line - errorRange.end.line + 1,
+              errorRange.end.character,
+            ),
+          });
+        }
+      }
+    } catch (err: unknown) {
+      if (!(err instanceof NoBundleMetadataError)) throw err;
+      const basename = `${script.name}.${script.guid}.lua`;
+      const uri = this.tempUri.with({ path: posix.join(this.tempUri.path, basename) });
+
+      return wd.showTextDocument(uri, {
+        selection: errorRange,
+      });
+    }
+    throw Error('Encountered problem finding error line.');
   }
 
   /**
