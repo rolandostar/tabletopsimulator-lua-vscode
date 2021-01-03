@@ -319,6 +319,7 @@ export default class TTSAdapter {
     const script = this.lastSentScripts[message.guid!];
     if (!script) throw Error('No such script loaded.');
     try {
+      // will throw if file isn't bundled
       const unbundled = bundle.unbundleString(script.script);
 
       const modules = Object.values(unbundled.modules);
@@ -332,18 +333,26 @@ export default class TTSAdapter {
         );
 
         if (moduleRange.contains(errorRange)) {
-          const config = ws.getConfiguration('TTSLua');
-          const path = resolveModule(
-            module.name,
-            getSearchPaths(config.get('bundleSearchPattern') as string[]),
-          );
-          if (!path) throw Error('Module containing error not found in search paths.');
+          let uri: Uri;
+          if (module.name === unbundled.metadata.rootModuleName) {
+            const basename = `${script.name}.${script.guid}.lua`;
+            uri = this.tempUri.with({ path: posix.join(this.tempUri.path, basename) });
+          } else {
+            // find the file the same way we did when we bundled it
+            const config = ws.getConfiguration('TTSLua');
+            const path = resolveModule(
+              module.name,
+              getSearchPaths(config.get('bundleSearchPattern') ?? []),
+            );
+            if (!path) throw Error('Module containing error not found in search paths.');
+            uri = Uri.file(path);
+          }
 
-          return wd.showTextDocument(Uri.file(path), {
+          return wd.showTextDocument(uri, {
             selection: new Range(
-              moduleRange.start.line - errorRange.start.line + 1,
+              errorRange.start.line - moduleRange.start.line + 1,
               errorRange.start.character,
-              moduleRange.start.line - errorRange.end.line + 1,
+              errorRange.end.line - moduleRange.start.line + 1,
               errorRange.end.character,
             ),
           });
@@ -351,6 +360,7 @@ export default class TTSAdapter {
       }
     } catch (err: unknown) {
       if (!(err instanceof NoBundleMetadataError)) throw err;
+      // file wasnt bundled, no complexity needed
       const basename = `${script.name}.${script.guid}.lua`;
       const uri = this.tempUri.with({ path: posix.join(this.tempUri.path, basename) });
 
