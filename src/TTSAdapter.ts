@@ -299,8 +299,8 @@ export default class TTSAdapter {
    * @param message - Error Message received from TTS
    */
   private async goToTTSError(message: TTSMessage): Promise<TextEditor | undefined> {
-    const text = message.errorMessagePrefix! + message.error!;
-    const re = /:\((?<line>\d*),(?<startChar>\d*)-(?<endChar>\d*)\):/;
+    const text = message.errorMessagePrefix!;
+    const re = /.*:\((?<line>\d*),(?<startChar>\d*)-(?<endChar>\d*)\):/;
     const m = re.exec(message.error!);
     if (!m) { // not a jumpable error message, just show it
       wd.showErrorMessage(text);
