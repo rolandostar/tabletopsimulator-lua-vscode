@@ -2,6 +2,10 @@
 
 All notable changes to the "tabletopsimulator-lua" extension will be documented in this file.
 
+## [1.1.3]
+
+- Merged PR adding a "Go To Error" button to Error Messages (Thanks @nabbydude)
+
 ## [1.1.2]
 
 - Fixed command mode not triggering on vscode panel
