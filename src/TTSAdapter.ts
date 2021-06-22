@@ -17,10 +17,10 @@ import { join, posix } from 'path';
 import bundle from 'luabundle';
 import { NoBundleMetadataError } from 'luabundle/errors';
 import { resolveModule } from 'luabundle/bundle/process';
-import { readFileSync } from 'fs';
+import { readFileSync, readlinkSync } from 'fs';
 
 import parse from './bbcode/tabletop';
-import { tempFolder, docsFolder, FileHandler } from './filehandler';
+import { tempFolder, docsFolder, FileHandler, isTempFolder } from './filehandler';
 
 /**
  * Shape of data received from TTS
@@ -151,7 +151,7 @@ export default class TTSAdapter {
    */
   public async getScripts() {
     const vsFolders = ws.workspaceFolders;
-    if (!vsFolders || vsFolders.findIndex((dir) => dir.uri.fsPath === this.tempUri.fsPath) === -1) {
+    if (!vsFolders || vsFolders.findIndex((dir) => isTempFolder(dir.uri.fsPath)) {
       ws.updateWorkspaceFolders(vsFolders ? vsFolders.length : 0, null, { uri: this.tempUri });
     }
     TTSAdapter.sendToTTS(TxMsgType.GetScripts);
