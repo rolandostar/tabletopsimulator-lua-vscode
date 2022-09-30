@@ -6,7 +6,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Tabletop Simulator VSCode Extension Documentation',
+  title: 'TTS VSCode Extension Documentation',
   url: 'https://tts-vscode.rolandostar.com',
   baseUrl: '/',
   onBrokenLinks: 'throw',
@@ -67,19 +67,12 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: 'Tabletop Simulator VSCode Extension Documentation',
+        title: 'TTS VSCode Docs',
         logo: {
           alt: 'Tabletop Simulator VSCode Extension Logo',
           src: 'img/icon.png',
         },
         items: [
-          // {
-          //   type: 'doc',
-          //   docId: 'intro',
-          //   position: 'left',
-          //   label: 'Tutorial',
-          // },
-          // {to: '/blog', label: 'Blog', position: 'left'},
           {
             href: 'https://github.com/rolandostar/tabletopsimulator-lua-vscode',
             label: 'GitHub',
@@ -92,6 +85,10 @@ const config = {
           src: 'img/logo.png',
         },
         links: [
+          {
+            href: 'https://github.com/rolandostar/tabletopsimulator-lua-vscode',
+            label: 'GitHub'
+          },
           {
             label: 'Reddit',
             href: 'https://www.reddit.com/user/rolandostar',

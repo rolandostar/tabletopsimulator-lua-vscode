@@ -78,7 +78,7 @@ export async function activate(context: vscode.ExtensionContext) {
     // Make sure we register a serializer in activation event
     vscode.window.registerWebviewPanelSerializer(TTSConsolePanel.viewType, {
       async deserializeWebviewPanel(webviewPanel: vscode.WebviewPanel, state: unknown) {
-        console.log(`Got state: ${state}`);
+        // console.log(`Got state: ${state}`);
         // Reset the webview options so we use latest uri for `localResourceRoots`.
         webviewPanel.webview.options = getWebviewOptions(context.extensionUri);
         TTSConsolePanel.revive(webviewPanel, context.extensionUri);

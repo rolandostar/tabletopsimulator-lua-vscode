@@ -13,7 +13,9 @@ All notable changes to the "tabletopsimulator-lua" extension will be documented 
 - Added simple autocomplete for XML
 - Added HyperScope dependency (To resolve TextMate/WASM issues)
 - Improved all informational messages
-- TODO:  Added a new documentation site []()
+- TODO: Added command history to console++
+- TODO: git workspace support
+- Added a new documentation site [tts-vscode.rolandostar.com](https://tts-vscode.rolandostar.com/)
 
 ## [1.1.4]
 
@@ -51,7 +53,7 @@ All notable changes to the "tabletopsimulator-lua" extension will be documented 
 - Console++ Panel now opens to the side of the active editor
 - Changed the way some error display, now in modal form
 - Added status bar messages when sending or receiving files
-- Spaces now show up propely in Console++ panel
+- Spaces now show up properly in Console++ panel
 - Can now include files from XML
 
 Thanks to the people who helped me test during development: @stom66, @andymeneely and ZBRA
