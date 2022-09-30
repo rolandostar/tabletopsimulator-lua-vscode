@@ -27,7 +27,7 @@ jobs:
       - name: Build Documentation
         run: npm run build
       - name: Upload Artifact
-        uses: actions/upload-pages-artifact
+        uses: actions/upload-pages-artifact@v1
         with:
           path: docs/build
 
