@@ -1,7 +1,7 @@
 <div align="center">
 <h2>Tabletop Simulator Lua Extension for VSCode</h2>
 <br>
-<img width="500" src="https://raw.githubusercontent.com/rolandostar/tabletopsimulator-lua-vscode/master/assets/docs/banner.png" alt="VSCode-TabletopSimulator-Lua">
+<img width="500" src="https://raw.githubusercontent.com/rolandostar/tabletopsimulator-lua-vscode/main/media/docs/banner.png" alt="VSCode-TabletopSimulator-Lua">
 <br>
 <br>
 </div>
@@ -11,7 +11,7 @@ Extension for VSCode to make writing Lua scripts for  <a href="https://store.ste
 </p>
 
 <div align="center">
-<img src="https://badgen.net/badge/build/should be ok/green"/>
+<img src="https://badgen.net/badge/build/sometimes ok/green"/>
 <img src="https://badgen.net/badge/uses/TS/blue"/>
 <img src="https://badgen.net/badge/designed in/MS Paint/yellow"/>
 <img src="https://badgen.net/badge/made%20with/%E2%9D%A4/red"/>
@@ -20,26 +20,35 @@ Extension for VSCode to make writing Lua scripts for  <a href="https://store.ste
 ## Features
 
 - Get/Send Scripts
-- Syntax Highlight based on the official [Atom plugin](https://github.com/Berserk-Games/atom-tabletopsimulator-lua)
-- Code autocompletion based on OliPro007's [Extension](https://github.com/OliPro007/vscode-tabletopsimulator-lua)
+- <img src="media/docs/new.png" width="80"/> Execute Lua without Save & Play
+- <img src="media/docs/new.png" width="80"/> Improved Code autocompletion for Lua
+  - Smart `GUID` suggestions which scans your savefile, it even detects newly-created objects.
+  - Update to latest available TTS API without waiting for manual updates. ([Learn More](here))
+- <img src="media/docs/new.png" width="80"/> Added Code autocompletion for XML!
+- <img src="media/docs/new.png" width="80"/> Hover over a `GUID` in VSCode to Highlight the object In-Game
 - Nested file support
   - `require("")` for Lua
   - `<Include src=""/>` for XML
   - Configurable search patterns and lookup directories (yes, plural)
   - Works with absolute directories, perfect for source controled projects
-- Highly Configurable
+  - <img src="media/docs/new.png" width="80"/> Debug module resolution issues right in VSCode (Never again wonder why your file isn't reachable)
+- <img src="media/docs/new.png" width="80"/> Improved Configuration (Made them clearer and categorized)
 - Built-in Console
-  - Integration with [Console++](https://github.com/onelivesleft/Console) by onelivesleft ([Tutorial](http://blog.onelivesleft.com/2017/09/debugging-your-tts-mods-with-console.html)) w/ Automatic Installation!
+  - Integration with [Console++](https://github.com/onelivesleft/Console) by onelivesleft ([Tutorial](http://blog.onelivesleft.com/2017/09/debugging-your-tts-mods-with-console.html)) with Automatic Installation!
   - Send commands from VSCode (Adds `onExternalCommand`)
   - Receive output and debug information on VSCode Panel
   - BBCode and nested colors support!
+- <img src="media/docs/new.png" width="80"/> Improved and extensive documentation available at []()
+  - Learn how to use version control, step-by-step debugging, and more!
 
-![Demo Reel](https://raw.githubusercontent.com/rolandostar/tabletopsimulator-lua-vscode/master/assets/docs/demo.gif)
+
+
+![Demo Reel](https://raw.githubusercontent.com/rolandostar/tabletopsimulator-lua-vscode/main/media/docs/demo.gif)
 
 ## Requirements
 
-- Visual Studio Code v1.50.0+
-- Tabletop Simulator v12.4.3
+- Visual Studio Code v1.71.0+
+- Tabletop Simulator v13.2.1
 
 ## Quick Installation
 
@@ -53,7 +62,7 @@ Launch VS Code Quick Open (`Ctrl+P`), paste the following command, and type ente
 
 You can also Install from the VSIX Package, you can find it under [Releases](https://github.com/rolandostar/tabletopsimulator-lua-vscode/releases/latest)
 
-![VSIX Install Menu](https://raw.githubusercontent.com/rolandostar/tabletopsimulator-lua-vscode/master/assets/docs/vsix.png)
+![VSIX Install Menu](https://raw.githubusercontent.com/rolandostar/tabletopsimulator-lua-vscode/main/media/docs/vsix.png)
 
 ## Manual Installation
 
@@ -68,6 +77,11 @@ Download or clone this repository and place it under:
 - ``Ctrl+Alt+` ``: Open TTS Console++
 - `Ctrl+Alt+L`: Get Lua Scripts
 - `Ctrl+Alt+S`: Save And Play
+
+<div style="color: #856404; background-color: #fff3cd; border: 1px solid #ffeeba; padding: .75rem 1.25rem; border-radius: 0.25rem">
+⚠️ Make sure Atom is closed if you are transitioning from the official editor as they will conflict with one another.
+</div>
+
 
 ###### Tip: Press enter or double click on the Console++ Panel to focus the command input at the bottom
 
@@ -196,15 +210,13 @@ This extension contributes the following settings:
 
 ## Release Notes
 
-Check [CHANGELOG.md](https://github.com/rolandostar/tabletopsimulator-lua-vscode/blob/master/CHANGELOG.md)
+Check [CHANGELOG.md](https://github.com/rolandostar/tabletopsimulator-lua-vscode/blob/main/CHANGELOG.md)
 
 ## About
 
 This project was motivated on trying out different solutions to communicate VSCode with TTS and being rather unsuccessful at that. I tried using [OliPro007's Extension](https://github.com/OliPro007/tabletopsimulator-lua-vscode) and was a bit finicky for me, I also checked out [dustinlacewell's vatts](https://github.com/dustinlacewell/vatts) and was able to retrieve scripts but not send them. I guess I'm just inexperienced setting up these extensions which is why I wanted to dive into it by making my own and hoped to streamline the process for someone else.
 
 I kind of ended up doing my own thing.
-
-I included OliPro007's snippet generation & autocomplete and built a much more simple communication architecture, which probably means it has a bit worse performance, however it works out for my purposes.
 
 If you have any suggestions feel free to contact me or submit a PR.
 

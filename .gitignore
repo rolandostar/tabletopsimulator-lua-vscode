@@ -1,5 +1,7 @@
 node_modules
+.vscode-test/
 *.vsix
 out
 generateSnippets/out
 dist
+provider.coffee

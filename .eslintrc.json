@@ -1,38 +1,35 @@
 {
-  "root": true,
-  "parser": "@typescript-eslint/parser",
-  "parserOptions": {
-    "ecmaVersion": 6,
-    "sourceType": "module",
-    "project": "./tsconfig.json"
-  },
-  "plugins": [
-    "@typescript-eslint",
-    "eslint-plugin-tsdoc"
-  ],
-  "extends": [
-    "airbnb-typescript/base"
-  ],
-  "rules": {
-    "tsdoc/syntax": "warn",
-    "@typescript-eslint/explicit-member-accessibility": "warn",
-    "@typescript-eslint/naming-convention": "warn",
-    "@typescript-eslint/semi": "warn",
-    "curly": "warn",
-    "eqeqeq": "warn",
-    "no-throw-literal": "warn",
-    "semi": "off",
-    "linebreak-style": [
-      "error",
-      "windows"
+    "extends": "./node_modules/gts/",
+    "overrides": [
+        {
+            "files": ["src/**/*.ts"],
+            "rules": {
+                "node/no-unpublished-import": "off",
+                "@typescript-eslint/no-explicit-any": ["error", { "ignoreRestArgs": true }]
+            }
+        }
     ],
-    "no-template-curly-in-string": "off",
-    "max-len": [
-      "warn",
-      {
-        "code": 100
-      }
-    ],
-    "no-console": "off"
-  }
+    "root": true,
+    // "parser": "@typescript-eslint/parser",
+    // "parserOptions": {
+    //     "ecmaVersion": 6,
+    //     "sourceType": "module"
+    // },
+    // "plugins": [
+    //     "@typescript-eslint"
+    // ],
+    // "rules": {
+    //     "@typescript-eslint/naming-convention": "warn",
+    //     "@typescript-eslint/semi": "warn",
+    //     "curly": "warn",
+    //     "eqeqeq": "warn",
+    //     "no-throw-literal": "warn",
+    //     "semi": "off"
+    // },
+    "ignorePatterns": [
+        "out",
+        "dist",
+        "**/*.d.ts",
+        "**/*.js"
+    ]
 }

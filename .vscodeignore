@@ -1,23 +1,11 @@
-# Promotional Assets
-assets/docs/**
-assets/github/**
-assets/src/**
-
-# Editor Config
-.gitignore
-**/jsconfig.json
-**/*.map
-**/.eslintrc.json
-.editorconfig
-.vscode
-tsconfig.json
-package-json.lock
-yarn.lock
-webpack.config.js
-
-# Additional Files
-syntaxes
-generateSnippets
-node_modules
+.vscode/**
+.vscode-test/**
+node_modules/**
 src/**
-!node_modules/luabundle
+.gitignore
+.yarnrc
+vsc-extension-quickstart.md
+**/tsconfig.json
+**/.eslintrc.json
+**/*.map
+**/*.ts

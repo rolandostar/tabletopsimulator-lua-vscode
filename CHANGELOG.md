@@ -2,6 +2,25 @@
 
 All notable changes to the "tabletopsimulator-lua" extension will be documented in this file.
 
+## [2.0.0] 🎉
+
+- Execute Lua without Save & Play
+- Hover over a GUID in VSCode to Highlight the object In-Game
+- Added config to debug module resolution
+- Changes to configuration items, made them clearer and validate input
+- Added API updater for autocompletion
+- Rewrote autocompletion completely (heh)
+- Added simple autocomplete for XML
+- Added HyperScope dependency (To resolve TextMate/WASM issues)
+- Improved all informational messages
+- TODO:  Added a new documentation site []()
+
+## [1.1.4]
+
+- Updated VSCode's extension development environment
+- Upped VSCode version
+- Temporarily removed autocompletion, it's outdated and it's causing issues with other language providing extensions
+
 ## [1.1.3]
 
 - Merged PR adding a "Go To Error" button to Error Messages (Thanks @nabbydude)

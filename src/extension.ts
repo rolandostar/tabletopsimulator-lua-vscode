@@ -1,74 +1,96 @@
 import * as vscode from 'vscode';
+// TTS-Specific Imports
+import {TTSConsolePanel, getWebviewOptions} from './TTSConsole';
 import TTSAdapter from './TTSAdapter';
-import activateCompletion from './language/completion';
-import { createWorkspaceFolder, installConsole, addDocsFolderToWorkspace } from './filehandler';
+// Editor Imports
+import * as workspace from './vscode/workspace';
+import TTSLuaCompletionProvider from './vscode/LuaCompletionProvider';
+import TTSXMLCompletionProvider from './vscode/XMLCompletionProvider';
+import TTSHoverProvider from './vscode/HoverProvider';
+import LocalStorageService from './vscode/LocalStorageService';
 
-export function activate(context: vscode.ExtensionContext) {
-  /* ----------------------------- Initialization ----------------------------- */
-  createWorkspaceFolder();
-  activateCompletion(context);
-  const adapter = new TTSAdapter(context.extensionPath);
-  console.debug('[TTSLua] Tabletop Simulator Extension Loaded');
-  /* ------------------------- Command Registration ------------------------- */
-  // Add default include folder to workspace
+export async function activate(context: vscode.ExtensionContext) {
+  console.log('[TTSLua] Tabletop Simulator Extension Load');
+  // Set Storage Service to global context
+  LocalStorageService.storage = context.globalState;
+
+  const ttsAdapter = new TTSAdapter();
+  const ttsHoverProvider = new TTSHoverProvider();
+  const ttsLuaCompletionProvider = new TTSLuaCompletionProvider();
+  const ttsXMLCompletionProvider = new TTSXMLCompletionProvider();
+  const commands: {
+    id: string;
+    fn: (this: vscode.ExtensionContext, ...args: any[]) => unknown;
+  }[] = [
+    {
+      id: 'ttslua.forceAutocompleteUpdate',
+      fn: () => ttsLuaCompletionProvider.updateCompletionItems(true),
+    },
+    {
+      id: 'ttslua.updateCompletionItems',
+      fn: () => ttsLuaCompletionProvider.updateCompletionItems(),
+    },
+    {
+      id: 'ttslua.addGlobalInclude',
+      fn: () => workspace.addDir2WS(workspace.docsFolder, 'TTS Global Include'),
+    },
+    {id: 'ttslua.openConsole', fn: () => TTSConsolePanel.createOrShow(context.extensionUri)},
+    {id: 'ttslua.installConsole', fn: () => workspace.installConsole(context.extensionPath)},
+    {id: 'ttslua.saveAndPlay', fn: () => ttsAdapter.saveAndPlay()},
+    {
+      id: 'ttslua.getScripts',
+      fn: () =>
+        vscode.window
+          .showInformationMessage(
+            'Get Lua Scripts from game?\n\n This will erase any changes that you have made since' +
+              'the last Save & Play.',
+            {modal: true},
+            'Get Scripts'
+          )
+          .then((answer: 'Get Scripts' | undefined) => {
+            if (answer === 'Get Scripts') ttsAdapter.getScripts();
+          }),
+    },
+    {id: 'ttslua.executeLua', fn: () => ttsAdapter.executeLua()},
+  ];
+
   context.subscriptions.push(
-    vscode.commands.registerCommand('ttslua.addDocsFolderToWorkspace', async () => {
-      addDocsFolderToWorkspace();
-    }),
-  );
-  // Open Panel
-  context.subscriptions.push(
-    vscode.commands.registerCommand('ttslua.openConsole', async () => {
-      adapter.createOrShowPanel();
-    }),
-  );
-  // Get Scripts
-  context.subscriptions.push(
-    vscode.commands.registerCommand('ttslua.getScripts', async () => {
-      const chosen = await vscode.window.showInformationMessage(
-        'Get Lua Scripts from game?\n\n'
-        + 'This will erase any changes that you have made in'
-        + ' Visual Studio Code since the last Save & Play.',
-        { modal: true },
-        'Get Scripts',
-      );
-      if (chosen === 'Get Scripts') adapter.getScripts();
-      // // Alternative confirmation dialog
-      // const option = await vscode.window.showQuickPick([
-      //   {
-      //     label: 'Get Scripts',
-      //     description: '$(alert) This will erase any changes since the last Save & Play.',
-      //   },
-      //   { label: 'Cancel' },
-      // ], {
-      //   placeHolder: 'Get Lua Scripts from game?',
-      // });
-      // if (option && option.label === 'Get Scripts') adapter.getScripts();
-    }),
-  );
-  // Save And Play
-  context.subscriptions.push(
-    vscode.commands.registerCommand('ttslua.saveAndPlay', () => {
-      adapter.saveAndPlay();
-    }),
-  );
-  // Install Console++
-  context.subscriptions.push(
-    vscode.commands.registerCommand('ttslua.installConsole', () => {
-      installConsole(context.extensionPath);
-    }),
+    // Register adapter disposables
+    ttsAdapter,
+    // Register all commands
+    ...commands.map(cmd => vscode.commands.registerCommand(cmd.id, cmd.fn, context)),
+    // Register providers for completion and hover
+    vscode.languages.registerCompletionItemProvider(
+      'lua',
+      ttsLuaCompletionProvider,
+      ...['.', ':', '(', ')', ' ']
+    ),
+    vscode.languages.registerCompletionItemProvider(
+      'xml',
+      ttsXMLCompletionProvider,
+      ...['<', '/', ' ']
+    ),
+    vscode.languages.registerHoverProvider('lua', ttsHoverProvider)
   );
 
-  /* -------------------------------------------------------------------------- */
+  // Register the TTS Console Panel
   if (vscode.window.registerWebviewPanelSerializer) {
-    vscode.window.registerWebviewPanelSerializer('TTSConsole', {
-      async deserializeWebviewPanel(webviewPanel) {
-        // `state` is the state persisted using `setState` inside the webview
-        // console.log(`Got state: ${state}`)
-        adapter.revivePanel(webviewPanel); // Restore the content of our webview.
+    // Make sure we register a serializer in activation event
+    vscode.window.registerWebviewPanelSerializer(TTSConsolePanel.viewType, {
+      async deserializeWebviewPanel(webviewPanel: vscode.WebviewPanel, state: unknown) {
+        console.log(`Got state: ${state}`);
+        // Reset the webview options so we use latest uri for `localResourceRoots`.
+        webviewPanel.webview.options = getWebviewOptions(context.extensionUri);
+        TTSConsolePanel.revive(webviewPanel, context.extensionUri);
       },
     });
   }
-}
 
-export function deactivate() { console.debug('Tabletop Simulator Extension Unloaded'); }
+  // Creates a new temporary workspace folder if one doesn't already exist
+  return vscode.workspace.fs.createDirectory(vscode.Uri.file(workspace.workFolder)).then(
+    () => {},
+    (reason: unknown) => {
+      vscode.window.showErrorMessage(`Failed to create workspace folder: ${reason}`);
+    }
+  );
+}
