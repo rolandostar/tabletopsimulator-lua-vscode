@@ -28,6 +28,12 @@ const config = {
   },
   stylesheets: [
     'https://unpkg.com/keyboard-css@1.2.4/dist/css/main.min.css',
+    'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css',
+    'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/treeview/prism-treeview.min.css'
+  ],
+  scripts: [
+    'https://cdnjs.cloudflare.com/ajax/libs/prism/9000.0.1/prism.min.js',
+    'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/treeview/prism-treeview.min.js'
   ],
 
   presets: [
@@ -42,7 +48,7 @@ const config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/rolandostar/tabletopsimulator-lua-vscode/tree/dev/docs',
+            'https://github.com/rolandostar/tabletopsimulator-lua-vscode/tree/main/docs',
           sidebarCollapsed: false,
           sidebarCollapsible: false,
         },
@@ -107,6 +113,7 @@ const config = {
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
+        additionalLanguages: ['lua'],
       },
     }),
 };

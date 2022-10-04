@@ -1,0 +1,19 @@
+.callout {
+  border: 1px solid transparent;
+  padding: .75rem 1.25rem;
+  border-radius: 0.7em;
+}
+
+.callout > p {
+  margin-bottom: 0;
+}
+
+.callout > p > a {
+  text-decoration: underline;
+  color: inherit;
+}
+
+.callout > p > a:hover {
+  text-decoration: underline;
+  color: var(--ifm-link-hover-color);
+}
