@@ -38,7 +38,10 @@ export function syncFiles(filesRecv: FileHandler[]) {
   const filesRecvNames = filesRecv.map(h => h.filename);
   const dirs = glob.sync('*/', {cwd: workFolder});
   // If there are dirs, show warning
-  if (dirs.length > 0 && vscode.workspace.getConfiguration('ttslua').get('showDirectoryWarning')) {
+  if (
+    dirs.length > 0 &&
+    !vscode.workspace.getConfiguration('ttslua.misc').get('disableDirectoryWarning')
+  ) {
     vscode.window
       .showWarningMessage(
         'Directories detected in "In-Game Files"',
@@ -57,8 +60,9 @@ export function syncFiles(filesRecv: FileHandler[]) {
             'TTSLua: Disable Directory Warning'
           );
         else if (res === 'Learn More')
-          // TODO: Link support page also package.json Config Contrib URL
-          vscode.env.openExternal(vscode.Uri.parse('https://google.com'));
+          vscode.env.openExternal(
+            vscode.Uri.parse('https://tts-vscode.rolandostar.com/support/dirWarning')
+          );
       });
     return;
   }

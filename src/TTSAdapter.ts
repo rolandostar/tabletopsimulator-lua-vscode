@@ -126,7 +126,6 @@ export default class TTSAdapter extends vscode.Disposable {
    * Sends all Scripts to the game
    */
   public async saveAndPlay() {
-    // TODO: Be more clear about how searchPatterns work in package.json (Maybe link support page)
     // When sending scripts, the Temp folder must be present in workspace
     if (!ws.isPresent(ws.workFolder)) {
       vscode.window.showErrorMessage(
@@ -175,9 +174,12 @@ export default class TTSAdapter extends vscode.Disposable {
               'Enable Debug'
             )
             .then(selection => {
-              //TODO: Open documentation
               if (selection === 'Learn More')
-                vscode.env.openExternal(vscode.Uri.parse('https://google.com'));
+                vscode.env.openExternal(
+                  vscode.Uri.parse(
+                    'https://tts-vscode.rolandostar.com/support/debuggingModuleResolution'
+                  )
+                );
               else if (selection === 'Enable Debug') {
                 if (!vscode.workspace.getConfiguration('ttslua.misc').get('debugSearchPaths')) {
                   vscode.workspace
@@ -237,8 +239,14 @@ export default class TTSAdapter extends vscode.Disposable {
     }
     // Validate empty global to avoid lockup
     if (scripts['-1'] === undefined || scripts['-1'].script === '') {
-      // TODO: Make it verbose, link to support page?
-      vscode.window.showErrorMessage('Global Script must not be empty');
+      vscode.window
+        .showErrorMessage('Global Script must not be empty', 'Learn More')
+        .then(selection => {
+          if (selection === 'Learn More')
+            vscode.env.openExternal(
+              vscode.Uri.parse('https://tts-vscode.rolandostar.com/support/globalScriptLock')
+            );
+        });
       return;
     }
     // Do the sending
@@ -535,7 +543,7 @@ export default class TTSAdapter extends vscode.Disposable {
     if (!editor) return;
     if (!script && !guid) {
       script = editor.document.getText(editor.selection);
-      path.basename(editor.document.fileName).split('.')[1];
+      guid = path.basename(editor.document.fileName).split('.')[1];
     } else if (!script || !guid) {
       console.error('Script or GUID not provided');
       return;

@@ -11,7 +11,11 @@ Extension for VSCode to make writing Lua scripts for  <a href="https://store.ste
 </p>
 
 <div align="center">
-<img src="https://badgen.net/badge/build/sometimes ok/green"/>
+
+[![Build Documentation](https://github.com/rolandostar/tabletopsimulator-lua-vscode/actions/workflows/build-docs.yaml/badge.svg?branch=main)](https://github.com/rolandostar/tabletopsimulator-lua-vscode/actions/workflows/build-docs.yaml)
+[![Deploy Extension](https://github.com/rolandostar/tabletopsimulator-lua-vscode/actions/workflows/deploy-to-marketplace.yaml/badge.svg?branch=main)](https://github.com/rolandostar/tabletopsimulator-lua-vscode/actions/workflows/deploy-to-marketplace.yaml)
+</div>
+<div align="center">
 <img src="https://badgen.net/badge/uses/TS/blue"/>
 <img src="https://badgen.net/badge/designed in/MS Paint/yellow"/>
 <img src="https://badgen.net/badge/made%20with/%E2%9D%A4/red"/>
@@ -47,7 +51,7 @@ Extension for VSCode to make writing Lua scripts for  <a href="https://store.ste
 
 ---
 
-## [Installation & Usage](https://tts-vscode.rolandostar.com/extension/installation)
+## [Installation & Usage](https://tts-vscode.rolandostar.com/extension/setup)
 
 ## Additional Documentation
 

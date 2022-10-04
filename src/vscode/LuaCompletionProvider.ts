@@ -83,11 +83,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
   // Hyper Scopes is an external extension API used to return the scope inside a document
   // It's used instead of vscode-textmate
   // https://marketplace.visualstudio.com/items?itemName=draivin.hscopes
-  private _hsExt: vscode.Extension<hscopes.HScopesAPI> =
-    vscode.extensions.getExtension<hscopes.HScopesAPI>('draivin.hscopes') ??
-    (() => {
-      throw new Error('Hyper Scopes extension not found');
-    })();
+  private _hsExt = vscode.extensions.getExtension<hscopes.HScopesAPI>('draivin.hscopes');
   private _hs: hscopes.HScopesAPI | undefined;
 
   // Standard Sections are resolved by the `isSection` function and uses the SectionMatcher map
@@ -145,7 +141,8 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
       const convertSuggestion = (sArray: Suggestion[]) => {
         return sArray.map(s => {
           // Null coalescing operator to handle non-matching values
-          const displayText = s.displayText.match(/\b.*(?=\()|\b.*$/g) ?? [s.displayText];
+          let displayText = s.displayText.match(/\b.*(?=\()|\b.*$/g);
+          if (displayText === null) displayText = [s.displayText];
           const item = new vscode.CompletionItem(displayText[0], typeToKind.get(s.type));
           item.insertText = new vscode.SnippetString(
             // TODO: Implement replace types
@@ -176,7 +173,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
       section => !extraSectionMatcher.includes(section) && !stdSectionMatcher.has(section)
     );
     if (unhandledSections.length > 0) {
-      console.warn('Unhandled Sections:', unhandledSections);
+      console.warn('Unhandled sections: \n=> ' + unhandledSections.join('\n=> '));
       vscode.window
         .showWarningMessage(
           "Unhandled Sections for AutoComplete.\nPlease report this to the extension author if it hasn't already.",
@@ -304,7 +301,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
         await axios.get(
           'https://api.github.com/repos/Berserk-Games/atom-tabletopsimulator-lua/contents/lib/provider.coffee'
         )
-      ).data; // TODO: Correct events url
+      ).data;
       // Compare
       return {
         required: sMeta.providerHash !== providerData.sha,
@@ -420,6 +417,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
     _token: vscode.CancellationToken,
     context: vscode.CompletionContext
   ): Promise<vscode.CompletionItem[] | vscode.CompletionList> {
+    if (this._hsExt === undefined) throw new Error('Extension not initialized');
     if (this._hs === undefined) this._hs = await this._hsExt.activate();
     const line = document.lineAt(position).text.substring(0, position.character);
     const token = this._hs.getScopeAt(document, position);
@@ -541,7 +539,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
     // Standard Sections
     // This is where the magic happens 🎇
     const findResult = Object.entries(this._stdSectionCItems).find(([n]) =>
-      isSection(stdSectionMatcher.get(n) ?? n)
+      isSection(stdSectionMatcher.get(n) || n)
     );
     if (findResult !== undefined) completionItems.push(...findResult[1]);
 
@@ -571,7 +569,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
           // Filter non alfanumeric characters from identifier
           const cleanId = id[1].replace(/[^a-zA-Z0-9]/g, '');
           const guidSuffix = vscode.workspace
-            .getConfiguration('ttslua')
+            .getConfiguration('ttslua.autocompletion')
             .get('guidSuffix') as string;
           // Deep Copy the completion item
           const smartGetObjectFromGUID: vscode.CompletionItem = Object.create(

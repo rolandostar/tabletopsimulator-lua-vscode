@@ -7,11 +7,7 @@ export default class XMLCompletionProvider implements vscode.CompletionItemProvi
   // Hyper Scopes is an external extension API used to return the scope inside a document
   // It's used instead of vscode-textmate
   // https://marketplace.visualstudio.com/items?itemName=draivin.hscopes
-  private _hsExt: vscode.Extension<hscopes.HScopesAPI> =
-    vscode.extensions.getExtension<hscopes.HScopesAPI>('draivin.hscopes') ??
-    (() => {
-      throw new Error('Hyper Scopes extension not found');
-    })();
+  private _hsExt = vscode.extensions.getExtension<hscopes.HScopesAPI>('draivin.hscopes');
   private _hs: hscopes.HScopesAPI | undefined;
   private XMLCompletionData: xml.IXMLCompletionData = require('./XMLCompletionData').default;
 
@@ -21,6 +17,7 @@ export default class XMLCompletionProvider implements vscode.CompletionItemProvi
     _token: vscode.CancellationToken,
     context: vscode.CompletionContext
   ): Promise<vscode.CompletionItem[] | vscode.CompletionList> {
+    if (this._hsExt === undefined) throw new Error('Hyper Scopes extension not found');
     if (this._hs === undefined) this._hs = await this._hsExt.activate();
     const currentLine = document.lineAt(position).text.substring(0, position.character);
     const grammar = await this._hs.getGrammar('text.xml');
@@ -58,14 +55,6 @@ export default class XMLCompletionProvider implements vscode.CompletionItemProvi
       return [include];
     }
 
-    // Print textTokens
-    console.log(context.triggerCharacter);
-    console.log('textTokens:');
-    for (let j = 0; j < textTokens.length; j++) {
-      const token = textTokens[j];
-      console.log(` - token ${j}: ${token.text} = ${token.scopes.join(', ')}`);
-    }
-
     /* ----------------------------------- Function Definition ---------------------------------- */
     const isAttribute =
       (textTokens[0].scopes.length === 2 && textTokens[0].scopes[1] === 'meta.tag.xml') ||
@@ -87,9 +76,9 @@ export default class XMLCompletionProvider implements vscode.CompletionItemProvi
     if (isTag) {
       this.XMLCompletionData.elementTypes.forEach(elementType => {
         elementType.items.forEach(item => {
-          completionItems.push(
-            new vscode.CompletionItem(item.tag, vscode.CompletionItemKind.Property)
-          );
+          const citem = new vscode.CompletionItem(item.tag, vscode.CompletionItemKind.Property);
+          citem.documentation = new vscode.MarkdownString(`[[Documentation]](${item.url})`);
+          completionItems.push(citem);
         });
       });
     } else if (isAttribute) {

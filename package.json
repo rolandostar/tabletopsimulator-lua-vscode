@@ -26,13 +26,17 @@
     "test": "node ./out/test/runTest.js",
     "fix": "gts fix",
     "clean": "gts clean",
-    "vscode:prepublish": "esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node --minify",
-    "package": "vsce package"
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "vscode:prepublish": "npm run package",
+    "webpack": "webpack --mode development",
+    "webpack-dev": "webpack --mode development --watch"
+
   },
   "extensionDependencies": [
     "draivin.hscopes"
   ],
   "dependencies": {
+    "@vscode/codicons": "^0.0.32",
     "axios": "^0.27.2",
     "decaffeinate": "^8.1.2",
     "glob": "^8.0.3",
@@ -46,16 +50,19 @@
     "@types/vscode": "^1.71.0",
     "@typescript-eslint/eslint-plugin": "^5.37.0",
     "@typescript-eslint/parser": "^5.37.0",
-    "@vscode/codicons": "^0.0.32",
     "@vscode/test-electron": "^2.1.5",
+    "copy-webpack-plugin": "^11.0.0",
     "esbuild": "^0.15.8",
     "eslint": "^8.23.1",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^4.2.1",
     "gts": "^3.1.1",
     "mocha": "^10.0.0",
+    "terser-webpack-plugin": "^5.3.6",
+    "ts-loader": "^9.4.1",
     "typescript": "^4.8.3",
-    "vscode-textmate": "7.0.1"
+    "webpack": "^5.74.0",
+    "webpack-cli": "^4.10.0"
   },
   "activationEvents": [
     "onWebviewPanel:TTSConsole",
@@ -69,12 +76,12 @@
     "onCommand:ttslua.forceAutocompleteUpdate",
     "workspaceContains:**/.lua"
   ],
-  "main": "./out/extension.js",
+  "main": "./dist/main.js",
   "contributes": {
     "commands": [
       {
         "command": "ttslua.updateCompletionItems",
-        "title": "Update autocomplete Intellisense to latest available TTS API",
+        "title": "Update IntelliSense with latest TTS API",
         "category": "TTS Lua",
         "icon": "$(book)"
       },
@@ -101,7 +108,7 @@
       },
       {
         "command": "ttslua.addGlobalInclude",
-        "title": "Add include folder to workspace",
+        "title": "Add Global include folder to workspace",
         "category": "TTS Lua"
       },
       {
@@ -172,7 +179,7 @@
           },
           "ttslua.fileManagement.includePaths": {
             "title": "Additional paths to search for files",
-            "markdownDescription": "Both `~/Documents/Tabletop Simulator` and currently opened Folders in workspace are always included in search path.\n\neg. `C:\\Users\\<YourName>\\MyTTSFiles\\`",
+            "markdownDescription": "Both `~/Documents/Tabletop Simulator` and currently opened Folders in workspace are always included in search path. [Learn More](https://tts-vscode.rolandostar.com/extension/moduleResolution)\n\neg. `C:\\Users\\<YourName>\\MyTTSFiles\\`",
             "type": "array",
             "items": {
               "type": "string"
@@ -308,19 +315,19 @@
         "title": "Miscellaneous",
         "properties": {
           "ttslua.misc.disableDirectoryWarning": {
-            "markdownDescription": "When enabled, the extension will not show a warning when directories are deteced in the In-Game Files. [Learn More](https://google.com)",
+            "markdownDescription": "When enabled, the extension will not show a warning when directories are deteced in the In-Game Files. [Learn More](http://tts-vscode.rolandostar.com/support/dirWarning)",
             "type": "boolean",
             "default": false
           },
           "ttslua.misc.debugSearchPaths": {
-            "markdownDescription": "When enabled, the extension will output the paths and patterns it's using to locate includes and requires. Useful for debugging `ModuleResolution` errors.\n\nOpen the Developer Tools to see the output, default hotkey `Ctrl+Shift+I`.",
+            "markdownDescription": "When enabled, the extension will output the paths and patterns it's using to locate includes and requires. Useful for debugging `ModuleResolution` errors.[Learn More](https://tts-vscode.rolandostar.com/support/debuggingModuleResolution)\n\nOpen the Developer Tools to see the output, default hotkey `Ctrl+Shift+I`.",
             "type": "boolean",
             "default": false
           }
         }
       }
     ],
-    "walkthroughs": [
+    "not-walkthroughs": [
       {
         "id": "ttslua-first-setup",
         "title": "Tabletop Simulator for VSCode",
@@ -436,11 +443,19 @@
     "color": "#1F1F23",
     "theme": "dark"
   },
+  "sponsor": {
+    "url": "https://github.com/sponsors/rolandostar"
+  },
   "badges": [
     {
-      "url": "https://badgen.net/badge/build/sometimes ok/green",
-      "href": "https://github.com/rolandostar/tabletopsimulator-lua-vscode",
-      "description": "Should build correctly most of the time..."
+      "url": "https://github.com/rolandostar/tabletopsimulator-lua-vscode/actions/workflows/build-docs.yaml/badge.svg?branch=main",
+      "href": "https://github.com/rolandostar/tabletopsimulator-lua-vscode/actions/workflows/build-docs.yaml",
+      "description": ""
+    },
+    {
+      "url": "https://github.com/rolandostar/tabletopsimulator-lua-vscode/actions/workflows/deploy-to-marketplace.yaml/badge.svg?branch=main",
+      "href": "https://github.com/rolandostar/tabletopsimulator-lua-vscode/actions/workflows/deploy-to-marketplace.yaml",
+      "description": ""
     },
     {
       "url": "https://badgen.net/badge/uses/TS/blue",
