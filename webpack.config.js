@@ -3,17 +3,26 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 
 const config = {
+  mode: 'none',
   target: 'node', // vscode extensions run in a Node.js-context 📖 -> https://webpack.js.org/configuration/node/
   // context: path.resolve(__dirname, 'src'),
+  node: {
+    __dirname: false,
+  },
+  resolve: {
+    // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
+    mainFields: ['module', 'main'],
+    extensions: ['.ts', '.js'],
+  },
   entry: './src/extension.ts', // the entry point of this extension, 📖 -> https://webpack.js.org/configuration/entry-context/
   output: {
     // the bundle is stored in the 'dist' folder (check package.json), 📖 -> https://webpack.js.org/configuration/output/
     path: path.resolve(__dirname, 'dist'),
     filename: 'main.js',
     libraryTarget: 'commonjs2',
-    devtoolModuleFilenameTemplate: '../[resource-path]',
+    // devtoolModuleFilenameTemplate: '../[resource-path]',
+    clean: true
   },
-  devtool: 'source-map',
   externals: {
     vscode: 'commonjs vscode', // the vscode-module is created on-the-fly and must be excluded. Add other modules that cannot be webpack'ed, 📖 -> https://webpack.js.org/configuration/externals/
     // luabundle: 'commonjs luabundle',
@@ -28,12 +37,7 @@ const config = {
       ],
     }),
   ],
-  resolve: {
-    // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
-    extensions: ['.ts', '.js'],
-  },
   optimization: {
-    minimize: process.env.NODE_ENV === 'production',
     minimizer: [new TerserPlugin({
       terserOptions: {
         format: {
@@ -57,4 +61,8 @@ const config = {
     ],
   },
 };
-module.exports = config;
+module.exports = (env, argv) => {
+  config.optimization.minimize = argv.mode === 'production'
+  config.devtool = argv.mode === 'production' ? false : 'eval-source-map'
+  return config
+};

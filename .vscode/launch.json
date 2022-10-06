@@ -13,9 +13,6 @@
 				"--profile=extensionContext",
 				"--extensionDevelopmentPath=${workspaceFolder}",
 			],
-			"outFiles": [
-				"${workspaceFolder}/out/**/*.js"
-			],
 			"preLaunchTask": "${defaultBuildTask}"
 		},
 		{
@@ -28,10 +25,7 @@
 				"--extensionTestsPath=${workspaceFolder}/out/test/runner.js",
 				"${workspaceFolder}/src/test/fixture/"
 			],
-			"outFiles": [
-				"${workspaceFolder}/out/test/**/*.js"
-			],
-			"preLaunchTask": "${defaultBuildTask}"
+			"preLaunchTask": "npm: test-compile"
 		}
 	]
 }

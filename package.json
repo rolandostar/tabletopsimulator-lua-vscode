@@ -19,18 +19,15 @@
     "Other"
   ],
   "scripts": {
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
+    "compile": "webpack --mode development",
+    "watch": "webpack --mode development --watch",
     "lint": "gts lint",
-    "pretest": "npm run lint && npm run compile",
-    "test": "node ./out/test/runTest.js",
+    "pretest": "npm run lint && npm run test-compile",
+    "test-compile": "tsc",
+    "test": "node ./dist/test/runTest.js",
     "fix": "gts fix",
-    "clean": "gts clean",
-    "package": "webpack --mode production --devtool hidden-source-map",
     "vscode:prepublish": "npm run package",
-    "webpack": "webpack --mode development",
-    "webpack-dev": "webpack --mode development --watch"
-
+    "package": "webpack --mode production --devtool hidden-source-map"
   },
   "extensionDependencies": [
     "draivin.hscopes"
@@ -41,7 +38,8 @@
     "decaffeinate": "^8.1.2",
     "glob": "^8.0.3",
     "html-escaper": "^3.0.3",
-    "luabundle": "^1.6.0"
+    "luabundle": "^1.6.0",
+    "module-from-string": "^3.3.0"
   },
   "devDependencies": {
     "@types/glob": "^8.0.0",
