@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
-import type * as xml from './XMLTypes';
-import type * as hscopes from './hscopes';
+import type * as xml from '@/vscode/XMLTypes';
+import type * as hscopes from '@/vscode/hscopes';
 
 export default class XMLCompletionProvider implements vscode.CompletionItemProvider {
   // Hyper Scopes is an external extension API used to return the scope inside a document
@@ -13,9 +13,7 @@ export default class XMLCompletionProvider implements vscode.CompletionItemProvi
 
   public async provideCompletionItems(
     document: vscode.TextDocument,
-    position: vscode.Position,
-    _token: vscode.CancellationToken,
-    context: vscode.CompletionContext
+    position: vscode.Position
   ): Promise<vscode.CompletionItem[] | vscode.CompletionList> {
     if (this._hsExt === undefined) throw new Error('Hyper Scopes extension not found');
     if (this._hs === undefined) this._hs = await this._hsExt.activate();

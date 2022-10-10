@@ -1,15 +1,16 @@
 import * as vscode from 'vscode';
-import * as TTSTypes from './TTSTypes';
 import * as net from 'net';
-import * as ws from './vscode/workspace';
 import * as fs from 'fs';
 
 import path = require('path');
 import bundler from 'luabundle';
 import {resolveModule} from 'luabundle/bundle/process';
 import * as bundleErr from 'luabundle/errors';
-import {TTSConsolePanel} from './TTSConsole';
-import LuaCompletionProvider from './vscode/LuaCompletionProvider';
+
+import * as ws from '@/vscode/workspace';
+import * as TTSTypes from '@/TTSTypes';
+import TTSConsolePanel from '@/TTSConsole';
+import TTSWorkDir from '@/vscode/TTSWorkDir';
 
 type InGameObjectsList = {[key: string]: {name?: string; type?: string; iname?: string}};
 
@@ -127,7 +128,7 @@ export default class TTSAdapter extends vscode.Disposable {
    */
   public async saveAndPlay() {
     // When sending scripts, the Temp folder must be present in workspace
-    if (!ws.isPresent(ws.workFolder)) {
+    if (!ws.isPresent(TTSWorkDir.instance.getUri())) {
       vscode.window.showErrorMessage(
         'The workspace does not contain the Tabletop Simulator folder.\n' +
           'Get Lua Scripts from game before trying to Save and Play.',
@@ -140,7 +141,7 @@ export default class TTSAdapter extends vscode.Disposable {
     // Read files contained in the Temp folder
     let files: [string, vscode.FileType][];
     try {
-      files = await vscode.workspace.fs.readDirectory(vscode.Uri.file(ws.workFolder));
+      files = await vscode.workspace.fs.readDirectory(TTSWorkDir.instance.getUri());
     } catch (reason: unknown) {
       vscode.window.showErrorMessage(
         'Unable to read TTS Scripts directory.\n' + `Details: ${reason}`
@@ -152,9 +153,7 @@ export default class TTSAdapter extends vscode.Disposable {
     const scripts: {[key: string]: TTSTypes.ScriptState} = {};
     for (const [file] of files.filter(([file]) => file.endsWith('.lua'))) {
       const [name, guid] = file.split('.');
-      const fileContents = (
-        await vscode.workspace.fs.readFile(vscode.Uri.file(path.join(ws.workFolder, file)))
-      ).toString();
+      const fileContents = (await TTSWorkDir.instance.readFile(file)).toString();
       try {
         scripts[guid] = {
           name,
@@ -210,9 +209,10 @@ export default class TTSAdapter extends vscode.Disposable {
             'Go to Error'
           );
           if (!option) return;
-          await vscode.window.showTextDocument(vscode.Uri.file(path.join(ws.workFolder, file)), {
-            selection: new vscode.Range(e.line - 1, e.column, e.line, 0),
-          });
+          await vscode.window.showTextDocument(TTSWorkDir.instance.getFileUri(file)),
+            {
+              selection: new vscode.Range(e.line - 1, e.column, e.line, 0),
+            };
           return;
         }
         vscode.window.showErrorMessage(`${name}:\n${err}`);
@@ -223,19 +223,15 @@ export default class TTSAdapter extends vscode.Disposable {
     for (const guid in scripts) {
       const script = scripts[guid];
       // Check if file exists with same name and guid
-      await vscode.workspace.fs
-        .readFile(vscode.Uri.file(path.join(ws.workFolder, `${script.name}.${script.guid}.xml`)))
-        .then(
-          // If Found, add it to the script state object under `ui`
-          fileContents => (scripts[guid].ui = TTSAdapter.insertXmlFiles(fileContents.toString())),
-          reason => {
-            if (reason.code !== 'FileNotFound') {
-              vscode.window.showErrorMessage(
-                `Error reading UI file for ${script.name}:\n${reason}`
-              );
-            }
+      await TTSWorkDir.instance.readFile(`${script.name}.${script.guid}.xml`).then(
+        // If Found, add it to the script state object under `ui`
+        fileContents => (scripts[guid].ui = TTSAdapter.insertXmlFiles(fileContents.toString())),
+        reason => {
+          if (reason.code !== 'FileNotFound') {
+            vscode.window.showErrorMessage(`Error reading UI file for ${script.name}:\n${reason}`);
           }
-        );
+        }
+      );
     }
     // Validate empty global to avoid lockup
     if (scripts['-1'] === undefined || scripts['-1'].script === '') {
@@ -272,11 +268,11 @@ export default class TTSAdapter extends vscode.Disposable {
    */
   private handleMessage(rawMessage: TTSTypes.GenericTTSMessage) {
     // console.log('[TTSLua] Received message:');
-    console.log(rawMessage);
+    // console.log(rawMessage);
     switch (rawMessage.messageID) {
       case TTSTypes.RxMsgType.ObjectPushed: {
         const ttsMessage = <TTSTypes.ObjectPushedMessage>rawMessage;
-        ws.addDir2WS(ws.workFolder, 'TTS In-Game Files');
+        ws.addWorkDirToWorkspace();
         // add guid to suggestion
         this.readFilesFromTTS(ttsMessage.scriptStates, {single: true});
         break;
@@ -285,9 +281,8 @@ export default class TTSAdapter extends vscode.Disposable {
       case TTSTypes.RxMsgType.NewGame: {
         const ttsMessage = <TTSTypes.NewGameMessage>rawMessage;
         // if (!this.savedAndPlayed)
-        // CompletionProvider.setGuids();
         this.requestObjectGUIDs();
-        ws.addDir2WS(ws.workFolder, 'TTS In-Game Files');
+        ws.addWorkDirToWorkspace();
         this.readFilesFromTTS(ttsMessage.scriptStates);
         // this.savedAndPlayed = false;
         break;
@@ -345,6 +340,10 @@ export default class TTSAdapter extends vscode.Disposable {
             class: 'save',
           });
         }
+        // TODO: Add option to save files to disk when work dir is not default
+        // if (ws.isGitEnabled) {
+        //   // Copy save game to work folder
+        // }
         break;
 
       case TTSTypes.RxMsgType.ObjectCreated: {
@@ -404,7 +403,7 @@ export default class TTSAdapter extends vscode.Disposable {
         if (mRange.contains(errorRange)) {
           let uri: vscode.Uri;
           if (m.name === unbundled.metadata.rootModuleName) {
-            uri = vscode.Uri.file(path.join(ws.workFolder, `${script.name}.${script.guid}.lua`));
+            uri = TTSWorkDir.instance.getFileUri(`${script.name}.${script.guid}.lua`);
           } else {
             // Find the file the same way we did when we bundled it
             const path = resolveModule(m.name, getSearchPaths(getLuaSearchPattern()));
@@ -426,8 +425,10 @@ export default class TTSAdapter extends vscode.Disposable {
     } catch (err: unknown) {
       if (!(err instanceof bundleErr.NoBundleMetadataError)) throw err;
       // file wasnt bundled, no complexity needed
-      const uri = vscode.Uri.file(path.join(ws.workFolder, `${script.name}.${script.guid}.lua`));
-      return vscode.window.showTextDocument(uri, {selection: errorRange});
+      return vscode.window.showTextDocument(
+        TTSWorkDir.instance.getFileUri(`${script.name}.${script.guid}.lua`),
+        {selection: errorRange}
+      );
     }
   }
 
@@ -437,7 +438,7 @@ export default class TTSAdapter extends vscode.Disposable {
    */
   private async readFilesFromTTS(
     scriptStates: TTSTypes.ScriptState[],
-    options?: TTSTypes.readFilesOptions
+    options?: {single?: boolean}
   ) {
     // Read scriptStates, write them to files and determine which should be opened
     const filesRecv: ws.FileHandler[] = [];

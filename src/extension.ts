@@ -1,19 +1,21 @@
 import * as vscode from 'vscode';
 // TTS-Specific Imports
-import {TTSConsolePanel, getWebviewOptions} from './TTSConsole';
-import TTSAdapter from './TTSAdapter';
+import TTSConsolePanel, {getWebviewOptions} from '@/TTSConsole';
+import TTSAdapter from '@/TTSAdapter';
 // Editor Imports
-import * as workspace from './vscode/workspace';
-import TTSLuaCompletionProvider from './vscode/LuaCompletionProvider';
-import TTSXMLCompletionProvider from './vscode/XMLCompletionProvider';
-import TTSHoverProvider from './vscode/HoverProvider';
-import LocalStorageService from './vscode/LocalStorageService';
+import * as workspace from '@/vscode/workspace';
+import TTSLuaCompletionProvider from '@/vscode/LuaCompletionProvider';
+import TTSXMLCompletionProvider from '@/vscode/XMLCompletionProvider';
+import TTSHoverProvider from '@/vscode/HoverProvider';
+import LocalStorageService from '@/vscode/LocalStorageService';
+import TTSWorkDir from '@/vscode/TTSWorkDir';
 
 export async function activate(context: vscode.ExtensionContext) {
   console.log('[TTSLua] Tabletop Simulator Extension Load');
   // Set Storage Service to global context
   LocalStorageService.storage = context.globalState;
 
+  const ttsWorkdir = new TTSWorkDir();
   const ttsAdapter = new TTSAdapter();
   const ttsHoverProvider = new TTSHoverProvider();
   const ttsLuaCompletionProvider = new TTSLuaCompletionProvider();
@@ -52,6 +54,7 @@ export async function activate(context: vscode.ExtensionContext) {
           }),
     },
     {id: 'ttslua.executeLua', fn: () => ttsAdapter.executeLua()},
+    {id: 'ttslua.changeWorkDir', fn: () => ttsWorkdir.changeWorkDir()},
   ];
 
   context.subscriptions.push(
@@ -77,7 +80,8 @@ export async function activate(context: vscode.ExtensionContext) {
   if (vscode.window.registerWebviewPanelSerializer) {
     // Make sure we register a serializer in activation event
     vscode.window.registerWebviewPanelSerializer(TTSConsolePanel.viewType, {
-      async deserializeWebviewPanel(webviewPanel: vscode.WebviewPanel, state: unknown) {
+      // Omit State
+      async deserializeWebviewPanel(webviewPanel: vscode.WebviewPanel) {
         // console.log(`Got state: ${state}`);
         // Reset the webview options so we use latest uri for `localResourceRoots`.
         webviewPanel.webview.options = getWebviewOptions(context.extensionUri);
@@ -85,12 +89,4 @@ export async function activate(context: vscode.ExtensionContext) {
       },
     });
   }
-
-  // Creates a new temporary workspace folder if one doesn't already exist
-  return vscode.workspace.fs.createDirectory(vscode.Uri.file(workspace.workFolder)).then(
-    () => {},
-    (reason: unknown) => {
-      vscode.window.showErrorMessage(`Failed to create workspace folder: ${reason}`);
-    }
-  );
 }

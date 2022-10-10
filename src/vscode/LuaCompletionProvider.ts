@@ -1,16 +1,15 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import * as glob from 'glob';
 import * as os from 'os';
 import * as decaf from 'decaffeinate';
+
 import {requireFromString} from 'module-from-string';
-
-import axios, {AxiosError} from 'axios';
-import LocalStorageService from './LocalStorageService';
-
-import type * as hscopes from './hscopes';
 import {TextEncoder} from 'util';
-import TTSAdapter from '../TTSAdapter';
+import axios, {AxiosError} from 'axios';
+
+import LocalStorageService from '@/vscode/LocalStorageService';
+import type * as hscopes from '@/vscode/hscopes';
+import TTSAdapter from '@/TTSAdapter';
 
 /* --- Section Categorization Logic ---
  * Standard autocompletes are built in a Map<sectionName, trigger> format. `trigger` will be the

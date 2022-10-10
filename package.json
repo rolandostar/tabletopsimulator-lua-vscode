@@ -50,7 +50,6 @@
     "@typescript-eslint/parser": "^5.37.0",
     "@vscode/test-electron": "^2.1.5",
     "copy-webpack-plugin": "^11.0.0",
-    "esbuild": "^0.15.8",
     "eslint": "^8.23.1",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^4.2.1",
@@ -72,7 +71,8 @@
     "onCommand:ttslua.addGlobalInclude",
     "onCommand:ttslua.updateCompletionItems",
     "onCommand:ttslua.forceAutocompleteUpdate",
-    "workspaceContains:**/.lua"
+    "workspaceContains:*.lua",
+    "onCommand:ttslua.changeWorkDir"
   ],
   "main": "./dist/main.js",
   "contributes": {
@@ -119,6 +119,11 @@
         "title": "Execute Selected Lua",
         "category": "TTS Lua",
         "icon": "$(debug-start)"
+      },
+      {
+        "command": "ttslua.changeWorkDir",
+        "title": "Select Working Directory where scripts will be saved to and loaded from.",
+        "category": "TTS Lua"
       }
     ],
     "menus": {

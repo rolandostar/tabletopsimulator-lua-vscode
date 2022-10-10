@@ -1,8 +1,9 @@
 import * as vscode from 'vscode';
-import * as BBCode from './BBCode';
-import TTSAdapter from './TTSAdapter';
 
-export class TTSConsolePanel {
+import * as BBCode from '@/BBCode';
+import TTSAdapter from '@/TTSAdapter';
+
+export default class TTSConsolePanel {
   public static currentPanel: TTSConsolePanel | undefined;
   public static readonly viewType = 'TTSConsole';
   private _disposables: vscode.Disposable[] = [];

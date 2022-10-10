@@ -13,6 +13,9 @@ const config = {
     // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
     mainFields: ['module', 'main'],
     extensions: ['.ts', '.js'],
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+    }
   },
   entry: './src/extension.ts', // the entry point of this extension, 📖 -> https://webpack.js.org/configuration/entry-context/
   output: {
