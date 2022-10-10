@@ -39,6 +39,7 @@
     "glob": "^8.0.3",
     "html-escaper": "^3.0.3",
     "luabundle": "^1.6.0",
+    "nodejs-file-downloader": "^4.10.2",
     "require-module-from-string": "^1.0.19"
   },
   "devDependencies": {
@@ -63,6 +64,7 @@
   },
   "activationEvents": [
     "onWebviewPanel:TTSConsole",
+    "workspaceContains:*.lua",
     "onLanguage:lua",
     "onCommand:ttslua.openConsole",
     "onCommand:ttslua.getScripts",
@@ -71,8 +73,8 @@
     "onCommand:ttslua.addGlobalInclude",
     "onCommand:ttslua.updateCompletionItems",
     "onCommand:ttslua.forceAutocompleteUpdate",
-    "workspaceContains:*.lua",
-    "onCommand:ttslua.changeWorkDir"
+    "onCommand:ttslua.changeWorkDir",
+    "onCommand:ttslua.downloadAssets"
   ],
   "main": "./dist/main.js",
   "contributes": {
@@ -116,13 +118,18 @@
       },
       {
         "command": "ttslua.executeLua",
-        "title": "Execute Selected Lua",
+        "title": "Execute selected Lua",
         "category": "TTS Lua",
         "icon": "$(debug-start)"
       },
       {
         "command": "ttslua.changeWorkDir",
-        "title": "Select Working Directory where scripts will be saved to and loaded from.",
+        "title": "Change working directory where scripts will be saved to and loaded from.",
+        "category": "TTS Lua"
+      },
+      {
+        "command": "ttslua.downloadAssets",
+        "title": "Download assets",
         "category": "TTS Lua"
       }
     ],

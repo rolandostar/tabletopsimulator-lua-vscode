@@ -128,7 +128,7 @@ export class FileHandler {
   }
 
   public write(text: string) {
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       vscode.workspace.fs
         .createDirectory(vscode.Uri.file(path.dirname(this.FileUri.fsPath)))
         .then(() =>

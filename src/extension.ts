@@ -9,6 +9,7 @@ import TTSXMLCompletionProvider from '@/vscode/XMLCompletionProvider';
 import TTSHoverProvider from '@/vscode/HoverProvider';
 import LocalStorageService from '@/vscode/LocalStorageService';
 import TTSWorkDir from '@/vscode/TTSWorkDir';
+import * as TTSAssetGen from '@/TTSAssetGen';
 
 export async function activate(context: vscode.ExtensionContext) {
   console.log('[TTSLua] Tabletop Simulator Extension Load');
@@ -55,6 +56,7 @@ export async function activate(context: vscode.ExtensionContext) {
     },
     {id: 'ttslua.executeLua', fn: () => ttsAdapter.executeLua()},
     {id: 'ttslua.changeWorkDir', fn: () => ttsWorkdir.changeWorkDir()},
+    {id: 'ttslua.downloadAssets', fn: () => TTSAssetGen.downloadAssets()},
   ];
 
   context.subscriptions.push(

@@ -84,14 +84,14 @@ export default class TTSWorkDir {
     }
     // Prompt for which one to use
     const selection = await vscode.window.showQuickPick(
-      [...gitDirs.map(d => d.uri.fsPath), 'Default'],
+      [...gitDirs.map(d => d.uri.fsPath), '$(refresh) Default'],
       {
-        placeHolder: 'Select a git repository to use',
+        placeHolder: 'Select new working directory to store TTS scripts',
       }
     );
     // Handle Cancel
     if (selection === undefined) return;
-    if (selection !== 'Default') {
+    if (selection !== '$(refresh) Default') {
       // Any selection but default
       const newWorkDir = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(selection))!;
       LocalStorageService.setValue('workDir', newWorkDir.uri.fsPath);

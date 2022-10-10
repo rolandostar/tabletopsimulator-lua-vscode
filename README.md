@@ -26,15 +26,16 @@ Extension for VSCode to make writing Lua scripts for  <a href="https://store.ste
 - Get/Send Scripts
 - <img src="media/docs/new.png" width="80"/> Execute Lua without Save & Play
 - <img src="media/docs/new.png" width="80"/> Improved Code autocompletion for Lua
-  - Smart `GUID` suggestions which scans your savefile, it even detects newly-created objects.
+  - Smart `GUID` suggestions which scans your save file, it even detects newly-created objects.
   - Update to latest available TTS API without waiting for manual updates. ([Learn More](here))
 - <img src="media/docs/new.png" width="80"/> Added Code autocompletion for XML!
+- <img src="media/docs/new.png" width="80"/> Added Version Control Support, you can now more easily use Git to manage your scripts!
 - <img src="media/docs/new.png" width="80"/> Hover over a `GUID` in VSCode to Highlight the object In-Game
 - Nested file support
   - `require("")` for Lua
   - `<Include src=""/>` for XML
   - Configurable search patterns and lookup directories (yes, plural)
-  - Works with absolute directories, perfect for source controled projects
+  - Works with absolute directories, perfect for source controlled projects
   - <img src="media/docs/new.png" width="80"/> Debug module resolution issues right in VSCode (Never again wonder why your file isn't reachable)
 - <img src="media/docs/new.png" width="80"/> Improved Configuration (Made them clearer and categorized)
 - Built-in Console
@@ -44,6 +45,7 @@ Extension for VSCode to make writing Lua scripts for  <a href="https://store.ste
   - BBCode and nested colors support!
 - <img src="media/docs/new.png" width="80"/> Improved and extensive documentation available at [tts-vscode.rolandostar.com](tts-vscode.rolandostar.com)
   - Learn how to use version control, step-by-step debugging, and more!
+- <img src="media/docs/new.png" width="80"/> Added an experimental asset downloader, which helps you download and rehost assets via Github
 
 <br/>
 

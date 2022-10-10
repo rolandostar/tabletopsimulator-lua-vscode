@@ -11,6 +11,7 @@ import * as ws from '@/vscode/workspace';
 import * as TTSTypes from '@/TTSTypes';
 import TTSConsolePanel from '@/TTSConsole';
 import TTSWorkDir from '@/vscode/TTSWorkDir';
+import LocalStorageService from './vscode/LocalStorageService';
 
 type InGameObjectsList = {[key: string]: {name?: string; type?: string; iname?: string}};
 
@@ -260,6 +261,8 @@ export default class TTSAdapter extends vscode.Disposable {
     // Clear the console if configured to do so
     if (vscode.workspace.getConfiguration('ttslua.console').get('clearOnReload'))
       TTSConsolePanel.currentPanel?.clearPanel();
+
+    return true;
   }
 
   /**
@@ -341,6 +344,7 @@ export default class TTSAdapter extends vscode.Disposable {
             class: 'save',
           });
         }
+        LocalStorageService.setValue('lastSavePath', ttsMessage.savePath);
         if (!TTSWorkDir.instance.isDefault()) {
           const saveName = vscode.workspace
             .getConfiguration('ttslua.fileManagement')
