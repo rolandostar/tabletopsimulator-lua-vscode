@@ -329,7 +329,8 @@ export default class TTSAdapter extends vscode.Disposable {
         break;
       }
 
-      case TTSTypes.RxMsgType.GameSaved:
+      case TTSTypes.RxMsgType.GameSaved: {
+        const ttsMessage = <TTSTypes.GameSavedMessaged>rawMessage;
         if (vscode.workspace.getConfiguration('ttslua.console').get('logSaves')) {
           const d = new Date();
           const h = `${d.getHours()}`.padStart(2, '0');
@@ -340,12 +341,22 @@ export default class TTSAdapter extends vscode.Disposable {
             class: 'save',
           });
         }
-        // TODO: Add option to save files to disk when work dir is not default
-        // if (ws.isGitEnabled) {
-        //   // Copy save game to work folder
-        // }
+        if (!TTSWorkDir.instance.isDefault()) {
+          const saveName = vscode.workspace
+            .getConfiguration('ttslua.fileManagement')
+            .get('saveName');
+          vscode.workspace.fs
+            .copy(
+              vscode.Uri.file(path.normalize(ttsMessage.savePath)),
+              TTSWorkDir.instance.getFileUri(saveName + '.json'),
+              {overwrite: true}
+            )
+            .then(() => {
+              vscode.window.showInformationMessage('Game Saved');
+            });
+        }
         break;
-
+      }
       case TTSTypes.RxMsgType.ObjectCreated: {
         const ttsMessage = <TTSTypes.ObjectCreatedMessage>rawMessage;
         // Add it to the guid suggestions if not already

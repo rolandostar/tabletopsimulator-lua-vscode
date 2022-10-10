@@ -26,8 +26,8 @@
     "test-compile": "tsc",
     "test": "node ./dist/test/runTest.js",
     "fix": "gts fix",
-    "vscode:prepublish": "npm run package",
-    "package": "webpack --mode production --devtool hidden-source-map"
+    "vscode:prepublish": "webpack --mode production",
+    "package": "vsce package"
   },
   "extensionDependencies": [
     "draivin.hscopes"
@@ -39,7 +39,7 @@
     "glob": "^8.0.3",
     "html-escaper": "^3.0.3",
     "luabundle": "^1.6.0",
-    "module-from-string": "^3.3.0"
+    "require-module-from-string": "^1.0.19"
   },
   "devDependencies": {
     "@types/glob": "^8.0.0",
@@ -200,6 +200,12 @@
               "?.lua"
             ],
             "minItems": 1
+          },
+          "ttslua.fileManagement.saveName": {
+            "title": "How to name saved files",
+            "markdownDescription": "When using version control, how should the save file be named.\n\nExtension will always be `.json`",
+            "type": "string",
+            "default": "savegame"
           }
         }
       },

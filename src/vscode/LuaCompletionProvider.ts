@@ -3,9 +3,9 @@ import * as path from 'path';
 import * as os from 'os';
 import * as decaf from 'decaffeinate';
 
-import {requireFromString} from 'module-from-string';
 import {TextEncoder} from 'util';
 import axios, {AxiosError} from 'axios';
+import buildModule from 'require-module-from-string';
 
 import LocalStorageService from '@/vscode/LocalStorageService';
 import type * as hscopes from '@/vscode/hscopes';
@@ -363,7 +363,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
     try {
       const jsCode = decaf.convert(coffeeScript, {loose: true}).code;
       done();
-      return {name: sectionNameFmt, f: requireFromString(jsCode)};
+      return {name: sectionNameFmt, f: buildModule(jsCode, sectionNameFmt)};
     } catch (e) {
       if (e instanceof Error) {
         const coffeeFilePath = path.join(os.tmpdir(), sectionNameFmt + '.coffee');
