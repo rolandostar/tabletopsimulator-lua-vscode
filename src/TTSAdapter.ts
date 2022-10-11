@@ -24,12 +24,30 @@ function getSearchPaths(searchPattern: string[]): string[] {
     vscode.workspace.getConfiguration('ttslua.fileManagement').get('includePaths') || [];
   // Search pattern can be undefined, if it is
   const vsFolders = vscode.workspace.workspaceFolders || [];
+
+  /* DISABLED:
+   * This would make relative require work anywhere, but will probably be too many locations to
+   * search for modules
+   */
+  // const possibleLocations = vsFolders
+  //   .map(vsFolder => glob.sync('**/*/', {cwd: vsFolder.uri.fsPath, absolute: true}))
+  //   .reduce((acc, cur) => acc.concat(cur), []);
+
+  /* We could only do that when we are working with version control */
+  // const workDirLocs = !TTSWorkDir.instance.isDefault()
+  //   ? glob.sync('**/*/', {
+  //       cwd: TTSWorkDir.instance.getUri().fsPath,
+  //       absolute: true,
+  //     })
+  //   : [];
+
   const paths = searchPattern
     .filter(pattern => pattern.length > 0)
     .map(pattern => [
       path.join(ws.docsFolder, pattern),
       ...includePaths.map(p => path.join(p, pattern)),
       ...vsFolders.map(val => path.join(val.uri.fsPath, pattern)),
+      // ...workDirLocs.map(val => path.join(val, pattern)),
       pattern, // For absolute paths
     ])
     // Flatten so all paths are in one top level array
@@ -43,12 +61,13 @@ function getSearchPaths(searchPattern: string[]): string[] {
 /**
  * Returns a list patterns, validating that '?.lua' is always included
  */
-function getLuaSearchPattern(): string[] {
-  const pattern = vscode.workspace
+function getLuaSearchPatterns(): string[] {
+  const patterns = vscode.workspace
     .getConfiguration('ttslua.fileManagement')
     .get('luaSearchPattern') as string[];
-  if (!pattern.includes('?.lua')) pattern.push('?.lua');
-  return pattern;
+  if (!patterns.includes('?')) patterns.push('?');
+  if (!patterns.includes('?.lua')) patterns.push('?.lua');
+  return patterns;
 }
 
 /**
@@ -160,7 +179,7 @@ export default class TTSAdapter extends vscode.Disposable {
           name,
           guid,
           script: bundler.bundleString(fileContents, {
-            paths: getSearchPaths(getLuaSearchPattern()),
+            paths: getSearchPaths(getLuaSearchPatterns()),
             isolate: true,
             rootModuleName: file,
           }),
@@ -223,16 +242,16 @@ export default class TTSAdapter extends vscode.Disposable {
     // Iterate over found scripts, and check if UI file exists
     for (const guid in scripts) {
       const script = scripts[guid];
-      // Check if file exists with same name and guid
-      await TTSWorkDir.instance.readFile(`${script.name}.${script.guid}.xml`).then(
+      try {
+        // Check if file exists with same name and guid
+        const filetext = await TTSWorkDir.instance.readFile(`${script.name}.${script.guid}.xml`);
         // If Found, add it to the script state object under `ui`
-        fileContents => (scripts[guid].ui = TTSAdapter.insertXmlFiles(fileContents.toString())),
-        reason => {
-          if (reason.code !== 'FileNotFound') {
-            vscode.window.showErrorMessage(`Error reading UI file for ${script.name}:\n${reason}`);
-          }
+        scripts[guid].ui = await TTSAdapter.insertXmlFiles(filetext.toString());
+      } catch (reason) {
+        if ((reason as vscode.FileSystemError).code !== 'FileNotFound') {
+          vscode.window.showErrorMessage(`Error reading UI file for ${script.name}:\n${reason}`);
         }
-      );
+      }
     }
     // Validate empty global to avoid lockup
     if (scripts['-1'] === undefined || scripts['-1'].script === '') {
@@ -421,7 +440,7 @@ export default class TTSAdapter extends vscode.Disposable {
             uri = TTSWorkDir.instance.getFileUri(`${script.name}.${script.guid}.lua`);
           } else {
             // Find the file the same way we did when we bundled it
-            const path = resolveModule(m.name, getSearchPaths(getLuaSearchPattern()));
+            const path = resolveModule(m.name, getSearchPaths(getLuaSearchPatterns()));
             if (!path) throw Error('Module containing error not found in search paths.');
             uri = vscode.Uri.file(path);
           }
@@ -477,7 +496,7 @@ export default class TTSAdapter extends vscode.Disposable {
           await xmlHandler.write(
             scriptState.ui?.replace(
               /(<!--\s+include\s+([^\s].*)\s+-->)[\s\S]+?\1/g,
-              match => `<Include src="${match[2].replace('"', '\\"')}"/>`
+              (_matched, _open, src) => `<Include src="${src}"/>`
             ) ?? ''
           );
           // if (scriptState.name === 'Global') globalHandlers.push(handler);
@@ -585,50 +604,82 @@ export default class TTSAdapter extends vscode.Disposable {
    * @remarks
    * Ported from Atom's Plugin
    */
-  private static insertXmlFiles(text: string | Uint8Array, alreadyInserted: string[] = []): string {
+  private static async insertXmlFiles(
+    text: string | Uint8Array,
+    alreadyInserted: string[] = []
+  ): Promise<string> {
     if (typeof text !== 'string') text = Buffer.from(text).toString('utf-8');
-    return text.replace(
-      /(^|\n)([\s]*)(.*)<Include\s+src=('|")(.+)\4\s*\/>/g,
-      (_matched, prefix, indentation, content, _quote, insertPath): string => {
-        prefix = prefix + indentation + content;
-        const {path, filetext} = getSearchPaths([insertPath]).reduce(
-          (result, lookupPath) => {
-            if (result.filetext.length > 0 || result.path.length > 0) return result;
-            try {
-              // const filetext = fs.readFileSync(lookupPath).toString('utf-8');
-              vscode.workspace.fs.readFile(vscode.Uri.file(lookupPath)).then(filetext => {
-                return {
-                  filetext,
-                  path: lookupPath,
-                };
-              });
-            } catch (error) {
-              if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
-            }
-            return {path: '', filetext: ''};
-          },
-          {path: '', filetext: ''}
-        );
+    const pattern = /(^|\n)([\s]*)(.*)<Include\s+src=('|")(.+)\4\s*\/>/;
+    const getNonce = () => Math.random().toString(36).substring(7);
+    const nonce = getNonce();
+    // First we extract comments and leave a placeholder, so we don't try to parse them
+    // Remember to store them for reinsertion later
+    const comments: string[] = [];
+    text = text.replace(/<!--[\s\S]*?-->/g, comment => {
+      comments.push(comment);
+      return `<!--${nonce}:${comments.length - 1}-->`;
+    });
+    // Then we perform the actual replacement
+
+    // Split text by lines
+    const lines = text.split(/\r?\n/);
+    // Iterate each line
+    for (const [index, line] of lines.entries()) {
+      // If line contains an include (with regex)
+      const match = line.match(pattern);
+      if (match) {
+        const [, pre, indent, before, , insertPath] = match;
+        const prefix = pre + indent + before;
         const marker = `<!-- include ${insertPath} -->`;
-        if (filetext.length > 0) {
-          if (alreadyInserted.includes(path)) {
-            vscode.window.showErrorMessage(
-              `Cyclical include detected. ${insertPath} was previously included`
-            );
-            return prefix;
+        const possiblePaths = getSearchPaths([insertPath]);
+        // Try to open each possible path, and insert the first one that works
+        for (const lookupPath of possiblePaths) {
+          // Check if the file exists before attempting to open it
+          try {
+            await vscode.workspace.fs.stat(vscode.Uri.file(lookupPath));
+          } catch (err) {
+            if ((err as vscode.FileSystemError).code !== 'FileNotFound') {
+              vscode.window.showErrorMessage(`Error reading ${lookupPath}: ${err}`);
+              throw err;
+            }
+            // If it doesn't, just try with the next one
+            continue;
           }
-          alreadyInserted.push(path);
-          const insertText =
-            indentation +
-            TTSAdapter.insertXmlFiles(filetext, alreadyInserted).replace('\n', `\n${indentation}`);
-          return `${prefix + marker}\n${insertText}\n${indentation}${marker}`;
+          // Found an existing file, so open it
+          const moduleUri = vscode.Uri.file(lookupPath);
+          const moduleContent = await vscode.workspace.fs.readFile(moduleUri);
+          if (moduleContent.length > 0) {
+            // If the file has already been inserted, skip it
+            if (alreadyInserted.includes(lookupPath)) {
+              vscode.window.showErrorMessage(
+                `Cyclical include detected. ${insertPath} was previously included`
+              );
+              lines[index] = line.replace(pattern, prefix);
+              break;
+            }
+            // File hasn't been inserted yet.
+            alreadyInserted.push(lookupPath);
+            const newText = await TTSAdapter.insertXmlFiles(moduleContent, alreadyInserted);
+            const content = newText.replace('\n', `\n${indent}`);
+            lines[index] = line.replace(
+              pattern,
+              `${prefix + marker}\n${indent}${content}\n${indent}${marker}`
+            );
+            break;
+          }
+          // Went through all possible paths but no return yet. Inform of error
+          vscode.window.showErrorMessage(
+            `Could not catalog <Include /> - file not found: ${insertPath}`
+          );
+          lines[index] = line.replace(pattern, `${prefix + marker}\n${indent}${marker}`);
         }
-        vscode.window.showErrorMessage(
-          `Could not catalog <Include /> - file not found: ${insertPath}`
-        );
-        return `${prefix + marker}\n${indentation}${marker}`;
       }
-    );
+    }
+
+    // Reinsert comments
+    return lines
+      .join('\n')
+      .replace(new RegExp(`<!--${nonce}:(\\d+)-->`, 'g'), (_match, index) => comments[index]);
   }
 
   private requestObjectGUIDs() {
