@@ -22,7 +22,7 @@
 			"args": [
 				"--profile=extensionContext",
 				"--extensionDevelopmentPath=${workspaceFolder}",
-				"--extensionTestsPath=${workspaceFolder}/out/test/runner.js",
+				"--extensionTestsPath=${workspaceFolder}/dist/test/runner.js",
 				"${workspaceFolder}/src/test/fixture/"
 			],
 			"preLaunchTask": "npm: test-compile"

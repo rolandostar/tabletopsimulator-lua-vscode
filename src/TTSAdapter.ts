@@ -596,13 +596,10 @@ export default class TTSAdapter extends vscode.Disposable {
     return this._inGameObjects;
   }
 
-  // REVIEW
   /**
    * Recursive XML Include
    * @param text - Text to be replaced
    * @param alreadyInserted - Tracking array to prevent cyclical includes
-   * @remarks
-   * Ported from Atom's Plugin
    */
   private static async insertXmlFiles(
     text: string | Uint8Array,

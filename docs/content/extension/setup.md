@@ -15,9 +15,9 @@ Launch VS Code Quick Open (`Ctrl+P`), paste the following command, and type ente
 - `Ctrl+Alt+L`: Get Lua Scripts
 - `Ctrl+Alt+S`: Save And Play
 
-<callout type="warn">
+<!-- <callout type="warn"> -->
 ⚠️ Make sure Atom is closed if you are transitioning from the official editor as they will conflict with one another.
-</callout>
+<!-- </callout> -->
 
 ## Other Installation Methods
 ### From package

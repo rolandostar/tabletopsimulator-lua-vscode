@@ -31,10 +31,10 @@ The first one is triggered by typing `getObjectFromGUID` on the right side of an
 
 ![GUID Suffix](guid_suffix.png)
 
-<callout type="info">
+<!-- <callout type="info"> -->
 
 Suffix is configurable in the [extension settings](/extension/configuration)
-</callout>
+<!-- </callout> -->
 
 #### Scan getObjectFromGUID:
 Whereas the second one is triggered by triggering suggestions (<kbd class="kbc-button-sm">Ctrl</kbd>+<kbd class="kbc-button-sm">Space</kbd>) while inside the parenthesis of `getObjectFromGUID` 

@@ -27,15 +27,8 @@ const config = {
     locales: ['en'],
   },
   stylesheets: [
-    'https://unpkg.com/keyboard-css@1.2.4/dist/css/main.min.css',
-    'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css',
-    'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/treeview/prism-treeview.min.css'
+    'https://unpkg.com/keyboard-css@1.2.4/dist/css/main.min.css'
   ],
-  scripts: [
-    'https://cdnjs.cloudflare.com/ajax/libs/prism/9000.0.1/prism.min.js',
-    'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/treeview/prism-treeview.min.js'
-  ],
-
   presets: [
     [
       'classic',

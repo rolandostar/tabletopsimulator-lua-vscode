@@ -60,7 +60,6 @@ export default class TTSWorkDir {
     TTSWorkDir.instance = this;
   }
 
-  // TODO: [every time there is asave, copy game save to git root]
   // TODO: another command can export game assets to git format
 
   public async changeWorkDir() {

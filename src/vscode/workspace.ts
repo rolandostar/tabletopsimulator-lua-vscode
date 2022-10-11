@@ -29,7 +29,6 @@ export function addDir2WS(dir: string, name?: string) {
 }
 
 export function addWorkDirToWorkspace() {
-  // REVIEW: This might add a previously selected folder to the workspace with the wrong name
   addDir2WS(TTSWorkDir.instance.getUri().fsPath, 'In-Game Scripts');
 }
 
