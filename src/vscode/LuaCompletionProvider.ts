@@ -1,17 +1,15 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import * as glob from 'glob';
 import * as os from 'os';
 import * as decaf from 'decaffeinate';
 
-import axios, {AxiosError} from 'axios';
-import LocalStorageService from './LocalStorageService';
-
-import type * as hscopes from './hscopes';
 import {TextEncoder} from 'util';
-import TTSAdapter from '../TTSAdapter';
+import axios, {AxiosError} from 'axios';
+import buildModule from 'require-module-from-string';
 
-const suggestionTempDir = path.join(os.tmpdir(), 'vscode-decaffeinate-suggestions');
+import LocalStorageService from '@/vscode/LocalStorageService';
+import type * as hscopes from '@/vscode/hscopes';
+import TTSAdapter from '@/TTSAdapter';
 
 /* --- Section Categorization Logic ---
  * Standard autocompletes are built in a Map<sectionName, trigger> format. `trigger` will be the
@@ -69,6 +67,7 @@ const extraSectionMatcher = [
 ];
 
 type SuggestionList = {[key: string]: Suggestion[]};
+type SuggestionGenerator = (...args: any[]) => Suggestion[];
 
 interface Suggestion {
   snippet: string;
@@ -83,11 +82,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
   // Hyper Scopes is an external extension API used to return the scope inside a document
   // It's used instead of vscode-textmate
   // https://marketplace.visualstudio.com/items?itemName=draivin.hscopes
-  private _hsExt: vscode.Extension<hscopes.HScopesAPI> =
-    vscode.extensions.getExtension<hscopes.HScopesAPI>('draivin.hscopes') ??
-    (() => {
-      throw new Error('Hyper Scopes extension not found');
-    })();
+  private _hsExt = vscode.extensions.getExtension<hscopes.HScopesAPI>('draivin.hscopes');
   private _hs: hscopes.HScopesAPI | undefined;
 
   // Standard Sections are resolved by the `isSection` function and uses the SectionMatcher map
@@ -98,18 +93,11 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
 
   constructor() {
     // Restore completion items from stored suggestions at init time
-    if (LocalStorageService.getValue('suggestionList')) {
+    if (LocalStorageService.getValue('suggestionList') !== undefined) {
       this.loadCompletionItems();
     } else {
       this.updateCompletionItems();
     }
-    // Make sure suggestionTempDir exists, if not, create it
-    const suggestionTempDirUri = vscode.Uri.file(suggestionTempDir);
-    vscode.workspace.fs.stat(suggestionTempDirUri).then(stats => {
-      if (stats.type !== vscode.FileType.Directory) {
-        vscode.workspace.fs.createDirectory(suggestionTempDirUri);
-      }
-    });
 
     /* ----------------------------- Completion Dictionary Populate ----------------------------- */
     // This is precalculated at init time to avoid having to do it every time a completion is requested
@@ -145,7 +133,8 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
       const convertSuggestion = (sArray: Suggestion[]) => {
         return sArray.map(s => {
           // Null coalescing operator to handle non-matching values
-          const displayText = s.displayText.match(/\b.*(?=\()|\b.*$/g) ?? [s.displayText];
+          let displayText = s.displayText.match(/\b.*(?=\()|\b.*$/g);
+          if (displayText === null) displayText = [s.displayText];
           const item = new vscode.CompletionItem(displayText[0], typeToKind.get(s.type));
           item.insertText = new vscode.SnippetString(
             // TODO: Implement replace types
@@ -176,7 +165,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
       section => !extraSectionMatcher.includes(section) && !stdSectionMatcher.has(section)
     );
     if (unhandledSections.length > 0) {
-      console.warn('Unhandled Sections:', unhandledSections);
+      console.warn('Unhandled sections: \n=> ' + unhandledSections.join('\n=> '));
       vscode.window
         .showWarningMessage(
           "Unhandled Sections for AutoComplete.\nPlease report this to the extension author if it hasn't already.",
@@ -210,7 +199,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
     if (updateStatus === undefined) return;
     // If update is not needed, let the user know
     if (!updateStatus.required && !force) {
-      vscode.window.showInformationMessage('No update needed');
+      vscode.window.showInformationMessage('Already up-to-date');
       return;
     }
     // Content is encoded in base64, decode
@@ -220,14 +209,6 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
       .substring(providerCode.indexOf('# Section: '), providerCode.indexOf('# End of sections'))
       .split('# Section: ');
     splitted.shift(); // Remove empty string at the beginning
-    // Make sure the directory is empty before we begin
-    await vscode.workspace.fs
-      .readDirectory(vscode.Uri.file(suggestionTempDir))
-      .then(files =>
-        files.map(file =>
-          vscode.workspace.fs.delete(vscode.Uri.file(path.join(suggestionTempDir, file[0])))
-        )
-      );
     /* -------------------------- Suggestion Generation Heavy Lifting ------------------------- */
     // We'll report progress every time a section is parsed
     // First we calculate values to update progress
@@ -245,7 +226,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
         // This also allows for each section to be parsed in parallel
         // Being asyncronous also allows for the progress bar to update correctly 😊
         await new Promise(resolve => setTimeout(resolve, 0)); // Force progress bar to show initially
-        await Promise.all(
+        const sgList: (void | {name: string; f: SuggestionGenerator})[] = await Promise.all(
           splitted.map(section =>
             // We wrap the progress report function which will update the progress bar as done()
             LuaCompletionProvider._parseSection(section, () =>
@@ -255,20 +236,14 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
         );
 
         /* ------------------------------------------------------------------------------------------ */
-        // We now have all the updated suggestions on disk, let's import them
+        // We now have all the updated suggestions on memory, let's import them
         const suggestionList: SuggestionList = {};
-        const files = glob.sync('**/*.js', {cwd: suggestionTempDir});
-        await Promise.all(
-          files.map(async file => {
-            const f: (...args: any[]) => Suggestion[] = await import(
-              path.join(suggestionTempDir, file)
-            );
-            const name = path.basename(file, '.js');
-            if (name === 'defaultevents') suggestionList['defaultevents-global'] = f(true);
-
-            suggestionList[name] = f();
-          })
-        );
+        for (const sGenerator of sgList) {
+          if (sGenerator === undefined) continue;
+          const {name, f} = sGenerator;
+          if (name === 'defaultevents') suggestionList['defaultevents-global'] = f(true);
+          else suggestionList[name] = f();
+        }
 
         // Store suggestion list metadata in memento
         LocalStorageService.setValue('suggestionList', suggestionList);
@@ -304,7 +279,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
         await axios.get(
           'https://api.github.com/repos/Berserk-Games/atom-tabletopsimulator-lua/contents/lib/provider.coffee'
         )
-      ).data; // TODO: Correct events url
+      ).data;
       // Compare
       return {
         required: sMeta.providerHash !== providerData.sha,
@@ -320,7 +295,10 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
     }
   }
 
-  private static async _parseSection(section: string, done: () => void) {
+  private static async _parseSection(
+    section: string,
+    done: () => void
+  ): Promise<void | {name: string; f: SuggestionGenerator}> {
     const sectionLines = section.split('\n');
     // Make sure array is not empty
     if (sectionLines.length === 0) return;
@@ -333,9 +311,8 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
 
     let coffeeScript = '';
 
-    // Control Blocks Section is skipped
+    // Control Blocks Section is skipped because is implemented in _cDict
     if (sectionName === 'Control blocks') {
-      // This section is implemented in _cDict
       done();
       return;
     }
@@ -379,32 +356,28 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
     }
     // Formatting is done, time to decaf
     // Section Name is formatted here, because it will be used to match with isSection function
-    const exportPath = path.join(
-      suggestionTempDir,
-      sectionName
-        .replace('Class', '')
-        .replace(/[^a-zA-Z0-9]/g, '')
-        .toLowerCase()
-    );
+    const sectionNameFmt = sectionName
+      .replace('Class', '')
+      .replace(/[^a-zA-Z0-9]/g, '')
+      .toLowerCase();
     try {
       const jsCode = decaf.convert(coffeeScript, {loose: true}).code;
-      await vscode.workspace.fs.writeFile(
-        vscode.Uri.file(exportPath + '.js'),
-        new TextEncoder().encode(jsCode)
-      );
+      done();
+      return {name: sectionNameFmt, f: buildModule(jsCode, sectionNameFmt)};
     } catch (e) {
       if (e instanceof Error) {
-        console.error(`Error parsing section: ${sectionName}`);
+        const coffeeFilePath = path.join(os.tmpdir(), sectionNameFmt + '.coffee');
+        console.error(`Error parsing section: ${sectionNameFmt}`);
         console.error(e.message);
         await vscode.workspace.fs.writeFile(
-          vscode.Uri.file(exportPath + '.coffee'),
+          vscode.Uri.file(coffeeFilePath),
           new TextEncoder().encode(coffeeScript)
         );
-        console.warn(`Debug File: ${exportPath}.coffee`);
+        console.warn(`Debug File: ${coffeeFilePath}`);
       }
+      done();
     }
-    // console.log(`Section parsed: '${sectionName}'`);
-    done();
+    // console.log(`Section parsed: '${sectionNameFmt}'`);
     /* --------- Simulates Long running task --------- */
     // await new Promise<void>(resolve => {
     //   setTimeout(() => {
@@ -420,6 +393,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
     _token: vscode.CancellationToken,
     context: vscode.CompletionContext
   ): Promise<vscode.CompletionItem[] | vscode.CompletionList> {
+    if (this._hsExt === undefined) throw new Error('Extension not initialized');
     if (this._hs === undefined) this._hs = await this._hsExt.activate();
     const line = document.lineAt(position).text.substring(0, position.character);
     const token = this._hs.getScopeAt(document, position);
@@ -541,7 +515,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
     // Standard Sections
     // This is where the magic happens 🎇
     const findResult = Object.entries(this._stdSectionCItems).find(([n]) =>
-      isSection(stdSectionMatcher.get(n) ?? n)
+      isSection(stdSectionMatcher.get(n) || n)
     );
     if (findResult !== undefined) completionItems.push(...findResult[1]);
 
@@ -571,7 +545,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
           // Filter non alfanumeric characters from identifier
           const cleanId = id[1].replace(/[^a-zA-Z0-9]/g, '');
           const guidSuffix = vscode.workspace
-            .getConfiguration('ttslua')
+            .getConfiguration('ttslua.autocompletion')
             .get('guidSuffix') as string;
           // Deep Copy the completion item
           const smartGetObjectFromGUID: vscode.CompletionItem = Object.create(

@@ -4,12 +4,12 @@ import * as path from 'path';
 import {glob} from 'glob';
 import {TextEncoder} from 'util';
 
-export const workFolder = path.join(os.tmpdir(), 'TabletopSimulator', 'Tabletop Simulator Lua');
+import TTSWorkDir from '@/vscode/TTSWorkDir';
+
 export const docsFolder = path.join(os.homedir(), 'Documents', 'Tabletop Simulator');
 
-export function isPresent(dir: string) {
+export function isPresent(dirUri: vscode.Uri) {
   const vsFolders = vscode.workspace.workspaceFolders;
-  const dirUri = vscode.Uri.file(dir);
   // If there are no folders in the workspace,
   // OR the requested dir in the workspace do not match any vscode folders path...
   return vsFolders && vsFolders.findIndex(vsDir => vsDir.uri.fsPath === dirUri.fsPath) !== -1;
@@ -20,25 +20,32 @@ export function isPresent(dir: string) {
  */
 export function addDir2WS(dir: string, name?: string) {
   const vsFolders = vscode.workspace.workspaceFolders;
-  const dirUri = vscode.Uri.file(dir);
+  const uri = vscode.Uri.file(dir);
   // Check if the folder is already present
-  if (!isPresent(dir)) {
+  if (!isPresent(vscode.Uri.file(dir))) {
     // ...If not add it to the workspace
-    vscode.workspace.updateWorkspaceFolders(vsFolders?.length ?? 0, null, {
-      uri: dirUri,
-      name,
-    });
+    vscode.workspace.updateWorkspaceFolders(vsFolders?.length ?? 0, null, {uri, name});
   }
+}
+
+export function addWorkDirToWorkspace() {
+  addDir2WS(TTSWorkDir.instance.getUri().fsPath, 'In-Game Scripts');
 }
 
 /**
  * This method removes files from the workFolder which are not in the game
  */
 export function syncFiles(filesRecv: FileHandler[]) {
+  // Only sync if workDir is default
+  if (!TTSWorkDir.instance.isDefault()) return;
+
   const filesRecvNames = filesRecv.map(h => h.filename);
-  const dirs = glob.sync('*/', {cwd: workFolder});
+  const dirs = glob.sync('*/', {cwd: TTSWorkDir.instance.getUri().fsPath});
   // If there are dirs, show warning
-  if (dirs.length > 0 && vscode.workspace.getConfiguration('ttslua').get('showDirectoryWarning')) {
+  if (
+    dirs.length > 0 &&
+    !vscode.workspace.getConfiguration('ttslua.misc').get('disableDirectoryWarning')
+  ) {
     vscode.window
       .showWarningMessage(
         'Directories detected in "In-Game Files"',
@@ -57,8 +64,9 @@ export function syncFiles(filesRecv: FileHandler[]) {
             'TTSLua: Disable Directory Warning'
           );
         else if (res === 'Learn More')
-          // TODO: Link support page also package.json Config Contrib URL
-          vscode.env.openExternal(vscode.Uri.parse('https://google.com'));
+          vscode.env.openExternal(
+            vscode.Uri.parse('https://tts-vscode.rolandostar.com/support/dirWarning')
+          );
       });
     return;
   }
@@ -66,9 +74,13 @@ export function syncFiles(filesRecv: FileHandler[]) {
   // This is to remove files that were deleted from the game.
   return Promise.all(
     glob
-      .sync('*', {cwd: workFolder, nodir: true})
+      .sync('*', {cwd: TTSWorkDir.instance.getUri().fsPath, nodir: true})
       .filter(file => !filesRecvNames.includes(file))
-      .map(file => vscode.workspace.fs.delete(vscode.Uri.file(path.join(workFolder, file))))
+      .map(file =>
+        vscode.workspace.fs.delete(
+          vscode.Uri.file(path.join(TTSWorkDir.instance.getUri().fsPath, file))
+        )
+      )
   );
 }
 
@@ -111,11 +123,11 @@ export class FileHandler {
   private FileUri: vscode.Uri;
 
   public constructor(public filename: string) {
-    this.FileUri = vscode.Uri.file(path.normalize(path.join(workFolder, filename)));
+    this.FileUri = vscode.Uri.file(path.join(TTSWorkDir.instance.getUri().fsPath, filename));
   }
 
   public write(text: string) {
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       vscode.workspace.fs
         .createDirectory(vscode.Uri.file(path.dirname(this.FileUri.fsPath)))
         .then(() =>
