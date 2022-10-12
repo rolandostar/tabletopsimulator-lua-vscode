@@ -28,3 +28,8 @@
   --ifm-color-primary-lightest: #ffe24d;
 }
 
+.sponsors {
+  display: flex;
+  justify-content: center;
+  gap: 50px;
+}

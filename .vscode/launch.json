@@ -13,9 +13,6 @@
 				"--profile=extensionContext",
 				"--extensionDevelopmentPath=${workspaceFolder}",
 			],
-			"outFiles": [
-				"${workspaceFolder}/out/**/*.js"
-			],
 			"preLaunchTask": "${defaultBuildTask}"
 		},
 		{
@@ -25,13 +22,10 @@
 			"args": [
 				"--profile=extensionContext",
 				"--extensionDevelopmentPath=${workspaceFolder}",
-				"--extensionTestsPath=${workspaceFolder}/out/test/runner.js",
+				"--extensionTestsPath=${workspaceFolder}/dist/test/runner.js",
 				"${workspaceFolder}/src/test/fixture/"
 			],
-			"outFiles": [
-				"${workspaceFolder}/out/test/**/*.js"
-			],
-			"preLaunchTask": "${defaultBuildTask}"
+			"preLaunchTask": "npm: test-compile"
 		}
 	]
 }

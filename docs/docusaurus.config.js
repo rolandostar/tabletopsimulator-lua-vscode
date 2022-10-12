@@ -6,7 +6,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Tabletop Simulator VSCode Extension Documentation',
+  title: 'TTS VSCode Extension Documentation',
   url: 'https://tts-vscode.rolandostar.com',
   baseUrl: '/',
   onBrokenLinks: 'throw',
@@ -27,9 +27,8 @@ const config = {
     locales: ['en'],
   },
   stylesheets: [
-    'https://unpkg.com/keyboard-css@1.2.4/dist/css/main.min.css',
+    'https://unpkg.com/keyboard-css@1.2.4/dist/css/main.min.css'
   ],
-
   presets: [
     [
       'classic',
@@ -42,7 +41,7 @@ const config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/rolandostar/tabletopsimulator-lua-vscode/tree/dev/docs',
+            'https://github.com/rolandostar/tabletopsimulator-lua-vscode/tree/main/docs',
           sidebarCollapsed: false,
           sidebarCollapsible: false,
         },
@@ -67,19 +66,12 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: 'Tabletop Simulator VSCode Extension Documentation',
+        title: 'TTS VSCode Docs',
         logo: {
           alt: 'Tabletop Simulator VSCode Extension Logo',
           src: 'img/icon.png',
         },
         items: [
-          // {
-          //   type: 'doc',
-          //   docId: 'intro',
-          //   position: 'left',
-          //   label: 'Tutorial',
-          // },
-          // {to: '/blog', label: 'Blog', position: 'left'},
           {
             href: 'https://github.com/rolandostar/tabletopsimulator-lua-vscode',
             label: 'GitHub',
@@ -93,12 +85,16 @@ const config = {
         },
         links: [
           {
+            href: 'https://github.com/rolandostar/tabletopsimulator-lua-vscode',
+            label: 'GitHub'
+          },
+          {
             label: 'Reddit',
             href: 'https://www.reddit.com/user/rolandostar',
           },
           {
             label: 'Discord',
-            href: 'https://discordapp.com/invite/docusaurus',
+            href: 'https://discord.com/users/90207880464076800',
           },
           {
             label: 'Steam',
@@ -110,6 +106,7 @@ const config = {
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
+        additionalLanguages: ['lua'],
       },
     }),
 };
