@@ -44,7 +44,7 @@ Documents/Tabletop Simulator
 └── foo.lua
 ```
 
-Remember that the console and console++ files are installed in the Documents Folder by default, so they are always available. Check out the [Console++ Guide](/guides/console++) for more info on how to install these files.
+Remember that the console and console++ files are installed in the Documents Folder by default, so they are always available. Check out the [Console++ Guide](console++) for more info on how to install these files.
 
 If you were to execute the `TTSLua: Add Global include folder to workspace` command, and get the scripts from the game, it would look something like this:
 
@@ -99,4 +99,4 @@ This would mean that:
 
 ## If you still have questions...
 
-Check out the [Debugging Module Resolution](/support/debuggingModuleResolution) page for further information on how to debug module resolution.
+Check out the [Debugging Module Resolution](/support/debugModuleResolution) page for further information on how to debug module resolution.

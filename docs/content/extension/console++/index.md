@@ -21,3 +21,9 @@ Save and Play (<kbd class="kbc-button-sm">Ctrl</kbd>+<kbd class="kbc-button-sm">
 :::tip
 Press enter or double click on the Console++ Panel to focus the command input at the bottom
 :::
+
+## Command Mode
+
+If you only send `>` as input to the Console++ Panel, it will enter command mode. This allows you to send console++ commands without having to prefix each one with `>`. Like so:
+
+![Command Mode](command-mode.png)

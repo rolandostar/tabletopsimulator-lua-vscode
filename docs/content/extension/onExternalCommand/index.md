@@ -4,7 +4,7 @@ description: A new function for you!
 
 # External Command
 
-When you `require("vscode/console")` a new function is added to the global scope called `onExternalCommand`. This function is called when the extension receives a command from the VSCode Console++ Panel when **not** prefixed by `>` and outside of command mode. [More details on command mode here](/guides/console++#command-mode).
+When you `require("vscode/console")` a new function is added to the global scope called `onExternalCommand`. This function is called when the extension receives a command from the VSCode Console++ Panel when **not** prefixed by `>` and outside of command mode. [More details on command mode here](console++#command-mode).
 
 Whenever you press enter on the Console++ Panel the extension will send the command to the game. If the command is prefixed by `>` it will be sent to the game as a command, otherwise it will be sent as `External Command`. The game will then call the `onExternalCommand` function with your input as the first argument.
 
