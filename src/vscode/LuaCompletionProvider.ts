@@ -7,9 +7,9 @@ import {TextEncoder} from 'util';
 import axios, {AxiosError} from 'axios';
 import buildModule from 'require-module-from-string';
 
-import LocalStorageService from '@/vscode/LocalStorageService';
-import type * as hscopes from '@/vscode/hscopes';
-import TTSAdapter from '@/TTSAdapter';
+import LocalStorageService from './LocalStorageService';
+import type * as hscopes from './hscopes';
+import TTSAdapter from '../TTSAdapter';
 
 /* --- Section Categorization Logic ---
  * Standard autocompletes are built in a Map<sectionName, trigger> format. `trigger` will be the

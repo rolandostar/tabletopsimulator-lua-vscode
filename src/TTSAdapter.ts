@@ -7,10 +7,10 @@ import bundler from 'luabundle';
 import {resolveModule} from 'luabundle/bundle/process';
 import * as bundleErr from 'luabundle/errors';
 
-import * as ws from '@/vscode/workspace';
-import * as TTSTypes from '@/TTSTypes';
-import TTSConsolePanel from '@/TTSConsole';
-import TTSWorkDir from '@/vscode/TTSWorkDir';
+import * as ws from './vscode/workspace';
+import * as TTSTypes from './TTSTypes';
+import TTSConsolePanel from './TTSConsole';
+import TTSWorkDir from './vscode/TTSWorkDir';
 import LocalStorageService from './vscode/LocalStorageService';
 
 type InGameObjectsList = {[key: string]: {name?: string; type?: string; iname?: string}};

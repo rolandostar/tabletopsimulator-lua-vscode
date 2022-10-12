@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import TTSWorkDir from '@/vscode/TTSWorkDir';
+import TTSWorkDir from './vscode/TTSWorkDir';
 // import {getApi} from '@microsoft/vscode-file-downloader-api';
 import Downloader from 'nodejs-file-downloader';
 import path from 'path';

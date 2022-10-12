@@ -1,15 +1,15 @@
 import * as vscode from 'vscode';
 // TTS-Specific Imports
-import TTSConsolePanel, {getWebviewOptions} from '@/TTSConsole';
-import TTSAdapter from '@/TTSAdapter';
+import TTSConsolePanel, {getWebviewOptions} from './TTSConsole';
+import TTSAdapter from './TTSAdapter';
 // Editor Imports
-import * as workspace from '@/vscode/workspace';
-import TTSLuaCompletionProvider from '@/vscode/LuaCompletionProvider';
-import TTSXMLCompletionProvider from '@/vscode/XMLCompletionProvider';
-import TTSHoverProvider from '@/vscode/HoverProvider';
-import LocalStorageService from '@/vscode/LocalStorageService';
-import TTSWorkDir from '@/vscode/TTSWorkDir';
-import * as TTSAssetGen from '@/TTSAssetGen';
+import * as workspace from './vscode/workspace';
+import TTSLuaCompletionProvider from './vscode/LuaCompletionProvider';
+import TTSXMLCompletionProvider from './vscode/XMLCompletionProvider';
+import TTSHoverProvider from './vscode/HoverProvider';
+import LocalStorageService from './vscode/LocalStorageService';
+import TTSWorkDir from './vscode/TTSWorkDir';
+import * as TTSAssetGen from './TTSAssetGen';
 
 export async function activate(context: vscode.ExtensionContext) {
   console.log('[TTSLua] Tabletop Simulator Extension Load');

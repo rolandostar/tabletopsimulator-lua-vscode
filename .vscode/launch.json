@@ -20,9 +20,9 @@
 			"type": "extensionHost",
 			"request": "launch",
 			"args": [
-				"--profile=extensionContext",
+        "--profile=extensionContext",
 				"--extensionDevelopmentPath=${workspaceFolder}",
-				"--extensionTestsPath=${workspaceFolder}/dist/test/runner.js",
+				"--extensionTestsPath=${workspaceFolder}/dist/test/suite/",
 				"${workspaceFolder}/src/test/fixture/"
 			],
 			"preLaunchTask": "npm: test-compile"

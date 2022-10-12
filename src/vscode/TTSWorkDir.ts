@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as os from 'os';
 
-import LocalStorageService from '@/vscode/LocalStorageService';
+import LocalStorageService from './LocalStorageService';
 
 const defaultWorkDir = path.join(os.tmpdir(), 'TabletopSimulatorLua');
 
@@ -133,7 +133,7 @@ export default class TTSWorkDir {
     }
     statusBarItem.command = 'ttslua.changeWorkDir';
     statusBarItem.tooltip = new vscode.MarkdownString(
-      'Click to select TTSLua working directory [[Learn More]](https://ttslua.rolandostar.com/guides/versionControl)'
+      'Click to select TTSLua working directory [[Learn More]](https://tts-vscode.rolandostar.com/guides/versionControl)'
     );
     // statusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
     // statusBarItem.color = new vscode.ThemeColor('statusBarItem.warningForeground');

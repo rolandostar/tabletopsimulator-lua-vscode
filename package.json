@@ -23,8 +23,8 @@
     "watch": "webpack --mode development --watch",
     "lint": "gts lint",
     "pretest": "npm run lint && npm run test-compile",
-    "test-compile": "tsc",
-    "test": "node ./dist/test/runTest.js",
+    "test-compile": "tsc --build --clean && tsc",
+    "test": "node dist/test/runTest",
     "fix": "gts fix",
     "vscode:prepublish": "webpack --mode production",
     "package": "vsce package"
@@ -76,7 +76,7 @@
     "onCommand:ttslua.changeWorkDir",
     "onCommand:ttslua.downloadAssets"
   ],
-  "main": "./dist/main.js",
+  "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {

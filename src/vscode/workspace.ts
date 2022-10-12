@@ -4,7 +4,7 @@ import * as path from 'path';
 import {glob} from 'glob';
 import {TextEncoder} from 'util';
 
-import TTSWorkDir from '@/vscode/TTSWorkDir';
+import TTSWorkDir from './TTSWorkDir';
 
 export const docsFolder = path.join(os.homedir(), 'Documents', 'Tabletop Simulator');
 

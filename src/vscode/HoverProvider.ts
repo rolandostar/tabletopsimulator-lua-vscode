@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import TTSAdapter from '@/TTSAdapter';
+import TTSAdapter from '../TTSAdapter';
 import * as path from 'path';
 import * as fs from 'fs';
 

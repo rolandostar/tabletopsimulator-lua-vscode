@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
-import * as BBCode from '@/BBCode';
-import TTSAdapter from '@/TTSAdapter';
+import * as BBCode from './BBCode';
+import TTSAdapter from './TTSAdapter';
 
 export default class TTSConsolePanel {
   public static currentPanel: TTSConsolePanel | undefined;

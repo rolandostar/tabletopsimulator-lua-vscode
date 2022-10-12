@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
-import type * as xml from '@/vscode/XMLTypes';
-import type * as hscopes from '@/vscode/hscopes';
+import type * as xml from './XMLTypes';
+import type * as hscopes from './hscopes';
 
 export default class XMLCompletionProvider implements vscode.CompletionItemProvider {
   // Hyper Scopes is an external extension API used to return the scope inside a document

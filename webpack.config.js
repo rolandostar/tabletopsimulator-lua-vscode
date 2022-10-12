@@ -8,14 +8,11 @@ const config = {
   resolve: {
     mainFields: ['module', 'main'],
     extensions: ['.ts', '.js'],
-    alias: {
-      '@': path.resolve(__dirname, 'src'),
-    }
   },
   entry: './src/extension.ts',
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'main.js',
+    filename: 'extension.js',
     libraryTarget: 'commonjs2',
     clean: true
   },
