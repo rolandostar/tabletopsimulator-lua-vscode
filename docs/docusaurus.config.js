@@ -94,7 +94,7 @@ const config = {
           },
           {
             label: 'Discord',
-            href: 'https://discordapp.com/invite/docusaurus',
+            href: 'https://discord.com/users/90207880464076800',
           },
           {
             label: 'Steam',

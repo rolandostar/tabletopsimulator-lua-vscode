@@ -13,3 +13,7 @@ This will result in the following:
 ![Return Console](returnConsole.png)
 
 The message is logged (both in-game and console++) and the return value is displayed in console++ in a special blue callout.
+
+When the Console++ panel is not opened, the return value will be outputted in a Information Message like so:
+
+![Return Message](returnInfoMessage.png)

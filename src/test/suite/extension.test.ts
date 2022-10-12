@@ -53,7 +53,7 @@ suite('Extension Test Suite', async () => {
     test('default workFolder must point to temp location', () => {
       assert.strictEqual(
         TTSWorkDir.instance.getUri().fsPath,
-        path.join(os.tmpdir(), 'TabletopSimulator', 'Tabletop Simulator Lua')
+        path.join(os.tmpdir(), 'TabletopSimulatorLua')
       );
     });
     test('Test adding a directory to the workspace', () => {

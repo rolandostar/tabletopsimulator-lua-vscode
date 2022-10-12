@@ -16,7 +16,7 @@ export default class TTSHoverProvider implements vscode.HoverProvider {
       const obj = igObjs[text];
       const name = obj.name || obj.iname || '(No Name)';
       const script = fs
-        .readFileSync(path.join(__dirname, '../../lua/highlightVsCode.lua.template'), 'utf8')
+        .readFileSync(path.resolve(__dirname, '../lua/highlightVsCode.lua.template'), 'utf8')
         .replace('%guid%', text);
       adapter.executeLua(script, '-1');
       return new vscode.Hover(name);

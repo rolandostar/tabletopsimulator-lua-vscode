@@ -4,7 +4,7 @@ import * as os from 'os';
 
 import LocalStorageService from '@/vscode/LocalStorageService';
 
-const defaultWorkDir = path.join(os.tmpdir(), 'TabletopSimulator', 'Tabletop Simulator');
+const defaultWorkDir = path.join(os.tmpdir(), 'TabletopSimulatorLua');
 
 function getGitDirs() {
   const vsFolders = vscode.workspace.workspaceFolders || [];

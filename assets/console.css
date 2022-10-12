@@ -9,17 +9,7 @@ body {
 #data {
   font-family: var(--ttslua-console-font-family);
   flex: 1;
-  overflow-y: scroll;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  /* vertical-align: bottom;
-  height: 0px;
-  max-height: calc(
-    100vh -
-    var(--ttslua-console-input-height) -
-    (var(--input-padding-vertical) * 2) - 7px
-  ); */
+  overflow-y: auto;
 }
 
 #commandInput {

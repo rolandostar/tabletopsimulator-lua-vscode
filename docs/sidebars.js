@@ -46,7 +46,8 @@ const sidebars = {
           dirName: 'support',
         }
       ]
-    }
+    },
+    'FAQ'
   ]
 };
 

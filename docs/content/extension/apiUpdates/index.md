@@ -1,7 +1,7 @@
 ---
 description: Game update just released? Let's update IntelliSense
 ---
-# Autocompletion Updates
+# TTS API Updates
 
 As you may know, Tabletop Simulator receives updates from time to time, with these updates there's a good chance that the API offered for Lua has changed, which would mean that there would have to be a separate update for the extension incorporating these changes. For this reason this extension offers a simple and automated way to download the latest **available** API for TTS Lua, and store it locally on your machine to provide autocompletion items for VSCode's IntelliSense WITHOUT having to wait for a separate extension update.
 

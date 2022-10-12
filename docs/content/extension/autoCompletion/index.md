@@ -11,6 +11,8 @@ Also note that the documentation for the function will be displayed in the toolt
 
 The `[More Info]` link will redirect you to the official documentation for that function.
 
+### Updating the Autocomplete for Lua
+
 ### Coroutine Snippets
 
 The extension also provides snippets for coroutines, so you can quickly create a coroutine and start it. The snippets are triggered after a function definition like so:

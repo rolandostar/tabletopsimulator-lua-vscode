@@ -13,8 +13,8 @@ All notable changes to the "tabletopsimulator-lua" extension will be documented 
 - Added simple autocomplete for XML
 - Added HyperScope dependency (To resolve TextMate/WASM issues)
 - Improved all informational messages
-- TODO: Added command history to console++
-- TODO: git workspace support
+TODO - Added command history to console++
+- Git workspace support
 - Added a new documentation site [tts-vscode.rolandostar.com](https://tts-vscode.rolandostar.com/)
 
 ## [1.1.4]
