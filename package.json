@@ -222,6 +222,18 @@
         "id": "ttslua.autocompletion",
         "title": "Autocompletion",
         "properties": {
+          "ttslua.autocompletion.luaEnabled": {
+            "title": "Enable autocompletion for LUA",
+            "description": "Enable autocompletion for TTS Lua API. Requires reloading VSCode.",
+            "type": "boolean",
+            "default": true
+          },
+          "ttslua.autocompletion.xmlEnabled": {
+            "title": "Enable autocompletion for XML",
+            "description": "Enable autocompletion for TTS XML API. Requires reloading VSCode.",
+            "type": "boolean",
+            "default": true
+          },
           "ttslua.autocompletion.coroutineSuffix": {
             "title": "Coroutine Suffix",
             "description": "When automatically creating an internal coroutine function this is appended to the parent function's name.",

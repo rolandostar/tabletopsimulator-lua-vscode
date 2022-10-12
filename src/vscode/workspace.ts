@@ -36,15 +36,11 @@ export function addWorkDirToWorkspace() {
  * This method removes files from the workFolder which are not in the game
  */
 export function syncFiles(filesRecv: FileHandler[]) {
-  // Only sync if workDir is default
-  if (!TTSWorkDir.instance.isDefault()) return;
-
-  const filesRecvNames = filesRecv.map(h => h.filename);
-  const dirs = glob.sync('*/', {cwd: TTSWorkDir.instance.getUri().fsPath});
   // If there are dirs, show warning
   if (
-    dirs.length > 0 &&
-    !vscode.workspace.getConfiguration('ttslua.misc').get('disableDirectoryWarning')
+    TTSWorkDir.instance.isDefault() && // If it's default Workdir
+    !vscode.workspace.getConfiguration('ttslua.misc').get('disableDirectoryWarning') && // The user didn't disable the warning
+    glob.sync('*/', {cwd: TTSWorkDir.instance.getUri().fsPath}).length > 0 // And there are dirs
   ) {
     vscode.window
       .showWarningMessage(
@@ -70,11 +66,12 @@ export function syncFiles(filesRecv: FileHandler[]) {
       });
     return;
   }
-  // Remove files not marked as received from the workFolder.
+  // Remove lua files non-recusive not marked as received from the workFolder.
   // This is to remove files that were deleted from the game.
+  const filesRecvNames = filesRecv.map(h => h.filename);
   return Promise.all(
     glob
-      .sync('*', {cwd: TTSWorkDir.instance.getUri().fsPath, nodir: true})
+      .sync('*.lua', {cwd: TTSWorkDir.instance.getUri().fsPath, nodir: true})
       .filter(file => !filesRecvNames.includes(file))
       .map(file =>
         vscode.workspace.fs.delete(

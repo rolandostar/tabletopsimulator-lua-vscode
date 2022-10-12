@@ -65,18 +65,29 @@ export async function activate(context: vscode.ExtensionContext) {
     // Register all commands
     ...commands.map(cmd => vscode.commands.registerCommand(cmd.id, cmd.fn, context)),
     // Register providers for completion and hover
-    vscode.languages.registerCompletionItemProvider(
-      'lua',
-      ttsLuaCompletionProvider,
-      ...['.', ':', '(', ')', ' ']
-    ),
-    vscode.languages.registerCompletionItemProvider(
-      'xml',
-      ttsXMLCompletionProvider,
-      ...['<', '/', ' ']
-    ),
     vscode.languages.registerHoverProvider('lua', ttsHoverProvider)
   );
+
+  // Get config and register providers accordingly
+  const autocompletion = vscode.workspace.getConfiguration('ttslua.autocompletion');
+  if (autocompletion.get('luaEnabled')) {
+    context.subscriptions.push(
+      vscode.languages.registerCompletionItemProvider(
+        'lua',
+        ttsLuaCompletionProvider,
+        ...['.', ':', '(', ')', ' ']
+      )
+    );
+  }
+  if (autocompletion.get('xmlEnabled')) {
+    context.subscriptions.push(
+      vscode.languages.registerCompletionItemProvider(
+        'xml',
+        ttsXMLCompletionProvider,
+        ...['<', '/', ' ']
+      )
+    );
+  }
 
   // Register the TTS Console Panel
   if (vscode.window.registerWebviewPanelSerializer) {
