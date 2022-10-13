@@ -20,7 +20,7 @@ export async function activate(context: vscode.ExtensionContext) {
   LocalStorageService.storage = context.globalState;
 
   TTSWorkDir.init();
-  TTSAdapter.init();
+  TTSAdapter.registerListeners();
 
   const ttsHoverProvider = new TTSHoverProvider();
   const ttsLuaCompletionProvider = new TTSLuaCompletionProvider();

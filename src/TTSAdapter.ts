@@ -1,124 +1,21 @@
+import { ErrorMessage, IncomingJsonObject, OutgoingJsonObject } from '@matanlurey/tts-editor';
 import * as fs from 'fs';
 import bundler from 'luabundle';
 import { resolveModule } from 'luabundle/bundle/process';
 import * as bundleErr from 'luabundle/errors';
+import * as path from 'path';
 import * as vscode from 'vscode';
-
-import path = require('path');
-
+import CustomExternalEditorApi from './CustomExternalEditorApi';
+import { handleBundleError } from './ErrorHandling';
 import TTSConsolePanel from './TTSConsole';
 import TTSWorkDir from './TTSWorkDir';
+import { getLuaSearchPatterns, getSearchPaths } from './utils/searchPaths';
 import * as ws from './vscode/workspace';
 
-import { ErrorMessage, IncomingJsonObject, OutgoingJsonObject } from '@matanlurey/tts-editor';
-import CustomExternalEditorApi from './CustomExternalEditorApi';
-
 type OutgoingJsonObjectWithName = OutgoingJsonObject & { name: string };
-
 type InGameObjectsList = {
   [key: string]: { name?: string; type?: string; iname?: string };
 };
-
-interface BundleSyntaxError {
-  line: number;
-  index: number;
-  column: number;
-}
-
-async function handleBundleError(err: unknown, scriptFilename: string) {
-  if (err instanceof bundleErr.ModuleResolutionError) {
-    const selection = await vscode.window.showErrorMessage(
-      `Unable to find module "${err.moduleName}" from ${err.parentModuleName}<${err.line}:${err.column}>\n`,
-      'Learn More',
-      'Enable Debug',
-    );
-
-    if (selection === 'Learn More')
-      vscode.env.openExternal(
-        vscode.Uri.parse('https://tts-vscode.rolandostar.com/support/debuggingModuleResolution'),
-      );
-    else if (selection === 'Enable Debug') {
-      if (!vscode.workspace.getConfiguration('ttslua.misc').get('debugSearchPaths')) {
-        vscode.workspace
-          .getConfiguration('ttslua.misc')
-          .update('debugSearchPaths', true, vscode.ConfigurationTarget.Global);
-        vscode.commands.executeCommand('workbench.action.toggleDevTools');
-        console.log(
-          '[TTSLua] Search Paths debug enabled, TTSAdapter window will now output the search paths when attempting to resolve modules.',
-        );
-      } else {
-        vscode.window
-          .showInformationMessage('Search Paths debug is already enabled', 'Toggle DevTools')
-          .then((selection) => {
-            if (selection === 'Toggle DevTools')
-              vscode.commands.executeCommand('workbench.action.toggleDevTools');
-          });
-      }
-    }
-    return;
-  } else if (err instanceof SyntaxError) {
-    const e = err as unknown as BundleSyntaxError;
-    const option = await vscode.window.showErrorMessage(
-      `Syntax Error in ${scriptFilename}${err.message}`,
-      'Go to Error',
-    );
-    if (!option) return;
-    await vscode.window.showTextDocument(TTSWorkDir.getFileUri(scriptFilename)),
-      {
-        selection: new vscode.Range(e.line - 1, e.column, e.line, 0),
-      };
-    return;
-  }
-  vscode.window.showErrorMessage(`${scriptFilename}:\n${err}`);
-  return;
-}
-
-/**
- * Forms an array with directory paths where to look for files to be included
- * @param searchPattern - Patterns array to form paths with
- */
-function getSearchPaths(searchPattern: string[]): string[] {
-  const includePaths: string[] =
-    vscode.workspace.getConfiguration('ttslua.fileManagement').get('includePaths') || [];
-  // Search pattern can be undefined, if it is
-  const vsFolders = vscode.workspace.workspaceFolders || [];
-
-  /* DISABLED:
-   * TTSAdapter would make relative require work anywhere, but will probably be too many locations to
-   * search for modules
-   */
-  // const possibleLocations = vsFolders
-  //   .map(vsFolder => glob.sync('**/*/', {cwd: vsFolder.uri.fsPath, absolute: true}))
-  //   .reduce((acc, cur) => acc.concat(cur), []);
-
-  /* We could only do that when we are working with version control */
-  // const workDirLocs = !TTSWorkDir.instance.isDefault()
-  //   ? glob.sync('**/*/', {
-  //       cwd: TTSWorkDir.instance.getUri().fsPath,
-  //       absolute: true,
-  //     })
-  //   : [];
-
-  const paths = searchPattern
-    .filter((pattern) => pattern.length > 0)
-    .map((pattern) => [
-      path.join(ws.docsFolder, pattern),
-      ...includePaths.map((p) => path.join(p, pattern)),
-      ...vsFolders.map((val) => path.join(val.uri.fsPath, pattern)),
-      // ...workDirLocs.map(val => path.join(val, pattern)),
-      pattern, // For absolute paths
-    ])
-    // Flatten so all paths are in one top level array
-    .reduce((acc, val) => acc.concat(val), []);
-  // Flatten res
-  if (vscode.workspace.getConfiguration('ttslua.misc').get('debugSearchPaths'))
-    console.log('[TTSLua] Search Paths:\n->', paths.join('\n-> '), '\n');
-  return paths;
-}
-
-function getLuaSearchPatterns(): string[] {
-  return ['?', '?.lua'];
-}
 
 /**
  * TTS Adapter singleton
@@ -129,28 +26,7 @@ export default abstract class TTSAdapter extends vscode.Disposable {
   private static _lastSentScripts: OutgoingJsonObjectWithName[] = [];
   private static _disposables: vscode.Disposable[] = [];
 
-  // public static getInstance(): TTSAdapter {
-  //   if (!TTSAdapter.instance) TTSAdapter.instance = new TTSAdapter();
-  //   return TTSAdapter.instance;
-  // }
-
-  public static init() {
-    if (TTSAdapter._api.listen() === undefined) {
-      console.log('[TTSLua] TTS is not running');
-      throw new Error('TTS is not running');
-      // vscode.window.showErrorMessage(
-      //   'Another instance of TTSLua or Atom is already running',
-      //   {
-      //     modal: true,
-      //     detail: 'Please close the other instance and try again.',
-      //   },
-      // );
-    } else TTSAdapter.registerListeners();
-    console.log('[TTSLua] TTSAdapter initialized');
-    console.log(TTSAdapter._api.listenerCount());
-  }
-
-  private static registerListeners() {
+  public static registerListeners() {
     TTSAdapter._disposables.push(
       new vscode.Disposable(
         TTSAdapter._api.on('pushingNewObject', (e) => {
@@ -187,7 +63,7 @@ export default abstract class TTSAdapter extends vscode.Disposable {
       new vscode.Disposable(
         TTSAdapter._api.on('customMessage', async (e) => {
           // Mostly unused, let's just print it for now
-          console.log('[TTSLua] Custom message from TTS:', e);
+          console.log('[TTSLua] Custom message from TTS:', e.customMessage);
         }),
       ),
       new vscode.Disposable(
@@ -256,7 +132,14 @@ export default abstract class TTSAdapter extends vscode.Disposable {
    * Requests a list of all scripts from the game
    */
   public static getScripts() {
-    return TTSAdapter._api.getLuaScripts();
+    TTSAdapter._api.getLuaScripts().catch((err) => {
+      if (err.code === 'EADDRINUSE')
+        vscode.window.showErrorMessage('Another instance of TTSLua or Atom is already running', {
+          modal: true,
+          detail: 'Please close the other instance and try again.',
+        });
+      else console.error('[TTSLua] Unexpected Server Error:', err);
+    });
   }
 
   /**
