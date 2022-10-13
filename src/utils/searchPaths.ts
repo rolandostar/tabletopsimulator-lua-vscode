@@ -27,5 +27,5 @@ export function getSearchPaths(searchPattern: string[]): string[] {
 }
 
 export function getLuaSearchPatterns(): string[] {
-  return ['?', '?.lua'];
+  return ['?.lua', '?.ttslua', '?'];
 }

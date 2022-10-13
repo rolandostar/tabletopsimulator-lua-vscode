@@ -62,8 +62,8 @@ export default abstract class TTSAdapter extends vscode.Disposable {
       ),
       new vscode.Disposable(
         TTSAdapter._api.on('customMessage', async (e) => {
-          // Mostly unused, let's just print it for now
-          console.log('[TTSLua] Custom message from TTS:', e.customMessage);
+          // Mostly unused
+          // console.log('[TTSLua] Custom message from TTS:', e.customMessage);
         }),
       ),
       new vscode.Disposable(

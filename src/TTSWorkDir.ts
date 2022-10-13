@@ -124,7 +124,7 @@ export default abstract class TTSWorkDir {
   }
 
   private static createStatusBarItem() {
-    const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 0);
+    const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 1);
     const folder = vscode.workspace.getWorkspaceFolder(
       vscode.Uri.file(TTSWorkDir.workDirUri.fsPath),
     );
