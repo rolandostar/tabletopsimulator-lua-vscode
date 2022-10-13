@@ -2,7 +2,7 @@ import * as path from 'path';
 import * as os from 'os';
 
 import * as assert from 'assert';
-import {before} from 'mocha';
+import { before } from 'mocha';
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
 import * as vscode from 'vscode';
@@ -25,14 +25,14 @@ suite('Extension Test Suite', async () => {
       registeredCommands = await vscode.commands.getCommands(true);
     });
     const commandsToTest = [
-      {commandId: 'ttslua.forceAutocompleteUpdate'},
-      {commandId: 'ttslua.updateCompletionItems'},
-      {commandId: 'ttslua.addGlobalInclude'},
-      {commandId: 'ttslua.openConsole'},
-      {commandId: 'ttslua.installConsole'},
-      {commandId: 'ttslua.saveAndPlay'},
-      {commandId: 'ttslua.getScripts'},
-      {commandId: 'ttslua.executeLua'},
+      { commandId: 'ttslua.forceAutocompleteUpdate' },
+      { commandId: 'ttslua.updateCompletionItems' },
+      { commandId: 'ttslua.addGlobalInclude' },
+      { commandId: 'ttslua.openConsole' },
+      { commandId: 'ttslua.installConsole' },
+      { commandId: 'ttslua.saveAndPlay' },
+      { commandId: 'ttslua.getScripts' },
+      { commandId: 'ttslua.executeLua' },
     ];
 
     console.log('Starting Command Registration Tests');
@@ -47,13 +47,13 @@ suite('Extension Test Suite', async () => {
     test('docsFolder must be available', () => {
       assert.strictEqual(
         workspace.docsFolder,
-        path.join(os.homedir(), 'Documents', 'Tabletop Simulator')
+        path.join(os.homedir(), 'Documents', 'Tabletop Simulator'),
       );
     });
     test('default workFolder must point to temp location', () => {
       assert.strictEqual(
         TTSWorkDir.instance.getUri().fsPath.toUpperCase(),
-        path.join(os.tmpdir(), 'TabletopSimulatorLua').toUpperCase()
+        path.join(os.tmpdir(), 'TabletopSimulatorLua').toUpperCase(),
       );
     });
     test('Test adding a directory to the workspace', () => {
@@ -63,7 +63,7 @@ suite('Extension Test Suite', async () => {
       const wsFolders = vscode.workspace.workspaceFolders;
       assert.strictEqual(
         wsFolders?.[wsFolders.length - 1].uri.fsPath.toLowerCase(),
-        workspace.docsFolder.toLowerCase()
+        workspace.docsFolder.toLowerCase(),
       );
     });
     test('Install Console++', async function () {
@@ -84,10 +84,10 @@ suite('Extension Test Suite', async () => {
 
       // Check that Console++ does not exist
       const filesExistBefore = await Promise.allSettled(
-        files.map(file => vscode.workspace.fs.stat(vscode.Uri.file(file.dst)))
+        files.map((file) => vscode.workspace.fs.stat(vscode.Uri.file(file.dst))),
       );
 
-      filesExistBefore.forEach(file => {
+      filesExistBefore.forEach((file) => {
         // assert.strictEqual(file.status, 'rejected');
         // If the file exists, test is invalid and should be skipped.
         if (file.status === 'fulfilled') {
@@ -100,9 +100,9 @@ suite('Extension Test Suite', async () => {
       await workspace.installConsole(extension.extensionPath);
       // Check that Console++ was installed
       const filesExistAfter = await Promise.all(
-        files.map(file => vscode.workspace.fs.stat(vscode.Uri.file(file.dst)))
+        files.map((file) => vscode.workspace.fs.stat(vscode.Uri.file(file.dst))),
       );
-      assert.ok(filesExistAfter.every(file => file.type === vscode.FileType.File));
+      assert.ok(filesExistAfter.every((file) => file.type === vscode.FileType.File));
     });
   });
 });

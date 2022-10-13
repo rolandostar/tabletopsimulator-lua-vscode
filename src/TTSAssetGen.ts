@@ -1,15 +1,17 @@
 import * as vscode from 'vscode';
 import TTSWorkDir from './vscode/TTSWorkDir';
 // import {getApi} from '@microsoft/vscode-file-downloader-api';
+import TTS from '@matanlurey/tts-editor';
 import Downloader from 'nodejs-file-downloader';
 import path from 'path';
-import {FileHandler} from './vscode/workspace';
+import { FileHandler } from './vscode/workspace';
+// const {ExternalEditorApi} = require('@rolandostar/tts-editor');
 
 const URLPattern =
   /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/;
 
 const getGUID = () => {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0,
       v = c === 'x' ? r : (r & 0x3) | 0x8;
     return v.toString(16);
@@ -50,7 +52,7 @@ export async function downloadAssets() {
   }
   // Scan the savegame for assets, leave placeholders for after download
   const savedata = await TTSWorkDir.instance.readFile(saveName + '.json');
-  const toBeDownloaded: {url: string; placeholder: string}[] = [];
+  const toBeDownloaded: { url: string; placeholder: string }[] = [];
   const jsondata = JSON.parse(savedata.toString(), (key, value) => {
     // Check if value matches a URL
     if (typeof value !== 'string' || !value.match(URLPattern)) return value;
@@ -60,7 +62,7 @@ export async function downloadAssets() {
     // TODO: Configurable prefix
     const prefix = 'ttslua-';
     const placeholder = prefix + getGUID();
-    toBeDownloaded.push({url: value, placeholder});
+    toBeDownloaded.push({ url: value, placeholder });
     return placeholder;
   });
 
@@ -91,7 +93,7 @@ export async function downloadAssets() {
     filePath: string | null;
   };
   const downloadedFiles: PromiseSettledResult<DownloaderReport>[] = [];
-  for (const {url} of toBeDownloaded) {
+  for (const { url } of toBeDownloaded) {
     const dstDirectory = TTSWorkDir.instance.getFileUri('assets').fsPath;
     const dl = new Downloader({
       url,
@@ -100,9 +102,9 @@ export async function downloadAssets() {
       cloneFiles: false,
     });
     try {
-      downloadedFiles.push({status: 'fulfilled', value: await dl.download()});
+      downloadedFiles.push({ status: 'fulfilled', value: await dl.download() });
     } catch (error) {
-      downloadedFiles.push({status: 'rejected', reason: error});
+      downloadedFiles.push({ status: 'rejected', reason: error });
     }
   }
 
@@ -120,8 +122,8 @@ export async function downloadAssets() {
       stringdata = stringdata.replace(
         placeholder,
         `https://raw.githubusercontent.com/${user}/${repo}/${branch}/assets/${path.basename(
-          result.value.filePath!
-        )}`
+          result.value.filePath!,
+        )}`,
       );
     } else stringdata = stringdata.replace(placeholder, toBeDownloaded[index].url);
   }
@@ -140,4 +142,11 @@ export async function downloadAssets() {
   //     {overwrite: true}
   //   );
   // }
+}
+
+export async function expander() {
+  // Copy Save to a new file
+  const api = new TTS();
+  const something = await api.executeLuaCodeAndReturn('return "HelloWorld"');
+  console.log(something);
 }

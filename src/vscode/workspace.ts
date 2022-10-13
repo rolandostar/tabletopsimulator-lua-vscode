@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import * as os from 'os';
 import * as path from 'path';
-import {glob} from 'glob';
-import {TextEncoder} from 'util';
+import { glob } from 'glob';
+import { TextEncoder } from 'util';
 
 import TTSWorkDir from './TTSWorkDir';
 
@@ -12,7 +12,7 @@ export function isPresent(dirUri: vscode.Uri) {
   const vsFolders = vscode.workspace.workspaceFolders;
   // If there are no folders in the workspace,
   // OR the requested dir in the workspace do not match any vscode folders path...
-  return vsFolders && vsFolders.findIndex(vsDir => vsDir.uri.fsPath === dirUri.fsPath) !== -1;
+  return vsFolders && vsFolders.findIndex((vsDir) => vsDir.uri.fsPath === dirUri.fsPath) !== -1;
 }
 
 /**
@@ -24,7 +24,10 @@ export function addDir2WS(dir: string, name?: string) {
   // Check if the folder is already present
   if (!isPresent(vscode.Uri.file(dir))) {
     // ...If not add it to the workspace
-    vscode.workspace.updateWorkspaceFolders(vsFolders?.length ?? 0, null, {uri, name});
+    vscode.workspace.updateWorkspaceFolders(vsFolders?.length ?? 0, null, {
+      uri,
+      name,
+    });
   }
 }
 
@@ -40,7 +43,7 @@ export function syncFiles(filesRecv: FileHandler[]) {
   if (
     TTSWorkDir.instance.isDefault() && // If it's default Workdir
     !vscode.workspace.getConfiguration('ttslua.misc').get('disableDirectoryWarning') && // The user didn't disable the warning
-    glob.sync('*/', {cwd: TTSWorkDir.instance.getUri().fsPath}).length > 0 // And there are dirs
+    glob.sync('*/', { cwd: TTSWorkDir.instance.getUri().fsPath }).length > 0 // And there are dirs
   ) {
     vscode.window
       .showWarningMessage(
@@ -51,33 +54,33 @@ export function syncFiles(filesRecv: FileHandler[]) {
             "It's recommended to store require'd files from an external folder instead.\n\nThis warning can be disabled under the extension settings.",
         },
         'Open Settings',
-        'Learn More'
+        'Learn More',
       )
-      .then(res => {
+      .then((res) => {
         if (res === 'Open Settings')
           vscode.commands.executeCommand(
             'workbench.action.openSettings',
-            'TTSLua: Disable Directory Warning'
+            'TTSLua: Disable Directory Warning',
           );
         else if (res === 'Learn More')
           vscode.env.openExternal(
-            vscode.Uri.parse('https://tts-vscode.rolandostar.com/support/dirWarning')
+            vscode.Uri.parse('https://tts-vscode.rolandostar.com/support/dirWarning'),
           );
       });
     return;
   }
   // Remove lua files non-recusive not marked as received from the workFolder.
   // This is to remove files that were deleted from the game.
-  const filesRecvNames = filesRecv.map(h => h.filename);
+  const filesRecvNames = filesRecv.map((h) => h.filename);
   return Promise.all(
     glob
-      .sync('*.lua', {cwd: TTSWorkDir.instance.getUri().fsPath, nodir: true})
-      .filter(file => !filesRecvNames.includes(file))
-      .map(file =>
+      .sync('*.lua', { cwd: TTSWorkDir.instance.getUri().fsPath, nodir: true })
+      .filter((file) => !filesRecvNames.includes(file))
+      .map((file) =>
         vscode.workspace.fs.delete(
-          vscode.Uri.file(path.join(TTSWorkDir.instance.getUri().fsPath, file))
-        )
-      )
+          vscode.Uri.file(path.join(TTSWorkDir.instance.getUri().fsPath, file)),
+        ),
+      ),
   );
 }
 
@@ -102,16 +105,16 @@ export function installConsole(extensionPath: string) {
     },
   ];
   return Promise.all(
-    files.map(file =>
+    files.map((file) =>
       vscode.workspace.fs.copy(vscode.Uri.file(file.src), vscode.Uri.file(file.dst), {
         overwrite: true,
-      })
-    )
+      }),
+    ),
   )
     .then(() => {
       vscode.window.showInformationMessage('Console++ Installation Successful');
     })
-    .catch(reason => {
+    .catch((reason) => {
       vscode.window.showErrorMessage(`Console++ Installation Failed: ${reason}`);
     });
 }
@@ -130,15 +133,17 @@ export class FileHandler {
         .then(() =>
           vscode.workspace.fs
             .writeFile(this.FileUri, new TextEncoder().encode(text))
-            .then(resolve, reject)
+            .then(resolve, reject),
         );
     });
   }
 
-  public open(options?: {preserveFocus?: boolean; preview?: boolean}) {
-    const {preserveFocus = true, preview = false} = options ?? {};
+  public open(options?: { preserveFocus?: boolean; preview?: boolean }) {
+    const { preserveFocus = true, preview = false } = options ?? {};
     return new Promise((resolve, reject) => {
-      vscode.window.showTextDocument(this.FileUri, {preserveFocus, preview}).then(resolve, reject);
+      vscode.window
+        .showTextDocument(this.FileUri, { preserveFocus, preview })
+        .then(resolve, reject);
     });
   }
 

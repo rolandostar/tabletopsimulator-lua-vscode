@@ -1,4 +1,4 @@
-import {Memento} from 'vscode';
+import { Memento } from 'vscode';
 
 export default class LocalStorageService {
   public static storage: Memento | undefined;

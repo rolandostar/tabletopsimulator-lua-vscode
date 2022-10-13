@@ -1,35 +1,16 @@
 {
-    "extends": "./node_modules/gts/",
-    "overrides": [
-        {
-            "files": ["src/**/*.ts"],
-            "rules": {
-                "node/no-unpublished-import": "off",
-                "@typescript-eslint/no-explicit-any": ["error", { "ignoreRestArgs": true }]
-            }
-        }
-    ],
-    "root": true,
-    // "parser": "@typescript-eslint/parser",
-    // "parserOptions": {
-    //     "ecmaVersion": 6,
-    //     "sourceType": "module"
-    // },
-    // "plugins": [
-    //     "@typescript-eslint"
-    // ],
-    // "rules": {
-    //     "@typescript-eslint/naming-convention": "warn",
-    //     "@typescript-eslint/semi": "warn",
-    //     "curly": "warn",
-    //     "eqeqeq": "warn",
-    //     "no-throw-literal": "warn",
-    //     "semi": "off"
-    // },
-    "ignorePatterns": [
-        "out",
-        "dist",
-        "**/*.d.ts",
-        "**/*.js"
-    ]
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "extraFileExtensions": ["json"],
+    "sourceType": "module"
+  },
+  "env": {
+    "node": true
+  },
+  "extends": [
+    "plugin:json/recommended",
+    "plugin:@typescript-eslint/recommended",
+    "prettier"
+  ],
+  "plugins": ["import", "prettier", "@typescript-eslint"]
 }

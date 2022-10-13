@@ -1,19 +1,21 @@
-import * as vscode from 'vscode';
-import * as net from 'net';
 import * as fs from 'fs';
+import bundler from 'luabundle';
+import { resolveModule } from 'luabundle/bundle/process';
+import * as bundleErr from 'luabundle/errors';
+import * as net from 'net';
+import * as vscode from 'vscode';
 
 import path = require('path');
-import bundler from 'luabundle';
-import {resolveModule} from 'luabundle/bundle/process';
-import * as bundleErr from 'luabundle/errors';
 
-import * as ws from './vscode/workspace';
-import * as TTSTypes from './TTSTypes';
 import TTSConsolePanel from './TTSConsole';
-import TTSWorkDir from './vscode/TTSWorkDir';
+import * as TTSTypes from './TTSTypes';
 import LocalStorageService from './vscode/LocalStorageService';
+import TTSWorkDir from './vscode/TTSWorkDir';
+import * as ws from './vscode/workspace';
 
-type InGameObjectsList = {[key: string]: {name?: string; type?: string; iname?: string}};
+type InGameObjectsList = {
+  [key: string]: { name?: string; type?: string; iname?: string };
+};
 
 /**
  * Forms an array with directory paths where to look for files to be included
@@ -42,11 +44,11 @@ function getSearchPaths(searchPattern: string[]): string[] {
   //   : [];
 
   const paths = searchPattern
-    .filter(pattern => pattern.length > 0)
-    .map(pattern => [
+    .filter((pattern) => pattern.length > 0)
+    .map((pattern) => [
       path.join(ws.docsFolder, pattern),
-      ...includePaths.map(p => path.join(p, pattern)),
-      ...vsFolders.map(val => path.join(val.uri.fsPath, pattern)),
+      ...includePaths.map((p) => path.join(p, pattern)),
+      ...vsFolders.map((val) => path.join(val.uri.fsPath, pattern)),
       // ...workDirLocs.map(val => path.join(val, pattern)),
       pattern, // For absolute paths
     ])
@@ -78,7 +80,7 @@ export default class TTSAdapter extends vscode.Disposable {
   private _inGameObjects: InGameObjectsList = {};
   private _serverPort = 39998;
   private _server: net.Server;
-  private _lastSentScripts: {[key: string]: TTSTypes.ScriptState} = {};
+  private _lastSentScripts: { [key: string]: TTSTypes.ScriptState } = {};
   private _retIdCounter = 0;
 
   public static getInstance(): TTSAdapter {
@@ -91,9 +93,9 @@ export default class TTSAdapter extends vscode.Disposable {
    */
   constructor() {
     super(() => this.dispose());
-    this._server = net.createServer(socket => {
+    this._server = net.createServer((socket) => {
       const chunks: Buffer[] = [];
-      socket.on('data', data => chunks.push(data));
+      socket.on('data', (data) => chunks.push(data));
       socket.on('close', () => {
         this.handleMessage(JSON.parse(chunks.join('').toString()));
       });
@@ -107,7 +109,7 @@ export default class TTSAdapter extends vscode.Disposable {
    * @returns Promise of server running state
    */
   private isServerRunning(): Promise<boolean> {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       if (!this._server.listening)
         this._server
           .listen(this._serverPort, 'localhost')
@@ -119,7 +121,7 @@ export default class TTSAdapter extends vscode.Disposable {
                 {
                   modal: true,
                   detail: 'Please close the other instance and try again.',
-                }
+                },
               );
             else console.error(`[TTSLua] Server ${err}`);
             resolve(false);
@@ -133,7 +135,7 @@ export default class TTSAdapter extends vscode.Disposable {
    * @param object - Table to be sent to game
    */
   public customMessage(object: unknown) {
-    this.sendToTTS(TTSTypes.TxMsgType.CustomMessage, {customMessage: object});
+    this.sendToTTS(TTSTypes.TxMsgType.CustomMessage, { customMessage: object });
   }
 
   /**
@@ -152,7 +154,7 @@ export default class TTSAdapter extends vscode.Disposable {
       vscode.window.showErrorMessage(
         'The workspace does not contain the Tabletop Simulator folder.\n' +
           'Get Lua Scripts from game before trying to Save and Play.',
-        {modal: true}
+        { modal: true },
       );
       return;
     }
@@ -164,13 +166,13 @@ export default class TTSAdapter extends vscode.Disposable {
       files = await vscode.workspace.fs.readDirectory(TTSWorkDir.instance.getUri());
     } catch (reason: unknown) {
       vscode.window.showErrorMessage(
-        'Unable to read TTS Scripts directory.\n' + `Details: ${reason}`
+        'Unable to read TTS Scripts directory.\n' + `Details: ${reason}`,
       );
       return;
     }
 
     // An indexed array is used to backreference the guids when parsing the UI portion
-    const scripts: {[key: string]: TTSTypes.ScriptState} = {};
+    const scripts: { [key: string]: TTSTypes.ScriptState } = {};
     for (const [file] of files.filter(([file]) => file.endsWith('.lua'))) {
       const [name, guid] = file.split('.');
       const fileContents = (await TTSWorkDir.instance.readFile(file)).toString();
@@ -190,14 +192,14 @@ export default class TTSAdapter extends vscode.Disposable {
             .showErrorMessage(
               `Unable to find module "${err.moduleName}" from ${err.parentModuleName}<${err.line}:${err.column}>\n`,
               'Learn More',
-              'Enable Debug'
+              'Enable Debug',
             )
-            .then(selection => {
+            .then((selection) => {
               if (selection === 'Learn More')
                 vscode.env.openExternal(
                   vscode.Uri.parse(
-                    'https://tts-vscode.rolandostar.com/support/debuggingModuleResolution'
-                  )
+                    'https://tts-vscode.rolandostar.com/support/debuggingModuleResolution',
+                  ),
                 );
               else if (selection === 'Enable Debug') {
                 if (!vscode.workspace.getConfiguration('ttslua.misc').get('debugSearchPaths')) {
@@ -206,15 +208,15 @@ export default class TTSAdapter extends vscode.Disposable {
                     .update('debugSearchPaths', true, vscode.ConfigurationTarget.Global);
                   vscode.commands.executeCommand('workbench.action.toggleDevTools');
                   console.log(
-                    '[TTSLua] Search Paths debug enabled, this window will now output the search paths when attempting to resolve modules.'
+                    '[TTSLua] Search Paths debug enabled, this window will now output the search paths when attempting to resolve modules.',
                   );
                 } else {
                   vscode.window
                     .showInformationMessage(
                       'Search Paths debug is already enabled',
-                      'Toggle DevTools'
+                      'Toggle DevTools',
                     )
-                    .then(selection => {
+                    .then((selection) => {
                       if (selection === 'Toggle DevTools')
                         vscode.commands.executeCommand('workbench.action.toggleDevTools');
                     });
@@ -226,7 +228,7 @@ export default class TTSAdapter extends vscode.Disposable {
           const e = err as unknown as TTSTypes.BundleSyntaxError;
           const option = await vscode.window.showErrorMessage(
             `Syntax Error in ${file}${err.message}`,
-            'Go to Error'
+            'Go to Error',
           );
           if (!option) return;
           await vscode.window.showTextDocument(TTSWorkDir.instance.getFileUri(file)),
@@ -257,10 +259,10 @@ export default class TTSAdapter extends vscode.Disposable {
     if (scripts['-1'] === undefined || scripts['-1'].script === '') {
       vscode.window
         .showErrorMessage('Global Script must not be empty', 'Learn More')
-        .then(selection => {
+        .then((selection) => {
           if (selection === 'Learn More')
             vscode.env.openExternal(
-              vscode.Uri.parse('https://tts-vscode.rolandostar.com/support/globalScriptLock')
+              vscode.Uri.parse('https://tts-vscode.rolandostar.com/support/globalScriptLock'),
             );
         });
       return;
@@ -272,7 +274,7 @@ export default class TTSAdapter extends vscode.Disposable {
     });
     // Update status bar
     const statusBar = vscode.window.setStatusBarMessage(
-      `$(cloud-upload) Sent ${files.length} files`
+      `$(cloud-upload) Sent ${files.length} files`,
     );
     setTimeout(() => {
       statusBar.dispose();
@@ -296,7 +298,7 @@ export default class TTSAdapter extends vscode.Disposable {
         const ttsMessage = <TTSTypes.ObjectPushedMessage>rawMessage;
         ws.addWorkDirToWorkspace();
         // add guid to suggestion
-        this.readFilesFromTTS(ttsMessage.scriptStates, {single: true});
+        this.readFilesFromTTS(ttsMessage.scriptStates, { single: true });
         break;
       }
 
@@ -321,7 +323,7 @@ export default class TTSAdapter extends vscode.Disposable {
         TTSConsolePanel.currentPanel?.appendToPanel(ttsMessage.errorMessagePrefix, {
           class: 'callout error',
         });
-        this.goToTTSError(ttsMessage).catch(err => vscode.window.showErrorMessage(err.message));
+        this.goToTTSError(ttsMessage).catch((err) => vscode.window.showErrorMessage(err.message));
         break;
       }
 
@@ -372,7 +374,7 @@ export default class TTSAdapter extends vscode.Disposable {
             .copy(
               vscode.Uri.file(path.normalize(ttsMessage.savePath)),
               TTSWorkDir.instance.getFileUri(saveName + '.json'),
-              {overwrite: true}
+              { overwrite: true },
             )
             .then(() => {
               vscode.window.showInformationMessage('Game Saved');
@@ -398,7 +400,7 @@ export default class TTSAdapter extends vscode.Disposable {
    * @param message - Error Message received from TTS
    */
   private async goToTTSError(
-    message: TTSTypes.ErrorMessage
+    message: TTSTypes.ErrorMessage,
   ): Promise<vscode.TextEditor | undefined> {
     // Confirm that message.error exists
     // If the error is from Execute Lua or no pattern found, no button is needed
@@ -421,7 +423,7 @@ export default class TTSAdapter extends vscode.Disposable {
     if (!option) return; // Dismissed
     if (!this._lastSentScripts) {
       vscode.window.showErrorMessage(
-        'Unable to locate Error. Make sure you have sent scripts first with Save & Play'
+        'Unable to locate Error. Make sure you have sent scripts first with Save & Play',
       );
       return;
     }
@@ -450,7 +452,7 @@ export default class TTSAdapter extends vscode.Disposable {
               errorRange.start.line - mRange.start.line + 1,
               errorRange.start.character,
               errorRange.end.line - mRange.start.line + 1,
-              errorRange.end.character
+              errorRange.end.character,
             ),
           });
         }
@@ -461,7 +463,7 @@ export default class TTSAdapter extends vscode.Disposable {
       // file wasnt bundled, no complexity needed
       return vscode.window.showTextDocument(
         TTSWorkDir.instance.getFileUri(`${script.name}.${script.guid}.lua`),
-        {selection: errorRange}
+        { selection: errorRange },
       );
     }
   }
@@ -472,7 +474,7 @@ export default class TTSAdapter extends vscode.Disposable {
    */
   private async readFilesFromTTS(
     scriptStates: TTSTypes.ScriptState[],
-    options?: {single?: boolean}
+    options?: { single?: boolean },
   ) {
     // Read scriptStates, write them to files and determine which should be opened
     const filesRecv: ws.FileHandler[] = [];
@@ -496,8 +498,8 @@ export default class TTSAdapter extends vscode.Disposable {
           await xmlHandler.write(
             scriptState.ui?.replace(
               /(<!--\s+include\s+([^\s].*)\s+-->)[\s\S]+?\1/g,
-              (_matched, _open, src) => `<Include src="${src}"/>`
-            ) ?? ''
+              (_matched, _open, src) => `<Include src="${src}"/>`,
+            ) ?? '',
           );
           // if (scriptState.name === 'Global') globalHandlers.push(handler);
           filesRecv.push(xmlHandler);
@@ -509,7 +511,7 @@ export default class TTSAdapter extends vscode.Disposable {
         try {
           // Then, attempt to unbundle
           const data = bundler.unbundleString(scriptState.script);
-          const {content} = data.modules[data.metadata.rootModuleName];
+          const { content } = data.modules[data.metadata.rootModuleName];
           // If unbundle was successful, overwrite the file with the unbundled content
           if (content !== '') await luaHandler.write(content);
         } catch (err: unknown) {
@@ -529,19 +531,19 @@ export default class TTSAdapter extends vscode.Disposable {
       await ws.syncFiles(filesRecv);
       switch (autoOpen) {
         case 'All':
-          filesRecv.forEach(handler => handler.open());
+          filesRecv.forEach((handler) => handler.open());
           break;
         case 'Global':
-          globalHandlers.forEach(handler => handler.open());
+          globalHandlers.forEach((handler) => handler.open());
           break;
         case 'None':
         default:
           break;
       }
-    } else filesRecv[0].open({preview: true});
+    } else filesRecv[0].open({ preview: true });
 
     const statusBar = vscode.window.setStatusBarMessage(
-      `$(cloud-download) Received ${Object.keys(filesRecv).length} scripts from TTS`
+      `$(cloud-download) Received ${Object.keys(filesRecv).length} scripts from TTS`,
     );
     setTimeout(() => statusBar.dispose(), 1500);
   }
@@ -555,7 +557,7 @@ export default class TTSAdapter extends vscode.Disposable {
     if (await !this.isServerRunning()) return;
     const statusBar = vscode.window.setStatusBarMessage('$(sync~spin) Connecting to TTS');
     const client = net.connect(39999, 'localhost', () => {
-      client.write(JSON.stringify({messageID, ...object}));
+      client.write(JSON.stringify({ messageID, ...object }));
       statusBar.dispose();
       client.destroy();
     });
@@ -565,7 +567,7 @@ export default class TTSAdapter extends vscode.Disposable {
         vscode.window.showErrorMessage(
           'Unable to connect to Tabletop Simulator.\n\n' +
             'Check that the game is running and a save has been loaded.',
-          {modal: true}
+          { modal: true },
         );
       } else console.error(`[TTSLua] Net Client ${err}`);
     });
@@ -589,7 +591,11 @@ export default class TTSAdapter extends vscode.Disposable {
       return;
     }
     // Send to TTS
-    this.sendToTTS(TTSTypes.TxMsgType.ExecuteLua, {script, guid, returnID: this._retIdCounter++});
+    this.sendToTTS(TTSTypes.TxMsgType.ExecuteLua, {
+      script,
+      guid,
+      returnID: this._retIdCounter++,
+    });
   }
 
   getInGameObjects() {
@@ -603,7 +609,7 @@ export default class TTSAdapter extends vscode.Disposable {
    */
   private static async insertXmlFiles(
     text: string | Uint8Array,
-    alreadyInserted: string[] = []
+    alreadyInserted: string[] = [],
   ): Promise<string> {
     if (typeof text !== 'string') text = Buffer.from(text).toString('utf-8');
     const pattern = /(^|\n)([\s]*)(.*)<Include\s+src=('|")(.+)\4\s*\/>/;
@@ -612,7 +618,7 @@ export default class TTSAdapter extends vscode.Disposable {
     // First we extract comments and leave a placeholder, so we don't try to parse them
     // Remember to store them for reinsertion later
     const comments: string[] = [];
-    text = text.replace(/<!--[\s\S]*?-->/g, comment => {
+    text = text.replace(/<!--[\s\S]*?-->/g, (comment) => {
       comments.push(comment);
       return `<!--${nonce}:${comments.length - 1}-->`;
     });
@@ -649,7 +655,7 @@ export default class TTSAdapter extends vscode.Disposable {
             // If the file has already been inserted, skip it
             if (alreadyInserted.includes(lookupPath)) {
               vscode.window.showErrorMessage(
-                `Cyclical include detected. ${insertPath} was previously included`
+                `Cyclical include detected. ${insertPath} was previously included`,
               );
               lines[index] = line.replace(pattern, prefix);
               break;
@@ -660,13 +666,13 @@ export default class TTSAdapter extends vscode.Disposable {
             const content = newText.replace('\n', `\n${indent}`);
             lines[index] = line.replace(
               pattern,
-              `${prefix + marker}\n${indent}${content}\n${indent}${marker}`
+              `${prefix + marker}\n${indent}${content}\n${indent}${marker}`,
             );
             break;
           }
           // Went through all possible paths but no return yet. Inform of error
           vscode.window.showErrorMessage(
-            `Could not catalog <Include /> - file not found: ${insertPath}`
+            `Could not catalog <Include /> - file not found: ${insertPath}`,
           );
           lines[index] = line.replace(pattern, `${prefix + marker}\n${indent}${marker}`);
         }

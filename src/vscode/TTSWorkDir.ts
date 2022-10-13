@@ -9,23 +9,23 @@ const defaultWorkDir = path.join(os.tmpdir(), 'TabletopSimulatorLua');
 function getGitDirs() {
   const vsFolders = vscode.workspace.workspaceFolders || [];
   return Promise.allSettled(
-    vsFolders.map(folder =>
-      vscode.workspace.fs.stat(vscode.Uri.file(path.join(folder.uri.fsPath, '.git')))
-    ) ?? []
-  ).then(settledArray =>
+    vsFolders.map((folder) =>
+      vscode.workspace.fs.stat(vscode.Uri.file(path.join(folder.uri.fsPath, '.git'))),
+    ) ?? [],
+  ).then((settledArray) =>
     settledArray.reduce((acc, cur, idx) => {
       if (cur.status === 'fulfilled') {
         acc.push(vsFolders[idx]);
       }
       return acc;
-    }, [] as vscode.WorkspaceFolder[])
+    }, [] as vscode.WorkspaceFolder[]),
   );
 }
 
 export default class TTSWorkDir {
   public static instance: TTSWorkDir;
   private workDirUri: vscode.Uri = vscode.Uri.file(
-    LocalStorageService.getOrSet('workDir', defaultWorkDir)
+    LocalStorageService.getOrSet('workDir', defaultWorkDir),
   );
   private sItem: vscode.StatusBarItem = this.createStatusBarItem();
 
@@ -35,7 +35,7 @@ export default class TTSWorkDir {
     if (
       !this.isDefault() &&
       !vscode.workspace.workspaceFolders?.some(
-        folder => folder.uri.fsPath === this.workDirUri.fsPath
+        (folder) => folder.uri.fsPath === this.workDirUri.fsPath,
       )
     )
       this.reset();
@@ -47,7 +47,7 @@ export default class TTSWorkDir {
         (reason: unknown) => {
           vscode.window.showErrorMessage(`Failed to create workspace folder: ${reason}`);
           throw new Error(`Failed to create workspace folder: ${reason}`);
-        }
+        },
       );
     }
 
@@ -73,20 +73,20 @@ export default class TTSWorkDir {
       }
       vscode.window
         .showErrorMessage('No git repositories found in workspace', 'Learn More')
-        .then(res => {
+        .then((res) => {
           if (res === 'Learn More')
             vscode.env.openExternal(
-              vscode.Uri.parse('https://tts-vscode.rolandostar.com/guides/versionControl')
+              vscode.Uri.parse('https://tts-vscode.rolandostar.com/guides/versionControl'),
             );
         });
       return;
     }
     // Prompt for which one to use
     const selection = await vscode.window.showQuickPick(
-      [...gitDirs.map(d => d.uri.fsPath), '$(refresh) Default'],
+      [...gitDirs.map((d) => d.uri.fsPath), '$(refresh) Default'],
       {
         placeHolder: 'Select new working directory to store TTS scripts',
-      }
+      },
     );
     // Handle Cancel
     if (selection === undefined) return;
@@ -133,7 +133,7 @@ export default class TTSWorkDir {
     }
     statusBarItem.command = 'ttslua.changeWorkDir';
     statusBarItem.tooltip = new vscode.MarkdownString(
-      'Click to select TTSLua working directory [[Learn More]](https://tts-vscode.rolandostar.com/guides/versionControl)'
+      'Click to select TTSLua working directory [[Learn More]](https://tts-vscode.rolandostar.com/guides/versionControl)',
     );
     // statusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
     // statusBarItem.color = new vscode.ThemeColor('statusBarItem.warningForeground');
@@ -146,7 +146,9 @@ export default class TTSWorkDir {
 
   public isDefault() {
     return (
-      this.workDirUri.fsPath.localeCompare(defaultWorkDir, undefined, {sensitivity: 'accent'}) === 0
+      this.workDirUri.fsPath.localeCompare(defaultWorkDir, undefined, {
+        sensitivity: 'accent',
+      }) === 0
     );
   }
 
@@ -158,7 +160,7 @@ export default class TTSWorkDir {
 
   public readFile(filename: string) {
     return vscode.workspace.fs.readFile(
-      vscode.Uri.file(path.join(this.workDirUri.fsPath, filename))
+      vscode.Uri.file(path.join(this.workDirUri.fsPath, filename)),
     );
   }
 

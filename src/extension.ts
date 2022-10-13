@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 // TTS-Specific Imports
-import TTSConsolePanel, {getWebviewOptions} from './TTSConsole';
+import TTSConsolePanel, { getWebviewOptions } from './TTSConsole';
 import TTSAdapter from './TTSAdapter';
 // Editor Imports
 import * as workspace from './vscode/workspace';
@@ -37,9 +37,15 @@ export async function activate(context: vscode.ExtensionContext) {
       id: 'ttslua.addGlobalInclude',
       fn: () => workspace.addDir2WS(workspace.docsFolder, 'TTS Global Include'),
     },
-    {id: 'ttslua.openConsole', fn: () => TTSConsolePanel.createOrShow(context.extensionUri)},
-    {id: 'ttslua.installConsole', fn: () => workspace.installConsole(context.extensionPath)},
-    {id: 'ttslua.saveAndPlay', fn: () => ttsAdapter.saveAndPlay()},
+    {
+      id: 'ttslua.openConsole',
+      fn: () => TTSConsolePanel.createOrShow(context.extensionUri),
+    },
+    {
+      id: 'ttslua.installConsole',
+      fn: () => workspace.installConsole(context.extensionPath),
+    },
+    { id: 'ttslua.saveAndPlay', fn: () => ttsAdapter.saveAndPlay() },
     {
       id: 'ttslua.getScripts',
       fn: () =>
@@ -47,25 +53,25 @@ export async function activate(context: vscode.ExtensionContext) {
           .showInformationMessage(
             'Get Lua Scripts from game?\n\n This will erase any changes that you have made since' +
               'the last Save & Play.',
-            {modal: true},
-            'Get Scripts'
+            { modal: true },
+            'Get Scripts',
           )
           .then((answer: 'Get Scripts' | undefined) => {
             if (answer === 'Get Scripts') ttsAdapter.getScripts();
           }),
     },
-    {id: 'ttslua.executeLua', fn: () => ttsAdapter.executeLua()},
-    {id: 'ttslua.changeWorkDir', fn: () => ttsWorkdir.changeWorkDir()},
-    {id: 'ttslua.downloadAssets', fn: () => TTSAssetGen.downloadAssets()},
+    { id: 'ttslua.executeLua', fn: () => ttsAdapter.executeLua() },
+    { id: 'ttslua.changeWorkDir', fn: () => ttsWorkdir.changeWorkDir() },
+    { id: 'ttslua.downloadAssets', fn: () => TTSAssetGen.expander() },
   ];
 
   context.subscriptions.push(
     // Register adapter disposables
     ttsAdapter,
     // Register all commands
-    ...commands.map(cmd => vscode.commands.registerCommand(cmd.id, cmd.fn, context)),
+    ...commands.map((cmd) => vscode.commands.registerCommand(cmd.id, cmd.fn, context)),
     // Register providers for completion and hover
-    vscode.languages.registerHoverProvider('lua', ttsHoverProvider)
+    vscode.languages.registerHoverProvider('lua', ttsHoverProvider),
   );
 
   // Get config and register providers accordingly
@@ -75,8 +81,8 @@ export async function activate(context: vscode.ExtensionContext) {
       vscode.languages.registerCompletionItemProvider(
         'lua',
         ttsLuaCompletionProvider,
-        ...['.', ':', '(', ')', ' ']
-      )
+        ...['.', ':', '(', ')', ' '],
+      ),
     );
   }
   if (autocompletion.get('xmlEnabled')) {
@@ -84,8 +90,8 @@ export async function activate(context: vscode.ExtensionContext) {
       vscode.languages.registerCompletionItemProvider(
         'xml',
         ttsXMLCompletionProvider,
-        ...['<', '/', ' ']
-      )
+        ...['<', '/', ' '],
+      ),
     );
   }
 
