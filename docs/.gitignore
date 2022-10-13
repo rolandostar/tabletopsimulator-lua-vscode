@@ -18,3 +18,7 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# other pkg managers
+pnpm-lock.yaml
+bun.lockb
