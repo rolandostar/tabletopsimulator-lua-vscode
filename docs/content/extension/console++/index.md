@@ -2,7 +2,7 @@
 
 This extension proves a quick and easy way to install Console++
 
-By default, the TTS Console++ Panel will only show messages and errors from TTS, to enable further interaction you need to install  [Console++](https://github.com/onelivesleft/Console) along with a modified version that enables `onExternalCommand` [More details here](/extension/onExternalCommand).
+By default, the TTS Console++ Panel will only show messages and errors from TTS, to enable further interaction you need to install [Console++](https://github.com/onelivesleft/Console) along with a modified version that enables `onExternalCommand` [More details here](/extension/onExternalCommand).
 
 Bring up the Command Palette (<kbd class="kbc-button-sm">Ctrl</kbd>+<kbd class="kbc-button-sm">Shift</kbd>+<kbd class="kbc-button-sm">P</kbd>) and look up: ​`>TTSLua: Install Console++`
 

@@ -29,4 +29,3 @@ If you have any suggestions feel free to contact me or submit a PR.
   <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7PK5YQ9HR3Z52"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button"/></a>
   <iframe src="https://github.com/sponsors/rolandostar/button" title="Sponsor rolandostar" height="35" width="116" style={{border: 0}}></iframe>
 </div>
-
