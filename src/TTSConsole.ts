@@ -49,10 +49,10 @@ export default class TTSConsolePanel {
       (message) => {
         switch (message.type) {
           case 'command':
-            TTSAdapter.getInstance().customMessage({ command: message.text });
+            TTSAdapter.customMessage({ command: message.text });
             break;
           case 'input':
-            TTSAdapter.getInstance().customMessage(
+            TTSAdapter.customMessage(
               this.commandMode ? { command: message.text } : { input: message.text },
             );
             break;

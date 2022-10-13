@@ -1,8 +1,8 @@
-import * as vscode from 'vscode';
-import * as path from 'path';
 import * as os from 'os';
+import * as path from 'path';
+import * as vscode from 'vscode';
 
-import LocalStorageService from './LocalStorageService';
+import LocalStorageService from './vscode/LocalStorageService';
 
 const defaultWorkDir = path.join(os.tmpdir(), 'TabletopSimulatorLua');
 
@@ -22,53 +22,49 @@ function getGitDirs() {
   );
 }
 
-export default class TTSWorkDir {
-  public static instance: TTSWorkDir;
-  private workDirUri: vscode.Uri = vscode.Uri.file(
-    LocalStorageService.getOrSet('workDir', defaultWorkDir),
-  );
-  private sItem: vscode.StatusBarItem = this.createStatusBarItem();
+export default abstract class TTSWorkDir {
+  private static workDirUri = vscode.Uri.file(defaultWorkDir);
+  private static sItem: vscode.StatusBarItem = TTSWorkDir.createStatusBarItem();
 
-  public constructor() {
+  public static init() {
+    TTSWorkDir.workDirUri = vscode.Uri.file(
+      LocalStorageService.getOrSet('workDir', defaultWorkDir),
+    );
     // Check if the workDir is currently opened in the workspace
     // If not, return to default
     if (
-      !this.isDefault() &&
       !vscode.workspace.workspaceFolders?.some(
-        (folder) => folder.uri.fsPath === this.workDirUri.fsPath,
+        (folder) => folder.uri.fsPath === TTSWorkDir.workDirUri.fsPath,
       )
     )
-      this.reset();
+      TTSWorkDir.reset();
 
     // Check if Temp folder exists, if not create it
-    if (this.isDefault()) {
-      vscode.workspace.fs.createDirectory(this.workDirUri).then(
-        () => {},
-        (reason: unknown) => {
+    if (TTSWorkDir.isDefault()) {
+      vscode.workspace.fs
+        .createDirectory(TTSWorkDir.workDirUri)
+        .then(undefined, (reason: unknown) => {
           vscode.window.showErrorMessage(`Failed to create workspace folder: ${reason}`);
           throw new Error(`Failed to create workspace folder: ${reason}`);
-        },
-      );
+        });
     }
 
     // Handle new workspaces
     vscode.workspace.onDidChangeWorkspaceFolders(() => {
-      this.updateStatusBarColors();
+      TTSWorkDir.updateStatusBarColors();
     });
-    this.updateStatusBarColors();
-
-    TTSWorkDir.instance = this;
+    TTSWorkDir.updateStatusBarColors();
   }
 
   // TODO: another command can export game assets to git format
 
-  public async changeWorkDir() {
+  public static async changeWorkDir() {
     // Check which of the folders in the workspace are git repos
     const gitDirs = await getGitDirs();
     if (gitDirs.length === 0) {
       // If there are no repos but the workDir is not default, reset it
-      if (!this.isDefault()) {
-        this.reset();
+      if (!TTSWorkDir.isDefault()) {
+        TTSWorkDir.reset();
         return;
       }
       vscode.window
@@ -92,41 +88,47 @@ export default class TTSWorkDir {
     if (selection === undefined) return;
     if (selection !== '$(refresh) Default') {
       // Any selection but default
-      const newWorkDir = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(selection))!;
+      const newWorkDir = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(selection));
+      if (newWorkDir === undefined) {
+        vscode.window.showErrorMessage('Failed to get workspace folder, please try again');
+        return;
+      }
       LocalStorageService.setValue('workDir', newWorkDir.uri.fsPath);
-      this.workDirUri = newWorkDir.uri;
-      this.sItem.text = `$(root-folder) TTS [${newWorkDir.name}]`;
-    } else this.reset();
-    this.updateStatusBarColors();
+      TTSWorkDir.workDirUri = newWorkDir.uri;
+      TTSWorkDir.sItem.text = `$(root-folder) TTS [${newWorkDir.name}]`;
+    } else TTSWorkDir.reset();
+    TTSWorkDir.updateStatusBarColors();
   }
 
-  private async updateStatusBarColors() {
+  private static async updateStatusBarColors() {
     // Color will be default when workDir has a git repo selected
     // Color will be error when there are git repos detected but none selected
     // Color will be warning when there are no git repos detected
 
     const gitRepos = await getGitDirs();
-    const isDefault = this.isDefault();
+    const isDefault = TTSWorkDir.isDefault();
     const repoDetected = gitRepos.length > 0;
     if (isDefault !== repoDetected) {
-      this.sItem.backgroundColor = new vscode.ThemeColor('statusBarItem.defaultBackground');
-      this.sItem.color = new vscode.ThemeColor('statusBarItem.defaultForeground');
+      TTSWorkDir.sItem.backgroundColor = new vscode.ThemeColor('statusBarItem.defaultBackground');
+      TTSWorkDir.sItem.color = new vscode.ThemeColor('statusBarItem.defaultForeground');
     } else {
       if (repoDetected) {
-        this.sItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
-        this.sItem.color = new vscode.ThemeColor('statusBarItem.warningForeground');
+        TTSWorkDir.sItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
+        TTSWorkDir.sItem.color = new vscode.ThemeColor('statusBarItem.warningForeground');
       } else {
-        this.sItem.backgroundColor = new vscode.ThemeColor('statusBarItem.errorBackground');
-        this.sItem.color = new vscode.ThemeColor('statusBarItem.errorForeground');
+        TTSWorkDir.sItem.backgroundColor = new vscode.ThemeColor('statusBarItem.errorBackground');
+        TTSWorkDir.sItem.color = new vscode.ThemeColor('statusBarItem.errorForeground');
       }
     }
-    this.sItem.show();
+    TTSWorkDir.sItem.show();
   }
 
-  private createStatusBarItem() {
+  private static createStatusBarItem() {
     const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 0);
-    const folder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(this.workDirUri.fsPath));
-    if (!this.isDefault() && folder) {
+    const folder = vscode.workspace.getWorkspaceFolder(
+      vscode.Uri.file(TTSWorkDir.workDirUri.fsPath),
+    );
+    if (!TTSWorkDir.isDefault() && folder) {
       statusBarItem.text = `$(root-folder) TTS [${folder.name}]`;
     } else {
       statusBarItem.text = '$(root-folder) TTS [Default]';
@@ -140,31 +142,31 @@ export default class TTSWorkDir {
     return statusBarItem;
   }
 
-  public getUri() {
-    return this.workDirUri;
+  public static getUri() {
+    return TTSWorkDir.workDirUri;
   }
 
-  public isDefault() {
+  public static isDefault() {
     return (
-      this.workDirUri.fsPath.localeCompare(defaultWorkDir, undefined, {
+      TTSWorkDir.workDirUri.fsPath.localeCompare(defaultWorkDir, undefined, {
         sensitivity: 'accent',
       }) === 0
     );
   }
 
-  public reset() {
-    this.workDirUri = vscode.Uri.file(defaultWorkDir);
-    LocalStorageService.setValue('workDir', this.workDirUri.fsPath);
-    this.sItem.text = '$(root-folder) TTS [Default]';
+  public static reset() {
+    TTSWorkDir.workDirUri = vscode.Uri.file(defaultWorkDir);
+    LocalStorageService.setValue('workDir', TTSWorkDir.workDirUri.fsPath);
+    TTSWorkDir.sItem.text = '$(root-folder) TTS [Default]';
   }
 
-  public readFile(filename: string) {
+  public static readFile(filename: string) {
     return vscode.workspace.fs.readFile(
-      vscode.Uri.file(path.join(this.workDirUri.fsPath, filename)),
+      vscode.Uri.file(path.join(TTSWorkDir.workDirUri.fsPath, filename)),
     );
   }
 
-  public getFileUri(filename: string) {
-    return vscode.Uri.file(path.join(this.workDirUri.fsPath, filename));
+  public static getFileUri(filename: string) {
+    return vscode.Uri.file(path.join(TTSWorkDir.workDirUri.fsPath, filename));
   }
 }

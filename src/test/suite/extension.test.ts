@@ -1,22 +1,26 @@
-import * as path from 'path';
 import * as os from 'os';
+import * as path from 'path';
 
 import * as assert from 'assert';
 import { before } from 'mocha';
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
 import * as vscode from 'vscode';
+import TTSWorkDir from '../../TTSWorkDir';
 import * as workspace from '../../vscode/workspace';
-import TTSWorkDir from '../..//vscode/TTSWorkDir';
 
 suite('Extension Test Suite', async () => {
-  let extension: vscode.Extension<unknown>;
+  let extension: vscode.Extension<unknown> | undefined;
+  let extensionContext: vscode.ExtensionContext;
 
-  before(async () => {
+  suiteSetup(async () => {
     // Make sure extension is activated
     await vscode.extensions.getExtension('draivin.hscopes')?.activate();
-    extension = await vscode.extensions.getExtension('rolandostar.tabletopsimulator-lua')!;
-    return extension?.activate();
+    extension = await vscode.extensions.getExtension('rolandostar.tabletopsimulator-lua');
+    extension?.activate();
+    extensionContext = (global as any).testExtensionContext;
+    // Set up workspace
+    // LocalStorageService.storage = extensionContext.globalState;
   });
 
   suite('Command Registration', () => {
@@ -52,7 +56,7 @@ suite('Extension Test Suite', async () => {
     });
     test('default workFolder must point to temp location', () => {
       assert.strictEqual(
-        TTSWorkDir.instance.getUri().fsPath.toUpperCase(),
+        TTSWorkDir.getUri().fsPath.toUpperCase(),
         path.join(os.tmpdir(), 'TabletopSimulatorLua').toUpperCase(),
       );
     });
@@ -67,6 +71,7 @@ suite('Extension Test Suite', async () => {
       );
     });
     test('Install Console++', async function () {
+      if (!extension) this.skip();
       const files = [
         {
           src: path.join(extension.extensionPath, 'scripts', 'Console', 'console.lua'),

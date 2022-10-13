@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import TTSWorkDir from './vscode/TTSWorkDir';
+import TTSWorkDir from './TTSWorkDir';
 // import {getApi} from '@microsoft/vscode-file-downloader-api';
 import TTS from '@matanlurey/tts-editor';
 import Downloader from 'nodejs-file-downloader';
@@ -20,7 +20,7 @@ const getGUID = () => {
 // TODO: Add progress bar
 export async function downloadAssets() {
   // Check that we are in a non default workdir
-  if (TTSWorkDir.instance.isDefault()) {
+  if (TTSWorkDir.isDefault()) {
     vscode.window.showErrorMessage('You must set a workspace folder before downloading assets');
     return;
   }
@@ -42,7 +42,7 @@ export async function downloadAssets() {
 
   // And the dir contains a savegame
   const saveName = vscode.workspace.getConfiguration('ttslua.fileManagement').get('saveName');
-  const saveUri = vscode.Uri.file(TTSWorkDir.instance.getUri().fsPath + '/' + saveName + '.json');
+  const saveUri = vscode.Uri.file(TTSWorkDir.getUri().fsPath + '/' + saveName + '.json');
   // stat teh file
   try {
     await vscode.workspace.fs.stat(saveUri);
@@ -51,7 +51,7 @@ export async function downloadAssets() {
     return;
   }
   // Scan the savegame for assets, leave placeholders for after download
-  const savedata = await TTSWorkDir.instance.readFile(saveName + '.json');
+  const savedata = await TTSWorkDir.readFile(saveName + '.json');
   const toBeDownloaded: { url: string; placeholder: string }[] = [];
   const jsondata = JSON.parse(savedata.toString(), (key, value) => {
     // Check if value matches a URL
@@ -94,7 +94,7 @@ export async function downloadAssets() {
   };
   const downloadedFiles: PromiseSettledResult<DownloaderReport>[] = [];
   for (const { url } of toBeDownloaded) {
-    const dstDirectory = TTSWorkDir.instance.getFileUri('assets').fsPath;
+    const dstDirectory = TTSWorkDir.getFileUri('assets').fsPath;
     const dl = new Downloader({
       url,
       maxAttempts: 5, //Default is 1.

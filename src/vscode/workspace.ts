@@ -1,10 +1,10 @@
-import * as vscode from 'vscode';
+import { glob } from 'glob';
 import * as os from 'os';
 import * as path from 'path';
-import { glob } from 'glob';
 import { TextEncoder } from 'util';
+import * as vscode from 'vscode';
 
-import TTSWorkDir from './TTSWorkDir';
+import TTSWorkDir from '../TTSWorkDir';
 
 export const docsFolder = path.join(os.homedir(), 'Documents', 'Tabletop Simulator');
 
@@ -32,7 +32,7 @@ export function addDir2WS(dir: string, name?: string) {
 }
 
 export function addWorkDirToWorkspace() {
-  addDir2WS(TTSWorkDir.instance.getUri().fsPath, 'In-Game Scripts');
+  addDir2WS(TTSWorkDir.getUri().fsPath, 'In-Game Scripts');
 }
 
 /**
@@ -41,9 +41,9 @@ export function addWorkDirToWorkspace() {
 export function syncFiles(filesRecv: FileHandler[]) {
   // If there are dirs, show warning
   if (
-    TTSWorkDir.instance.isDefault() && // If it's default Workdir
+    TTSWorkDir.isDefault() && // If it's default Workdir
     !vscode.workspace.getConfiguration('ttslua.misc').get('disableDirectoryWarning') && // The user didn't disable the warning
-    glob.sync('*/', { cwd: TTSWorkDir.instance.getUri().fsPath }).length > 0 // And there are dirs
+    glob.sync('*/', { cwd: TTSWorkDir.getUri().fsPath }).length > 0 // And there are dirs
   ) {
     vscode.window
       .showWarningMessage(
@@ -74,12 +74,10 @@ export function syncFiles(filesRecv: FileHandler[]) {
   const filesRecvNames = filesRecv.map((h) => h.filename);
   return Promise.all(
     glob
-      .sync('*.lua', { cwd: TTSWorkDir.instance.getUri().fsPath, nodir: true })
+      .sync('*.lua', { cwd: TTSWorkDir.getUri().fsPath, nodir: true })
       .filter((file) => !filesRecvNames.includes(file))
       .map((file) =>
-        vscode.workspace.fs.delete(
-          vscode.Uri.file(path.join(TTSWorkDir.instance.getUri().fsPath, file)),
-        ),
+        vscode.workspace.fs.delete(vscode.Uri.file(path.join(TTSWorkDir.getUri().fsPath, file))),
       ),
   );
 }
@@ -123,7 +121,7 @@ export class FileHandler {
   private FileUri: vscode.Uri;
 
   public constructor(public filename: string) {
-    this.FileUri = vscode.Uri.file(path.join(TTSWorkDir.instance.getUri().fsPath, filename));
+    this.FileUri = vscode.Uri.file(path.join(TTSWorkDir.getUri().fsPath, filename));
   }
 
   public write(text: string) {

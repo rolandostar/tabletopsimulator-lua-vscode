@@ -1,7 +1,8 @@
 import * as vscode from 'vscode';
 
-import type * as xml from './XMLTypes';
 import type * as hscopes from './hscopes';
+import XMLCompletionData from './XMLCompletionData.json';
+import type * as xml from './XMLTypes';
 
 export default class XMLCompletionProvider implements vscode.CompletionItemProvider {
   // Hyper Scopes is an external extension API used to return the scope inside a document
@@ -9,7 +10,7 @@ export default class XMLCompletionProvider implements vscode.CompletionItemProvi
   // https://marketplace.visualstudio.com/items?itemName=draivin.hscopes
   private _hsExt = vscode.extensions.getExtension<hscopes.HScopesAPI>('draivin.hscopes');
   private _hs: hscopes.HScopesAPI | undefined;
-  private XMLCompletionData: xml.IXMLCompletionData = require('./XMLCompletionData').default;
+  private XMLCompletionData: xml.IXMLCompletionData = XMLCompletionData;
 
   public async provideCompletionItems(
     document: vscode.TextDocument,

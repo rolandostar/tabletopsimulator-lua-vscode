@@ -1,15 +1,15 @@
-import * as vscode from 'vscode';
-import * as path from 'path';
-import * as os from 'os';
 import * as decaf from 'decaffeinate';
+import * as os from 'os';
+import * as path from 'path';
+import * as vscode from 'vscode';
 
-import { TextEncoder } from 'util';
 import axios, { AxiosError } from 'axios';
 import buildModule from 'require-module-from-string';
+import { TextEncoder } from 'util';
 
-import LocalStorageService from './LocalStorageService';
-import type * as hscopes from './hscopes';
 import TTSAdapter from '../TTSAdapter';
+import type * as hscopes from './hscopes';
+import LocalStorageService from './LocalStorageService';
 
 /* --- Section Categorization Logic ---
  * Standard autocompletes are built in a Map<sectionName, trigger> format. `trigger` will be the
@@ -576,7 +576,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
     // Add truly smart getObjectFromGUID which suggests GUIDs from the game
     if (isGetObjectFromGUID()) {
       // const guidCompletionItems: vscode.CompletionItem[] = CompletionProvider._guids.map(guid => {
-      const igObjs = TTSAdapter.getInstance().getInGameObjects();
+      const igObjs = TTSAdapter.getInGameObjects();
       const guidCompletionItems: vscode.CompletionItem[] = Object.keys(igObjs).map((guid) => {
         const obj = igObjs[guid];
         const name = obj.name || obj.iname || '';

@@ -1,23 +1,27 @@
 import * as vscode from 'vscode';
 // TTS-Specific Imports
 import TTSConsolePanel, { getWebviewOptions } from './TTSConsole';
-import TTSAdapter from './TTSAdapter';
 // Editor Imports
-import * as workspace from './vscode/workspace';
-import TTSLuaCompletionProvider from './vscode/LuaCompletionProvider';
-import TTSXMLCompletionProvider from './vscode/XMLCompletionProvider';
+import TTSAdapter from './TTSAdapter';
+import * as TTSAssetGen from './TTSAssetGen';
+import TTSWorkDir from './TTSWorkDir';
 import TTSHoverProvider from './vscode/HoverProvider';
 import LocalStorageService from './vscode/LocalStorageService';
-import TTSWorkDir from './vscode/TTSWorkDir';
-import * as TTSAssetGen from './TTSAssetGen';
+import TTSLuaCompletionProvider from './vscode/LuaCompletionProvider';
+import * as workspace from './vscode/workspace';
+import TTSXMLCompletionProvider from './vscode/XMLCompletionProvider';
 
 export async function activate(context: vscode.ExtensionContext) {
+  // Set context as a global as some tests depend on it
+  (global as any).testExtensionContext = context;
+
   console.log('[TTSLua] Tabletop Simulator Extension Load');
   // Set Storage Service to global context
   LocalStorageService.storage = context.globalState;
 
-  const ttsWorkdir = new TTSWorkDir();
-  const ttsAdapter = new TTSAdapter();
+  TTSWorkDir.init();
+  TTSAdapter.init();
+
   const ttsHoverProvider = new TTSHoverProvider();
   const ttsLuaCompletionProvider = new TTSLuaCompletionProvider();
   const ttsXMLCompletionProvider = new TTSXMLCompletionProvider();
@@ -45,7 +49,7 @@ export async function activate(context: vscode.ExtensionContext) {
       id: 'ttslua.installConsole',
       fn: () => workspace.installConsole(context.extensionPath),
     },
-    { id: 'ttslua.saveAndPlay', fn: () => ttsAdapter.saveAndPlay() },
+    { id: 'ttslua.saveAndPlay', fn: () => TTSAdapter.saveAndPlay() },
     {
       id: 'ttslua.getScripts',
       fn: () =>
@@ -57,17 +61,17 @@ export async function activate(context: vscode.ExtensionContext) {
             'Get Scripts',
           )
           .then((answer: 'Get Scripts' | undefined) => {
-            if (answer === 'Get Scripts') ttsAdapter.getScripts();
+            if (answer === 'Get Scripts') TTSAdapter.getScripts();
           }),
     },
-    { id: 'ttslua.executeLua', fn: () => ttsAdapter.executeLua() },
-    { id: 'ttslua.changeWorkDir', fn: () => ttsWorkdir.changeWorkDir() },
+    { id: 'ttslua.executeLua', fn: () => TTSAdapter.executeSelectedLua() },
+    { id: 'ttslua.changeWorkDir', fn: () => TTSWorkDir.changeWorkDir() },
     { id: 'ttslua.downloadAssets', fn: () => TTSAssetGen.expander() },
   ];
 
   context.subscriptions.push(
     // Register adapter disposables
-    ttsAdapter,
+    new vscode.Disposable(TTSAdapter.dispose),
     // Register all commands
     ...commands.map((cmd) => vscode.commands.registerCommand(cmd.id, cmd.fn, context)),
     // Register providers for completion and hover
