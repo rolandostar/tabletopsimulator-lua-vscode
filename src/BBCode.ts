@@ -1,18 +1,18 @@
-const {escape} = require('html-escaper');
+import { escape } from 'html-escaper';
 
 // REVIEW
 
 class Stack {
   private count: number;
 
-  private storage: {color: string; loc: number}[];
+  private storage: { color: string; loc: number }[];
 
   public constructor() {
     this.count = 0;
     this.storage = [];
   }
 
-  public push(value: {color: string; loc: number}) {
+  public push(value: { color: string; loc: number }) {
     this.storage[this.count] = value;
     this.count += 1;
   }
@@ -36,7 +36,7 @@ class BBCodeParser {
     replacement: string;
   }[] = [];
 
-  public constructor(codes: {[key: string]: string}) {
+  public constructor(codes: { [key: string]: string }) {
     this.codes = Object.keys(codes).map((regex: string) => ({
       regexp: new RegExp(regex, 'igm'),
       replacement: codes[regex],
@@ -65,7 +65,7 @@ export function parse(input: string) {
   while ((match = RegExp('\\[([a-fA-F|0-9]{6})\\]|\\[-\\]', 'im').exec(html)) !== null) {
     if (match[1]) {
       // Matched a color
-      stack.push({color: match[1], loc: match.index}); // Store color and pos
+      stack.push({ color: match[1], loc: match.index }); // Store color and pos
       // Remove it from string
       html = [html.slice(0, match.index), html.slice(match.index + 8)].join('');
     } else {

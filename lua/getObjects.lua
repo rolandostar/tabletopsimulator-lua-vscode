@@ -6,5 +6,5 @@ for k, v in pairs(getObjects()) do
       type=v.type,
     }
 end
-result = {type="guids", content=JSON.encode(objs)}
+result = {type="objectsList", data=JSON.encode(objs)}
 sendExternalMessage(result)
