@@ -1,6 +1,6 @@
 import { Memento } from 'vscode';
 
-export default abstract class LocalStorageService {
+export default class LocalStorageService {
   public static storage: Memento | undefined;
   public static getValue<T>(key: string): T | undefined {
     if (!LocalStorageService.storage) throw new Error('Storage not set');

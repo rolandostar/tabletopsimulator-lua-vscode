@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-export async function fileExists(uri: vscode.Uri) {
+export async function uriExists(uri: vscode.Uri) {
   try {
     await vscode.workspace.fs.stat(uri);
   } catch (err) {

@@ -80,3 +80,14 @@ export function handleMultipleInstances() {
     detail: 'Please close the other instance and try again.',
   });
 }
+
+export function handleEmptyGlobalScript() {
+  vscode.window
+    .showErrorMessage('Global Script must not be empty', 'Learn More')
+    .then((selection) => {
+      if (selection === 'Learn More')
+        vscode.env.openExternal(
+          vscode.Uri.parse('https://tts-vscode.rolandostar.com/support/globalScriptLock'),
+        );
+    });
+}

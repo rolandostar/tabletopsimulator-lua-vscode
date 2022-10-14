@@ -33,7 +33,9 @@
     "draivin.hscopes"
   ],
   "dependencies": {
+    "@matanlurey/tts-editor": "github:rolandostar/tts-editor#dist",
     "@matanlurey/tts-expander": "github:matanlurey/tts-expander#dist",
+    "@matanlurey/tts-save-files": "github:matanlurey/tts-save-format",
     "@vscode/codicons": "^0.0.32",
     "axios": "^1.1.2",
     "decaffeinate": "^8.1.3",

@@ -22,7 +22,7 @@ function getGitDirs() {
   );
 }
 
-export default abstract class TTSWorkDir {
+export default class TTSWorkDir {
   private static workDirUri = vscode.Uri.file(defaultWorkDir);
   private static sItem: vscode.StatusBarItem = TTSWorkDir.createStatusBarItem();
 
@@ -51,9 +51,9 @@ export default abstract class TTSWorkDir {
 
     // Update on new workspaces
     vscode.workspace.onDidChangeWorkspaceFolders(() => {
-      TTSWorkDir.updateStatusBarColors();
+      TTSWorkDir.updateStatusBar();
     });
-    TTSWorkDir.updateStatusBarColors();
+    TTSWorkDir.updateStatusBar();
   }
 
   // TODO: another command can export game assets to git format
@@ -97,16 +97,24 @@ export default abstract class TTSWorkDir {
       TTSWorkDir.workDirUri = newWorkDir.uri;
       TTSWorkDir.sItem.text = `$(root-folder) TTS [${newWorkDir.name}]`;
     } else TTSWorkDir.reset();
-    TTSWorkDir.updateStatusBarColors();
+    TTSWorkDir.updateStatusBar();
   }
 
-  private static async updateStatusBarColors() {
+  private static async updateStatusBar() {
     // Color will be default when workDir has a git repo selected
     // Color will be error when there are git repos detected but none selected
     // Color will be warning when there are no git repos detected
 
     const gitRepos = await getGitDirs();
     const isDefault = TTSWorkDir.isDefault();
+
+    const folder = vscode.workspace.getWorkspaceFolder(
+      vscode.Uri.file(TTSWorkDir.workDirUri.fsPath),
+    );
+
+    TTSWorkDir.sItem.text =
+      !isDefault && folder ? `$(root-folder) TTS [${folder.name}]` : '$(root-folder) TTS [Default]';
+
     const repoDetected = gitRepos.length > 0;
     if (isDefault !== repoDetected) {
       TTSWorkDir.sItem.backgroundColor = new vscode.ThemeColor('statusBarItem.defaultBackground');
@@ -125,20 +133,10 @@ export default abstract class TTSWorkDir {
 
   private static createStatusBarItem() {
     const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 1);
-    const folder = vscode.workspace.getWorkspaceFolder(
-      vscode.Uri.file(TTSWorkDir.workDirUri.fsPath),
-    );
-    if (!TTSWorkDir.isDefault() && folder) {
-      statusBarItem.text = `$(root-folder) TTS [${folder.name}]`;
-    } else {
-      statusBarItem.text = '$(root-folder) TTS [Default]';
-    }
     statusBarItem.command = 'ttslua.changeWorkDir';
     statusBarItem.tooltip = new vscode.MarkdownString(
       'Click to select TTSLua working directory [[Learn More]](https://tts-vscode.rolandostar.com/guides/versionControl)',
     );
-    // statusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
-    // statusBarItem.color = new vscode.ThemeColor('statusBarItem.warningForeground');
     return statusBarItem;
   }
 

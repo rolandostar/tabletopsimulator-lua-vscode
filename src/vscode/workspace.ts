@@ -6,6 +6,7 @@ import * as vscode from 'vscode';
 
 import TTSWorkDir from '../TTSWorkDir';
 import getConfig from '../utils/getConfig';
+import { uriExists } from '../utils/simpleStat';
 
 export const docsFolder = path.join(os.homedir(), 'Documents', 'Tabletop Simulator');
 
@@ -122,20 +123,27 @@ export function installConsole(extensionPath: string) {
 export class FileManager {
   private FileUri: vscode.Uri;
 
-  public constructor(public filename: string) {
-    this.FileUri = vscode.Uri.file(path.join(TTSWorkDir.getUri().fsPath, filename));
+  public constructor(public filename: string, fromWorkDir = true) {
+    this.FileUri = fromWorkDir
+      ? vscode.Uri.file(path.normalize(path.join(TTSWorkDir.getUri().fsPath, filename)))
+      : vscode.Uri.file(path.normalize(filename));
   }
 
-  public write(text: string) {
-    return new Promise<void>((resolve, reject) => {
-      vscode.workspace.fs
-        .createDirectory(vscode.Uri.file(path.dirname(this.FileUri.fsPath)))
-        .then(() =>
-          vscode.workspace.fs
-            .writeFile(this.FileUri, new TextEncoder().encode(text))
-            .then(resolve, reject),
-        );
-    });
+  public async write(text: string) {
+    // Check if path.dirname exists
+    const dir = vscode.Uri.file(path.dirname(this.FileUri.fsPath));
+    if (!(await uriExists(dir))) await vscode.workspace.fs.createDirectory(dir);
+    return vscode.workspace.fs.writeFile(this.FileUri, new TextEncoder().encode(text));
+  }
+
+  public async read() {
+    try {
+      const r = await vscode.workspace.fs.readFile(this.FileUri);
+      return r.toString();
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
   }
 
   public open(options?: { preserveFocus?: boolean; preview?: boolean }) {

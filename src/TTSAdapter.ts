@@ -1,5 +1,8 @@
 import { ErrorMessage, IncomingJsonObject, OutgoingJsonObject } from '@matanlurey/tts-editor';
+import { SplitIO } from '@matanlurey/tts-expander';
+import { SaveState } from '@matanlurey/tts-save-format/src/types';
 import * as fs from 'fs';
+import { glob } from 'glob';
 import bundler from 'luabundle';
 import { resolveModule } from 'luabundle/bundle/process';
 import * as bundleErr from 'luabundle/errors';
@@ -8,10 +11,10 @@ import * as vscode from 'vscode';
 import CustomExternalEditorApi from './CustomExternalEditorApi';
 import TTSConsolePanel from './TTSConsole';
 import TTSWorkDir from './TTSWorkDir';
-import { handleBundleError } from './utils/errorHandling';
+import { handleBundleError, handleEmptyGlobalScript } from './utils/errorHandling';
 import getConfig from './utils/getConfig';
 import { getLuaSearchPatterns, getSearchPaths } from './utils/searchPaths';
-import { fileExists } from './utils/simpleStat';
+import { uriExists } from './utils/simpleStat';
 import { quickStatus } from './utils/status';
 import { xtractGame } from './utils/xtractGame';
 import * as ws from './vscode/workspace';
@@ -24,7 +27,7 @@ type InGameObjectsList = {
 /**
  * TTS Adapter singleton
  */
-export default abstract class TTSAdapter extends vscode.Disposable {
+export default class TTSAdapter extends vscode.Disposable {
   public static api = new CustomExternalEditorApi();
   private static _inGameObjects: InGameObjectsList = {};
   private static _lastSentScripts: OutgoingJsonObjectWithName[] = [];
@@ -36,7 +39,11 @@ export default abstract class TTSAdapter extends vscode.Disposable {
         TTSAdapter.api.on('pushingNewObject', (e) => {
           ws.addWorkDirToWorkspace(); // Attempt to open workdir (if not already)
           // TTSAdapter will add the new object to the suggestion list and open it in the editor
-          TTSAdapter.writeFilesFromTTS(e.scriptStates, { single: true });
+          if (TTSWorkDir.isDefault())
+            TTSAdapter.writeFilesFromTTS(e.scriptStates, { single: true });
+          else {
+            // TODO: Different method of saving a single script to proper location
+          }
         }),
       ),
       new vscode.Disposable(
@@ -44,7 +51,9 @@ export default abstract class TTSAdapter extends vscode.Disposable {
           // Whenever a new game is loaded, we need to update the list of objects
           TTSAdapter.updateInGameObjectsList();
           ws.addWorkDirToWorkspace(); // Attempt to open workdir (if not already)
-          TTSAdapter.writeFilesFromTTS(e.scriptStates);
+          // Retrieve scripts from this data if not in a git workdir
+          // Because in a git workdir we get them from the save itself
+          if (TTSWorkDir.isDefault()) TTSAdapter.writeFilesFromTTS(e.scriptStates);
         }),
       ),
       new vscode.Disposable(
@@ -148,22 +157,17 @@ export default abstract class TTSAdapter extends vscode.Disposable {
       );
       return;
     }
-    // Save all files
-    await vscode.workspace.saveAll(false);
-
-    // Big If
+    /* This function collectScripts, will add objects to the list of OutgoingJsonObjects
+     * @param scriptFileNames: string[] - List of absolute script file names. All must end with '.lua'
+     */
     const objects: OutgoingJsonObjectWithName[] = [];
-    if (TTSWorkDir.isDefault()) {
-      // If the workdir is the default, we can just send the scripts
-      const wsFiles = await vscode.workspace.fs.readDirectory(workDirUri);
-      // Filter to only apply to FileType.File and file extension .lua
-      const scriptFiles = wsFiles
-        .filter((file) => file[1] === vscode.FileType.File && path.extname(file[0]) === '.lua')
-        .map((file) => file[0]);
-      for (const scriptFilename of scriptFiles) {
-        const [name, guid] = scriptFilename.split('.');
-        const obj: OutgoingJsonObject & { name: string } = { guid, name };
-        const scriptContent = (await TTSWorkDir.readFile(scriptFilename)).toString();
+    const collectScripts = async (scriptFileNames: string[]) => {
+      for (const scriptFilename of scriptFileNames) {
+        const { name: scriptNameGuid, dir: scriptDir } = path.parse(scriptFilename);
+        const [name, guid] = scriptNameGuid.split('.');
+        const obj: OutgoingJsonObjectWithName = { guid, name };
+        const scriptMger = new ws.FileManager(scriptFilename, false);
+        const scriptContent = await scriptMger.read();
         // Attempt to bundle the script
         try {
           obj.script = bundler.bundleString(scriptContent, {
@@ -174,10 +178,8 @@ export default abstract class TTSAdapter extends vscode.Disposable {
         }
         // Let's check for XML
         try {
-          const filetext = await TTSWorkDir.readFile(
-            `${path.basename(scriptFilename, '.lua')}.xml`,
-          );
-          obj.ui = await TTSAdapter.insertXmlFiles(filetext.toString());
+          const xmlMger = new ws.FileManager(path.join(scriptDir, `${scriptNameGuid}.xml`), false);
+          obj.ui = await TTSAdapter.insertXmlFiles(await xmlMger.read());
         } catch (err) {
           if ((err as vscode.FileSystemError).code !== 'FileNotFound') {
             vscode.window.showErrorMessage(
@@ -188,23 +190,63 @@ export default abstract class TTSAdapter extends vscode.Disposable {
         }
         objects.push(obj);
       }
+    };
 
-      // Validate empty global to avoid lockup
-      const globalObj = objects.find((obj) => obj.guid === '-1');
-      if (globalObj === undefined || globalObj.script === '') {
-        vscode.window
-          .showErrorMessage('Global Script must not be empty', 'Learn More')
-          .then((selection) => {
-            if (selection === 'Learn More')
-              vscode.env.openExternal(
-                vscode.Uri.parse('https://tts-vscode.rolandostar.com/support/globalScriptLock'),
-              );
-          });
-        return;
-      }
+    // Save all files
+    await vscode.workspace.saveAll(false);
+
+    // Big If
+    if (TTSWorkDir.isDefault()) {
+      // If the workdir is the default, we can just send the scripts
+      const wsFiles = await vscode.workspace.fs.readDirectory(workDirUri);
+      // Filter to only apply to FileType.File and file extension .lua
+      const scriptFiles = wsFiles
+        .filter((file) => file[1] === vscode.FileType.File && path.extname(file[0]) === '.lua')
+        .map((file) => vscode.Uri.joinPath(workDirUri, file[0]).fsPath);
+      await collectScripts(scriptFiles);
     } else {
-      // TODO: Git Workspace Save & Play Workflow
+      // Git Workspace Save & Play Workflow
+      // We don't know the save path, so we'll have to ask the game
+      const { savePath } = await TTSAdapter.api.getLuaScripts();
+      // Parse savePath to get save name
+      const save: SaveState = JSON.parse(
+        (await vscode.workspace.fs.readFile(vscode.Uri.file(savePath))).toString(),
+      );
+      // Consolitate workdir tree back to save json
+      const splitter = new SplitIO();
+      const saveFileJson = await splitter.readAndCollapse(
+        path.join(
+          TTSWorkDir.getFileUri(getConfig('fileManagement.git.output')).fsPath,
+          save.SaveName + '.json',
+        ),
+      );
+      // Write back to savePath
+      const saveMger = new ws.FileManager(savePath, false);
+      await saveMger.write(JSON.stringify(saveFileJson, null, 2));
+      // Now we need to reload the game, we have to send all objects through external editor API
+      // Parse the save we just wrote, to get the objects to be sent
+      const newSave = await splitter.readSaveAndSplit(savePath);
+      // First we add global
+      objects.push({
+        guid: '-1',
+        name: 'Global',
+        script: newSave.luaScript?.contents,
+        ui: newSave.xmlUi?.contents,
+      });
+      // Then we add all the other objects
+      await collectScripts(
+        glob.sync('**/*.lua', {
+          cwd: TTSWorkDir.getFileUri(
+            path.join(getConfig('fileManagement.git.output'), save.SaveName),
+          ).fsPath,
+          absolute: true,
+        }),
+      );
     }
+
+    // Validate empty global to avoid lockup
+    const globalObj = objects.find((obj) => obj.guid === '-1');
+    if (globalObj === undefined || globalObj.script === '') return handleEmptyGlobalScript();
 
     TTSAdapter._lastSentScripts = objects;
     // TODO: Open edit according to config here!
@@ -303,8 +345,7 @@ export default abstract class TTSAdapter extends vscode.Disposable {
   ) {
     // Read scriptStates, write them to files and determine which should be opened
     const filesRecvMgers: ws.FileManager[] = [];
-    // TTSAdapter would create a status bar with spinning icon, but it finishes too fast to see :(
-    /* let statusBar = wd.setStatusBarMessage('$(sync~spin) Receiving scripts'); */
+    const statusBar = vscode.window.setStatusBarMessage('$(sync~spin) Receiving scripts');
     for (const obj of objects) {
       // Sanitize script name
       obj.name = obj.name.replace(/([":<>/\\|?*])/g, '');
@@ -358,6 +399,7 @@ export default abstract class TTSAdapter extends vscode.Disposable {
       // If it's a single, open it in preview mode
       // Single will never carry UI so it's safe to assume the first and only manager is the lua one
     } else filesRecvMgers[0].open({ preview: true });
+    statusBar.dispose();
     quickStatus(`$(cloud-download) Received ${filesRecvMgers.length} scripts from TTS`);
   }
 
@@ -424,7 +466,7 @@ export default abstract class TTSAdapter extends vscode.Disposable {
         // Try to open each possible path, and insert the first one that works
         for (const lookupPath of possiblePaths) {
           // Check if the file exists before attempting to open it
-          if (!(await fileExists(vscode.Uri.file(lookupPath)))) continue;
+          if (!(await uriExists(vscode.Uri.file(lookupPath)))) continue;
           // try {
           //   await vscode.workspace.fs.stat(vscode.Uri.file(lookupPath));
           // } catch (err) {
