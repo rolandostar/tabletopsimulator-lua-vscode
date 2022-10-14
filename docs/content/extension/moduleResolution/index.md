@@ -14,9 +14,10 @@ The way this is accomplished is with a combination of the [includePaths](/) Conf
 
 Include paths are all the additional paths that the extension will search for files when resolving `require` or `<Include>` statements. The default value for this is `[]` which means that the extension does not search in any **additional** include paths.
 
-I'm highlighting the word **additional** because the extension will always search in the Documents Folder `~Documents/Tabletop Simulator` *and* every folder currently opened in the workspace. These are resolved according to this [ordered priority list](https://github.com/rolandostar/tabletopsimulator-lua-vscode/blob/main/src/TTSAdapter.ts#L44), stopping at the first match.
+I'm highlighting the word **additional** because the extension will always search in the Documents Folder `~Documents/Tabletop Simulator` _and_ every folder currently opened in the workspace. These are resolved according to this [ordered priority list](https://github.com/rolandostar/tabletopsimulator-lua-vscode/blob/main/src/TTSAdapter.ts#L44), stopping at the first match.
 
 Priority from highest to lowest:
+
 1. Documents Folder: `~/Documents/Tabletop Simulator`
 2. Folders described in `ttslua.fileManagement.includePaths` config
 3. Folders currently opened in the workspace
@@ -70,6 +71,7 @@ Let's add more files to the external folder, like so:
 ```
 
 This would mean that:
+
 - `require('bar')` will **still** resolves to `~/Documents/Tabletop Simulator/bar.lua`
 
 Even when the file is in a workspace folder, the extension will always prioritize the Documents Folder. This is because the Documents Folder is always available, and the workspace is not. As indicated by the ordered priority list above.
@@ -94,6 +96,7 @@ And it's corresponding file structure:
 ```
 
 This would mean that:
+
 - `require('bar')` **still** resolves to `~/Documents/Tabletop Simulator/bar.lua` (Docs folder has higher priority than include paths)
 - `require('baz')` resolves to `~/AnotherPath/myScripts/baz.lua` (include paths have higher priority than workspace folders)
 

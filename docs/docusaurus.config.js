@@ -26,9 +26,7 @@ const config = {
     defaultLocale: 'en',
     locales: ['en'],
   },
-  stylesheets: [
-    'https://unpkg.com/keyboard-css@1.2.4/dist/css/main.min.css'
-  ],
+  stylesheets: ['https://unpkg.com/keyboard-css@1.2.4/dist/css/main.min.css'],
   presets: [
     [
       'classic',
@@ -40,8 +38,7 @@ const config = {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/rolandostar/tabletopsimulator-lua-vscode/tree/main/docs',
+          editUrl: 'https://github.com/rolandostar/tabletopsimulator-lua-vscode/tree/main/docs',
           sidebarCollapsed: false,
           sidebarCollapsible: false,
         },
@@ -55,7 +52,7 @@ const config = {
 
   plugins: [
     [
-      require.resolve("@cmfcmf/docusaurus-search-local"),
+      require.resolve('@cmfcmf/docusaurus-search-local'),
       {
         indexBlog: false,
       },
@@ -65,6 +62,7 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
+      colorMode: {respectPrefersColorScheme: true},
       navbar: {
         title: 'TTS VSCode Docs',
         logo: {
@@ -86,7 +84,7 @@ const config = {
         links: [
           {
             href: 'https://github.com/rolandostar/tabletopsimulator-lua-vscode',
-            label: 'GitHub'
+            label: 'GitHub',
           },
           {
             label: 'Reddit',
