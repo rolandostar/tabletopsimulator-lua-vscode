@@ -29,7 +29,6 @@ $(document).ready(function () {
 })
 
 window.addEventListener('message', event => {
-  console.log(`Llego comando: ${event.data.command}`);
   if(event.data.command === 'append') {
       // If current scroll + height of the window + 100 pixel tolerance
       const wasAtBottom = $('#data').scrollTop() + $('#data').height() + 100 >= $('#data')[0].scrollHeight;

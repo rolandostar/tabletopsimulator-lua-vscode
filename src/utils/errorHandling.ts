@@ -1,7 +1,8 @@
 import * as bundleErr from 'luabundle/errors';
 import * as vscode from 'vscode';
 
-import TTSWorkDir from './TTSWorkDir';
+import TTSWorkDir from '../TTSWorkDir';
+import getConfig from './getConfig';
 
 type BundleSyntaxError = {
   line: number;
@@ -22,7 +23,7 @@ export async function handleBundleError(err: unknown, scriptFilename: string) {
         vscode.Uri.parse('https://tts-vscode.rolandostar.com/support/debuggingModuleResolution'),
       );
     else if (selection === 'Enable Debug') {
-      if (!vscode.workspace.getConfiguration('ttslua.misc').get('debugSearchPaths')) {
+      if (!getConfig<boolean>('ttslua.misc.debugSearchPaths')) {
         vscode.workspace
           .getConfiguration('ttslua.misc')
           .update('debugSearchPaths', true, vscode.ConfigurationTarget.Global);
@@ -55,4 +56,27 @@ export async function handleBundleError(err: unknown, scriptFilename: string) {
   }
   vscode.window.showErrorMessage(`${scriptFilename}:\n${err}`);
   return;
+}
+
+export function handleSavePathMissing() {
+  vscode.window.showErrorMessage(
+    'Unable to connect to Tabletop Simulator.\n\n' +
+      'If the game is running try to reload the save as a workaround.',
+    { modal: true },
+  );
+}
+
+export function handleGameNotRunning() {
+  vscode.window.showErrorMessage(
+    'Unable to connect to Tabletop Simulator.\n\n' +
+      'Check that the game is running and a save has been loaded.',
+    { modal: true },
+  );
+}
+
+export function handleMultipleInstances() {
+  vscode.window.showErrorMessage('Another instance of TTSLua or Atom is already running', {
+    modal: true,
+    detail: 'Please close the other instance and try again.',
+  });
 }

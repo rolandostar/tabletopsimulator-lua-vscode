@@ -5,6 +5,7 @@ import TTSConsolePanel, { getWebviewOptions } from './TTSConsole';
 import TTSAdapter from './TTSAdapter';
 import * as TTSAssetGen from './TTSAssetGen';
 import TTSWorkDir from './TTSWorkDir';
+import getConfig from './utils/getConfig';
 import TTSHoverProvider from './vscode/HoverProvider';
 import LocalStorageService from './vscode/LocalStorageService';
 import TTSLuaCompletionProvider from './vscode/LuaCompletionProvider';
@@ -66,7 +67,7 @@ export async function activate(context: vscode.ExtensionContext) {
     },
     { id: 'ttslua.executeLua', fn: () => TTSAdapter.executeSelectedLua() },
     { id: 'ttslua.changeWorkDir', fn: () => TTSWorkDir.changeWorkDir() },
-    { id: 'ttslua.downloadAssets', fn: () => TTSAssetGen.expander() },
+    { id: 'ttslua.downloadAssets', fn: () => TTSAssetGen.downloadAssets() },
   ];
 
   context.subscriptions.push(
@@ -79,8 +80,7 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   // Get config and register providers accordingly
-  const autocompletion = vscode.workspace.getConfiguration('ttslua.autocompletion');
-  if (autocompletion.get('luaEnabled')) {
+  if (getConfig('autocompletion.luaEnabled')) {
     context.subscriptions.push(
       vscode.languages.registerCompletionItemProvider(
         'lua',
@@ -89,7 +89,7 @@ export async function activate(context: vscode.ExtensionContext) {
       ),
     );
   }
-  if (autocompletion.get('xmlEnabled')) {
+  if (getConfig('autocompletion.xmlEnabled')) {
     context.subscriptions.push(
       vscode.languages.registerCompletionItemProvider(
         'xml',

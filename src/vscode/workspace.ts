@@ -5,6 +5,7 @@ import { TextEncoder } from 'util';
 import * as vscode from 'vscode';
 
 import TTSWorkDir from '../TTSWorkDir';
+import getConfig from '../utils/getConfig';
 
 export const docsFolder = path.join(os.homedir(), 'Documents', 'Tabletop Simulator');
 
@@ -36,13 +37,15 @@ export function addWorkDirToWorkspace() {
 }
 
 /**
- * This method removes files from the workFolder which are not in the game
+ * Because getLuaScripts will only return a list of present objects with scripts...
+ * If a script is deleted, it won't be in the list.
+ * This will remove all lua files not present in the `filesRecv` list
  */
-export function syncFiles(filesRecv: FileHandler[]) {
+export function syncFiles(filesRecv: vscode.Uri[]) {
   // If there are dirs, show warning
   if (
     TTSWorkDir.isDefault() && // If it's default Workdir
-    !vscode.workspace.getConfiguration('ttslua.misc').get('disableDirectoryWarning') && // The user didn't disable the warning
+    !getConfig('misc.disableDirectoryWarning') && // The user didn't disable the warning
     glob.sync('*/', { cwd: TTSWorkDir.getUri().fsPath }).length > 0 // And there are dirs
   ) {
     vscode.window
@@ -69,9 +72,8 @@ export function syncFiles(filesRecv: FileHandler[]) {
       });
     return;
   }
-  // Remove lua files non-recusive not marked as received from the workFolder.
-  // This is to remove files that were deleted from the game.
-  const filesRecvNames = filesRecv.map((h) => h.filename);
+  const filesRecvNames = filesRecv.map((h) => path.basename(h.fsPath));
+  //TODO: multi-extension support
   return Promise.all(
     glob
       .sync('*.lua', { cwd: TTSWorkDir.getUri().fsPath, nodir: true })
@@ -117,7 +119,7 @@ export function installConsole(extensionPath: string) {
     });
 }
 
-export class FileHandler {
+export class FileManager {
   private FileUri: vscode.Uri;
 
   public constructor(public filename: string) {

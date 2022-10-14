@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 
 import * as BBCode from './BBCode';
 import TTSAdapter from './TTSAdapter';
+import getConfig from './utils/getConfig';
 
 export default class TTSConsolePanel {
   public static currentPanel: TTSConsolePanel | undefined;
@@ -49,10 +50,10 @@ export default class TTSConsolePanel {
       (message) => {
         switch (message.type) {
           case 'command':
-            TTSAdapter.customMessage({ command: message.text });
+            TTSAdapter.api.customMessage({ command: message.text });
             break;
           case 'input':
-            TTSAdapter.customMessage(
+            TTSAdapter.api.customMessage(
               this.commandMode ? { command: message.text } : { input: message.text },
             );
             break;
@@ -87,7 +88,6 @@ export default class TTSConsolePanel {
   }
 
   public clearPanel() {
-    console.log('clearing panel');
     this._panel.webview.postMessage({ command: 'clear' });
   }
 
@@ -138,7 +138,6 @@ export default class TTSConsolePanel {
 
     // Use a nonce to only allow a specific script to be run.
     const nonce = getNonce();
-    const consoleConfig = vscode.workspace.getConfiguration('ttslua.console');
     return `<!DOCTYPE html>
           <html lang="en">
           <head>
@@ -160,9 +159,9 @@ export default class TTSConsolePanel {
               
               <style>
               :root {
-                --ttslua-console-font-family: ${consoleConfig.get('fontFamily') as string};
-                --ttslua-console-font-size: ${consoleConfig.get('fontSize') as number}px;
-                --ttslua-console-input-height: ${consoleConfig.get('inputHeight') as number}px;
+                --ttslua-console-font-family: ${getConfig<number>('ttslua.console.fontFamily')};
+                --ttslua-console-font-size: ${getConfig<number>('ttslua.console.fontSize')}px;
+                --ttslua-console-input-height: ${getConfig<number>('ttslua.console.inputHeight')}px;
               }
               </style>
               <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -190,7 +189,7 @@ export default class TTSConsolePanel {
               id="mainScript"
               type="module"
               src="${scriptUri}"
-              clearOnFocus="${consoleConfig.get('clearOnFocus')}">
+              clearOnFocus="${getConfig('console.clearOnFocus')}">
             />
           </body>
           </html>`;

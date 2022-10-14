@@ -49,7 +49,7 @@ export default abstract class TTSWorkDir {
         });
     }
 
-    // Handle new workspaces
+    // Update on new workspaces
     vscode.workspace.onDidChangeWorkspaceFolders(() => {
       TTSWorkDir.updateStatusBarColors();
     });

@@ -1,11 +1,10 @@
 import * as vscode from 'vscode';
 import TTSWorkDir from './TTSWorkDir';
 // import {getApi} from '@microsoft/vscode-file-downloader-api';
-import TTS from '@matanlurey/tts-editor';
 import Downloader from 'nodejs-file-downloader';
 import path from 'path';
-import { FileHandler } from './vscode/workspace';
-// const {ExternalEditorApi} = require('@rolandostar/tts-editor');
+import getConfig from './utils/getConfig';
+import { FileManager } from './vscode/workspace';
 
 const URLPattern =
   /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/;
@@ -41,7 +40,7 @@ export async function downloadAssets() {
   const [user, repo, branch] = repoUrl.split('/');
 
   // And the dir contains a savegame
-  const saveName = vscode.workspace.getConfiguration('ttslua.fileManagement').get('saveName');
+  const saveName = getConfig('fileManagement.saveName');
   const saveUri = vscode.Uri.file(TTSWorkDir.getUri().fsPath + '/' + saveName + '.json');
   // stat teh file
   try {
@@ -130,7 +129,7 @@ export async function downloadAssets() {
 
   // Save Jsondata back to the savegame
   console.log('Saving file');
-  const newSavegameFile = new FileHandler(saveName + '_github.json');
+  const newSavegameFile = new FileManager(saveName + '_github.json');
   await newSavegameFile.write(stringdata);
 
   // ⚠️ Send back to game folder ⚠️
@@ -144,9 +143,15 @@ export async function downloadAssets() {
   // }
 }
 
-export async function expander() {
-  // Copy Save to a new file
-  const api = new TTS();
-  const something = await api.executeLuaCodeAndReturn('return "HelloWorld"');
-  console.log(something);
-}
+// export async function xpand() {
+//   // Copy Save to a new file
+//   const { savePath } = await TTSAdapter.api.getLuaScripts();
+//   // TTSWorkDir.
+//   if (!savePath) {
+//     vscode.window.showErrorMessage('Could not find savegame');
+//     return;
+//   }
+//   const splitter = new SplitIO();
+//   const modTree = await splitter.readSaveAndSplit(savePath);
+//   await splitter.writeSplit(TTSWorkDir.getFileUri('output/').fsPath, modTree);
+// }

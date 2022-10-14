@@ -33,7 +33,6 @@
     "draivin.hscopes"
   ],
   "dependencies": {
-    "@matanlurey/tts-editor": "github:rolandostar/tts-editor#dist",
     "@matanlurey/tts-expander": "github:matanlurey/tts-expander#dist",
     "@vscode/codicons": "^0.0.32",
     "axios": "^1.1.2",
@@ -218,6 +217,18 @@
             "markdownDescription": "When using version control, how should the save file be named.\n\nExtension will always be `.json`",
             "type": "string",
             "default": "savegame"
+          },
+          "ttslua.fileManagement.git.enabled": {
+            "title": "Use git integration",
+            "markdownDescription": "Use git integration to parse savegame JSON into individual files.\n\n[Learn More](https://tts-vscode.rolandostar.com/extension/gitIntegration)",
+            "type": "boolean",
+            "default": true
+          },
+          "ttslua.fileManagement.git.output": {
+            "title": "Output directory for individual files",
+            "markdownDescription": "Use git integration to parse savegame JSON into individual files.\n\n[Learn More](https://tts-vscode.rolandostar.com/extension/gitIntegration)",
+            "type": "string",
+            "default": "/"
           }
         }
       },

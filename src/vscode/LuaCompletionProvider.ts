@@ -8,6 +8,7 @@ import buildModule from 'require-module-from-string';
 import { TextEncoder } from 'util';
 
 import TTSAdapter from '../TTSAdapter';
+import getConfig from '../utils/getConfig';
 import type * as hscopes from './hscopes';
 import LocalStorageService from './LocalStorageService';
 
@@ -501,9 +502,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
     if (line.includes('function') && line.trimEnd().endsWith(')')) {
       let funcName = currentToken.substring(0, currentToken.lastIndexOf('('));
       funcName = funcName.substring(funcName.lastIndexOf(' ') + 1);
-      funcName =
-        funcName +
-        vscode.workspace.getConfiguration('ttslua.autocompletion').get('coroutineSuffix');
+      funcName = funcName + getConfig('autocompletion.coroutineSuffix');
       completionItems.push(this._cDict['fend']);
       completionItems.push(
         ...[
