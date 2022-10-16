@@ -23,10 +23,10 @@ jobs:
           cache: npm
       - name: Install Dependencies
         run: npm install --frozen-lockfile
-      - name: Install prettier
-        run: npm install prettier
-      - name: Run prettier
+      - name: Lint Files
         run: npm run lint
+      - name: Build Documentation
+        run: npm run build
       - name: Upload Artifact
         uses: actions/upload-pages-artifact@v1
         with:

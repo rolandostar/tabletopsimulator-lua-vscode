@@ -17,7 +17,6 @@
     "source.organizeImports": true
   },
   "editor.formatOnSave": true,
-  "prettier.ignorePath": ".gitignore",
   "files.eol": "\n",
   "files.insertFinalNewline": true,
   "files.exclude": {
@@ -31,11 +30,7 @@
     "node_modules": true
   },
   // Linting.
-  "eslint.validate": [
-    "javascript",
-    "json",
-    "typescript"
-  ],
+  "eslint.validate": ["javascript", "json", "typescript"],
   "eslint.lintTask.enable": true,
   "editor.tabSize": 2,
   "editor.detectIndentation": false,

@@ -21,8 +21,8 @@
   "scripts": {
     "compile": "webpack --mode development",
     "watch": "webpack --mode development --watch",
-    "lint": "prettier --ignore-path .prettierignore --list-different src && eslint src --ext .ts ",
-    "lint:fix": "prettier --ignore-path .prettierignore --write src && eslint src --fix --ext .ts",
+    "lint": "prettier --check src/**/*.ts && eslint src/**/*.ts",
+    "lint:fix": "prettier --write src/**/*.ts && eslint --fix src/**/*.ts",
     "pretest": "npm run lint && npm run test-compile",
     "test-compile": "tsc --build --clean && tsc",
     "test": "node dist/test/runTest",

@@ -4,7 +4,7 @@
     "trailingComma": "all",
     "arrowParens": "avoid",
     "printWidth": 100,
-    "tabWidth": 4,
+    "tabWidth": 2,
     "endOfLine": "lf",
     "useTabs": false,
     "semi": true
