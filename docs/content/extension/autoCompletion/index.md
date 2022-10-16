@@ -18,6 +18,7 @@ The `[More Info]` link will redirect you to the official documentation for that 
 The extension also provides snippets for coroutines, so you can quickly create a coroutine and start it. The snippets are triggered after a function definition like so:
 
 ![Coroutines](coroutines.png)
+
 ### Require Snippets
 
 The extension also provides snippets for `require` statements, so you can quickly require a file. The snippets are triggered when you start writing a `require` statement like so:
@@ -29,6 +30,7 @@ The extension also provides snippets for `require` statements, so you can quickl
 There are 2 autocompletion items for `getObjectFromGUID` the first one takes a variable name as a parameter along with a suffix and the second will scan the current file for guids and suggest them as a completion items.
 
 #### Suffixed getObjectFromGUID:
+
 The first one is triggered by typing `getObjectFromGUID` on the right side of an assignment like so:
 
 ![GUID Suffix](guid_suffix.png)
@@ -36,10 +38,12 @@ The first one is triggered by typing `getObjectFromGUID` on the right side of an
 <!-- <callout type="info"> -->
 
 Suffix is configurable in the [extension settings](/extension/configuration)
+
 <!-- </callout> -->
 
 #### Scan getObjectFromGUID:
-Whereas the second one is triggered by triggering suggestions (<kbd class="kbc-button-sm">Ctrl</kbd>+<kbd class="kbc-button-sm">Space</kbd>) while inside the parenthesis of `getObjectFromGUID` 
+
+Whereas the second one is triggered by triggering suggestions (<kbd class="kbc-button-sm">Ctrl</kbd>+<kbd class="kbc-button-sm">Space</kbd>) while inside the parenthesis of `getObjectFromGUID`
 
 ![GUID Scan](guid_scan.png)
 
@@ -47,7 +51,7 @@ This one works by executing a custom [Lua function](https://github.com/rolandost
 
 ## XML
 
-XML Autocompletion is a lot simpler than Lua, the suggestions are loaded from [a data array](https://github.com/rolandostar/tabletopsimulator-lua-vscode/blob/main/src/vscode/XMLCompletionData.ts) created by hand, so it's not as accurate as the Lua autocompletion, but it should be enough to get you started. 
+XML Autocompletion is a lot simpler than Lua, the suggestions are loaded from [a data array](https://github.com/rolandostar/tabletopsimulator-lua-vscode/blob/main/src/vscode/XMLCompletionData.ts) created by hand, so it's not as accurate as the Lua autocompletion, but it should be enough to get you started.
 
 Tag autocompletion is available, so you can get a list of tags that are available at the current level. This is triggered by typing `<` and then pressing <kbd class="kbc-button-sm">Ctrl</kbd>+<kbd class="kbc-button-sm">Space</kbd>
 

@@ -1,15 +1,15 @@
-import * as vscode from 'vscode';
-import * as path from 'path';
-import * as os from 'os';
 import * as decaf from 'decaffeinate';
+import * as os from 'os';
+import * as path from 'path';
+import * as vscode from 'vscode';
 
-import {TextEncoder} from 'util';
-import axios, {AxiosError} from 'axios';
+import axios, { AxiosError } from 'axios';
 import buildModule from 'require-module-from-string';
+import { TextEncoder } from 'util';
 
-import LocalStorageService from '@/vscode/LocalStorageService';
-import type * as hscopes from '@/vscode/hscopes';
-import TTSAdapter from '@/TTSAdapter';
+import TTSAdapter from '../TTSAdapter';
+import type * as hscopes from './hscopes';
+import LocalStorageService from './LocalStorageService';
 
 /* --- Section Categorization Logic ---
  * Standard autocompletes are built in a Map<sectionName, trigger> format. `trigger` will be the
@@ -66,7 +66,7 @@ const extraSectionMatcher = [
   'globallyaccessibleconstantsfunctions',
 ];
 
-type SuggestionList = {[key: string]: Suggestion[]};
+type SuggestionList = { [key: string]: Suggestion[] };
 type SuggestionGenerator = (...args: any[]) => Suggestion[];
 
 interface Suggestion {
@@ -86,10 +86,10 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
   private _hs: hscopes.HScopesAPI | undefined;
 
   // Standard Sections are resolved by the `isSection` function and uses the SectionMatcher map
-  private _extraSectionCItems: {[key: string]: vscode.CompletionItem[]} = {};
-  private _stdSectionCItems: {[key: string]: vscode.CompletionItem[]} = {};
+  private _extraSectionCItems: { [key: string]: vscode.CompletionItem[] } = {};
+  private _stdSectionCItems: { [key: string]: vscode.CompletionItem[] } = {};
   // This is dictionary with simple completions that don't require any parsing
-  private _cDict: {[key: string]: vscode.CompletionItem} = {};
+  private _cDict: { [key: string]: vscode.CompletionItem } = {};
 
   constructor() {
     // Restore completion items from stored suggestions at init time
@@ -102,16 +102,28 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
     /* ----------------------------- Completion Dictionary Populate ----------------------------- */
     // This is precalculated at init time to avoid having to do it every time a completion is requested
     for (const item of [
-      {name: 'endsWithDo', label: 'do...end', snippet: 'do\n\t${0}\nend'},
-      {name: 'endsWithThen', label: 'then...end', snippet: 'then\n\t${0}\nend'},
-      {name: 'endsWithRepeat', label: 'repeat...until', snippet: 'repeat\n\t${1}\nuntil ${0}'},
-      {name: 'fend', label: 'function...end', snippet: '\n\t${0}\nend'},
-      {name: 'require', label: 'require("...")', snippet: 'require("${0}")'},
-      {name: 'rConsole', label: 'require("vscode/console")', snippet: 'require("vscode/console")'},
+      { name: 'endsWithDo', label: 'do...end', snippet: 'do\n\t${0}\nend' },
+      {
+        name: 'endsWithThen',
+        label: 'then...end',
+        snippet: 'then\n\t${0}\nend',
+      },
+      {
+        name: 'endsWithRepeat',
+        label: 'repeat...until',
+        snippet: 'repeat\n\t${1}\nuntil ${0}',
+      },
+      { name: 'fend', label: 'function...end', snippet: '\n\t${0}\nend' },
+      { name: 'require', label: 'require("...")', snippet: 'require("${0}")' },
+      {
+        name: 'rConsole',
+        label: 'require("vscode/console")',
+        snippet: 'require("vscode/console")',
+      },
     ]) {
       const completionItem = new vscode.CompletionItem(
         item.label,
-        vscode.CompletionItemKind.Snippet
+        vscode.CompletionItemKind.Snippet,
       );
       completionItem.insertText = new vscode.SnippetString(item.snippet);
       this._cDict[item.name] = completionItem;
@@ -131,7 +143,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
     const insertTextMatchPattern = /\${([0-9]+):([0-9a-zA-Z_]+)\|([0-9a-zA-Z_]+)}/g;
     Object.entries(suggestionList).forEach(([section, suggestionArray]) => {
       const convertSuggestion = (sArray: Suggestion[]) => {
-        return sArray.map(s => {
+        return sArray.map((s) => {
           // Null coalescing operator to handle non-matching values
           let displayText = s.displayText.match(/\b.*(?=\()|\b.*$/g);
           if (displayText === null) displayText = [s.displayText];
@@ -139,10 +151,10 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
           item.insertText = new vscode.SnippetString(
             // TODO: Implement replace types
             // https://github.com/OliPro007/vscode-tabletopsimulator-lua/blob/master/src/language/completion.ts#L308
-            s.snippet.replace(insertTextMatchPattern, '$${$1:$3}')
+            s.snippet.replace(insertTextMatchPattern, '$${$1:$3}'),
           );
           item.documentation = new vscode.MarkdownString(
-            `${s.description}\n\n[[More Info]](${s.descriptionMoreURL})\n\n*Section: ${section}*`
+            `${s.description}\n\n[[More Info]](${s.descriptionMoreURL})\n\n*Section: ${section}*`,
           );
           item.detail = s.leftLabel
             ? `(${s.type}) ${s.leftLabel} ${s.displayText}`
@@ -162,7 +174,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
 
     // Check for unhanded sections
     const unhandledSections = Object.keys(suggestionList).filter(
-      section => !extraSectionMatcher.includes(section) && !stdSectionMatcher.has(section)
+      (section) => !extraSectionMatcher.includes(section) && !stdSectionMatcher.has(section),
     );
     if (unhandledSections.length > 0) {
       console.warn('Unhandled sections: \n=> ' + unhandledSections.join('\n=> '));
@@ -170,22 +182,22 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
         .showWarningMessage(
           "Unhandled Sections for AutoComplete.\nPlease report this to the extension author if it hasn't already.",
           'Check Issue Tracker',
-          'Create Issue'
+          'Create Issue',
         )
-        .then(selection => {
+        .then((selection) => {
           switch (selection) {
             case 'Check Issue Tracker':
               vscode.env.openExternal(
                 vscode.Uri.parse(
-                  'https://github.com/rolandostar/tabletopsimulator-lua-vscode/issues?q=is%3Aissue+is%3Aopen+Unhandled+Sections+for+AutoComplete'
-                )
+                  'https://github.com/rolandostar/tabletopsimulator-lua-vscode/issues?q=is%3Aissue+is%3Aopen+Unhandled+Sections+for+AutoComplete',
+                ),
               );
               break;
             case 'Create Issue':
               vscode.env.openExternal(
                 vscode.Uri.parse(
-                  'https://github.com/rolandostar/tabletopsimulator-lua-vscode/issues/new?title=Unhandled%20Sections%20for%20AutoComplete&body=%2F%2F%20PLEASE%20DO%20NOT%20SUBMIT%20WITHOUT%20SEARCHING%20-%20Help%20me%20prevent%20duplicates.%0A%0ADetected%20Unhandled%20Sections%3A%20%5B%5D&assignee=rolandostar'
-                )
+                  'https://github.com/rolandostar/tabletopsimulator-lua-vscode/issues/new?title=Unhandled%20Sections%20for%20AutoComplete&body=%2F%2F%20PLEASE%20DO%20NOT%20SUBMIT%20WITHOUT%20SEARCHING%20-%20Help%20me%20prevent%20duplicates.%0A%0ADetected%20Unhandled%20Sections%3A%20%5B%5D&assignee=rolandostar',
+                ),
               );
               break;
           }
@@ -221,18 +233,18 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
         title: 'Updating API Intellisense',
         cancellable: false,
       },
-      async progress => {
+      async (progress) => {
         // Create an array of promises, each resolving when the corresponding section is done
         // This also allows for each section to be parsed in parallel
         // Being asyncronous also allows for the progress bar to update correctly 😊
-        await new Promise(resolve => setTimeout(resolve, 0)); // Force progress bar to show initially
-        const sgList: (void | {name: string; f: SuggestionGenerator})[] = await Promise.all(
-          splitted.map(section =>
+        await new Promise((resolve) => setTimeout(resolve, 0)); // Force progress bar to show initially
+        const sgList: (void | { name: string; f: SuggestionGenerator })[] = await Promise.all(
+          splitted.map((section) =>
             // We wrap the progress report function which will update the progress bar as done()
             LuaCompletionProvider._parseSection(section, () =>
-              progress.report({increment: incrementValue})
-            )
-          )
+              progress.report({ increment: incrementValue }),
+            ),
+          ),
         );
 
         /* ------------------------------------------------------------------------------------------ */
@@ -240,7 +252,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
         const suggestionList: SuggestionList = {};
         for (const sGenerator of sgList) {
           if (sGenerator === undefined) continue;
-          const {name, f} = sGenerator;
+          const { name, f } = sGenerator;
           if (name === 'defaultevents') suggestionList['defaultevents-global'] = f(true);
           else suggestionList[name] = f();
         }
@@ -259,8 +271,8 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
           message: ': Done!',
         });
         // Simple 300ms delay to make sure the progress bar is shown at 100% for a bit
-        return new Promise(resolve => setTimeout(resolve, 2300));
-      }
+        return new Promise((resolve) => setTimeout(resolve, 2300));
+      },
     );
   }
 
@@ -275,9 +287,9 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
     });
     // Download provider hash
     try {
-      const providerData: {sha: string; content: string} = (
+      const providerData: { sha: string; content: string } = (
         await axios.get(
-          'https://api.github.com/repos/Berserk-Games/atom-tabletopsimulator-lua/contents/lib/provider.coffee'
+          'https://api.github.com/repos/Berserk-Games/atom-tabletopsimulator-lua/contents/lib/provider.coffee',
         )
       ).data;
       // Compare
@@ -297,8 +309,8 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
 
   private static async _parseSection(
     section: string,
-    done: () => void
-  ): Promise<void | {name: string; f: SuggestionGenerator}> {
+    done: () => void,
+  ): Promise<void | { name: string; f: SuggestionGenerator }> {
     const sectionLines = section.split('\n');
     // Make sure array is not empty
     if (sectionLines.length === 0) return;
@@ -322,27 +334,27 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
       coffeeScript =
         'module.exports = (global_script) ->\n' +
         // Remove first 6 space characters to leave a 2 space indent for the function block
-        sectionLines.map(v => v.substring(6).replace('\r', '')).join('\n') +
+        sectionLines.map((v) => v.substring(6).replace('\r', '')).join('\n') +
         '\n  return suggestions';
     } else {
       // All other sections can be solved with an indent map
       // This map means, "Lines which start with...
       const indentMap = [
-        {pattern: /^[}{]/, indent: 1}, // opening/closing curly braces have lv1 indent
-        {pattern: /^'/, indent: 3}, // single quote has lv3 indent
-        {pattern: /^\]/, indent: 0}, // closing bracket has lv0 indent
-        {pattern: /^suggestions = \[/, indent: 0},
-        {pattern: /^[a-zA-Z]/, indent: 2}, // all other lines have lv2 indent
+        { pattern: /^[}{]/, indent: 1 }, // opening/closing curly braces have lv1 indent
+        { pattern: /^'/, indent: 3 }, // single quote has lv3 indent
+        { pattern: /^\]/, indent: 0 }, // closing bracket has lv0 indent
+        { pattern: /^suggestions = \[/, indent: 0 },
+        { pattern: /^[a-zA-Z]/, indent: 2 }, // all other lines have lv2 indent
       ];
 
       // Create new file with appropiate indentation levels
       coffeeScript =
         'module.exports = () ->\n' +
         sectionLines
-          .map(v => {
+          .map((v) => {
             let indent = 0;
             v = v.trimStart().replace('\r', '');
-            for (const {pattern, indent: newIndent} of indentMap) {
+            for (const { pattern, indent: newIndent } of indentMap) {
               if (pattern.test(v)) {
                 // We add +1 because everything is inside a getSuggestions function
                 indent = newIndent + 1;
@@ -361,9 +373,9 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
       .replace(/[^a-zA-Z0-9]/g, '')
       .toLowerCase();
     try {
-      const jsCode = decaf.convert(coffeeScript, {loose: true}).code;
+      const jsCode = decaf.convert(coffeeScript, { loose: true }).code;
       done();
-      return {name: sectionNameFmt, f: buildModule(jsCode, sectionNameFmt)};
+      return { name: sectionNameFmt, f: buildModule(jsCode, sectionNameFmt) };
     } catch (e) {
       if (e instanceof Error) {
         const coffeeFilePath = path.join(os.tmpdir(), sectionNameFmt + '.coffee');
@@ -371,7 +383,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
         console.error(e.message);
         await vscode.workspace.fs.writeFile(
           vscode.Uri.file(coffeeFilePath),
-          new TextEncoder().encode(coffeeScript)
+          new TextEncoder().encode(coffeeScript),
         );
         console.warn(`Debug File: ${coffeeFilePath}`);
       }
@@ -391,7 +403,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
     document: vscode.TextDocument,
     position: vscode.Position,
     _token: vscode.CancellationToken,
-    context: vscode.CompletionContext
+    context: vscode.CompletionContext,
   ): Promise<vscode.CompletionItem[] | vscode.CompletionList> {
     if (this._hsExt === undefined) throw new Error('Extension not initialized');
     if (this._hs === undefined) this._hs = await this._hsExt.activate();
@@ -409,7 +421,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
       'string.quoted.double.lua',
       'string.quoted.single.lua',
     ];
-    if (skippedScopes.some(v => token.scopes.includes(v))) return [];
+    if (skippedScopes.some((v) => token.scopes.includes(v))) return [];
     // Short circuit some common lua keywords
     if (line.match(/(^|\s)else$/) || line.match(/(^|\s)elseif$/) || line.match(/(^|\s)end$/))
       return [];
@@ -425,11 +437,11 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
     // Tokenize line, which pretty much means, split it into words avoiding depth and symbols
     const [currentToken = '', previousToken = '', previousToken2 = ''] = grammar
       .tokenizeLine(line, null)
-      .tokens.map(v => line.substring(v.startIndex, v.endIndex))
+      .tokens.map((v) => line.substring(v.startIndex, v.endIndex))
       // Revers to get tokens from closest to farthest from cursor
       .reverse()
       // Filter out strings ending with dot or where token are only spaces
-      .filter(v => !v.endsWith('.') && v.trim().length !== 0);
+      .filter((v) => !v.endsWith('.') && v.trim().length !== 0);
     const isCurrentTokenAlfanum = /^[a-zA-Z0-9_]+$/.test(currentToken);
 
     /* ---------------------------------- Function Definitions ---------------------------------- */
@@ -505,17 +517,17 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
             label: 'function...coroutine...repeat...end',
             snippet: `\n\tfunction ${funcName}()\n\t\trepeat\n\t\t\tcoroutine.yield(0)\n\t\tuntil \${1}\n\t\treturn 1\n\tend\n\tstartLuaCoroutine(self, '${funcName}')\nend`,
           },
-        ].map(v => {
+        ].map((v) => {
           const vci = new vscode.CompletionItem(v.label, vscode.CompletionItemKind.Snippet);
           vci.insertText = new vscode.SnippetString(v.snippet);
           return vci;
-        })
+        }),
       );
     }
     // Standard Sections
     // This is where the magic happens 🎇
     const findResult = Object.entries(this._stdSectionCItems).find(([n]) =>
-      isSection(stdSectionMatcher.get(n) || n)
+      isSection(stdSectionMatcher.get(n) || n),
     );
     if (findResult !== undefined) completionItems.push(...findResult[1]);
 
@@ -536,8 +548,8 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
     // Add labeled getObjectFromGUID after static getObjectFromGUID if appropriate
     if (previousToken.includes('=')) {
       // if 'getObjectFromGUID' is included in completionItems
-      const getObjectIndex = completionItems.findIndex(v =>
-        (v.insertText as vscode.SnippetString).value.startsWith('getObjectFromGUID')
+      const getObjectIndex = completionItems.findIndex((v) =>
+        (v.insertText as vscode.SnippetString).value.startsWith('getObjectFromGUID'),
       );
       if (getObjectIndex >= 0) {
         const id = line.match(/([^\s]+)\s*=[^=]*$/);
@@ -549,12 +561,12 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
             .get('guidSuffix') as string;
           // Deep Copy the completion item
           const smartGetObjectFromGUID: vscode.CompletionItem = Object.create(
-            completionItems[getObjectIndex]
+            completionItems[getObjectIndex],
           );
           // Replace the snippet with the new one
           smartGetObjectFromGUID.label = `getObjectFromGUID(->${cleanId}${guidSuffix})`;
           smartGetObjectFromGUID.insertText = new vscode.SnippetString(
-            `getObjectFromGUID($\{0:${cleanId}${guidSuffix}})`
+            `getObjectFromGUID($\{0:${cleanId}${guidSuffix}})`,
           );
           // Add the new completion item
           completionItems.splice(getObjectIndex, 0, smartGetObjectFromGUID);
@@ -564,13 +576,13 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
     // Add truly smart getObjectFromGUID which suggests GUIDs from the game
     if (isGetObjectFromGUID()) {
       // const guidCompletionItems: vscode.CompletionItem[] = CompletionProvider._guids.map(guid => {
-      const igObjs = TTSAdapter.getInstance().getInGameObjects();
-      const guidCompletionItems: vscode.CompletionItem[] = Object.keys(igObjs).map(guid => {
+      const igObjs = TTSAdapter.getInGameObjects();
+      const guidCompletionItems: vscode.CompletionItem[] = Object.keys(igObjs).map((guid) => {
         const obj = igObjs[guid];
         const name = obj.name || obj.iname || '';
         const completionItem = new vscode.CompletionItem(
           name.length > 0 ? `${name} (${guid})` : guid,
-          vscode.CompletionItemKind.Value
+          vscode.CompletionItemKind.Value,
         );
         completionItem.insertText = `'${guid}'`;
         completionItem.detail = obj.type;

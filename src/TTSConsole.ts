@@ -1,13 +1,13 @@
 import * as vscode from 'vscode';
 
-import * as BBCode from '@/BBCode';
-import TTSAdapter from '@/TTSAdapter';
+import * as BBCode from './BBCode';
+import TTSAdapter from './TTSAdapter';
 
 export default class TTSConsolePanel {
   public static currentPanel: TTSConsolePanel | undefined;
   public static readonly viewType = 'TTSConsole';
   private _disposables: vscode.Disposable[] = [];
-  private commandMode: boolean = false;
+  private commandMode = false;
 
   public static createOrShow(extensionUri: vscode.Uri) {
     const column = vscode.window.activeTextEditor ? vscode.ViewColumn.Beside : undefined;
@@ -23,7 +23,7 @@ export default class TTSConsolePanel {
       TTSConsolePanel.viewType,
       'Tabletop Simulator Console++',
       column || vscode.ViewColumn.One,
-      getWebviewOptions(extensionUri)
+      getWebviewOptions(extensionUri),
     );
 
     TTSConsolePanel.currentPanel = new TTSConsolePanel(panel, extensionUri);
@@ -35,7 +35,7 @@ export default class TTSConsolePanel {
 
   private constructor(
     private readonly _panel: vscode.WebviewPanel,
-    private readonly _extensionUri: vscode.Uri
+    private readonly _extensionUri: vscode.Uri,
   ) {
     // Set the webview's initial html content
     this._update();
@@ -46,14 +46,14 @@ export default class TTSConsolePanel {
 
     // Handle messages from the webview
     this._panel.webview.onDidReceiveMessage(
-      message => {
+      (message) => {
         switch (message.type) {
           case 'command':
-            TTSAdapter.getInstance().customMessage({command: message.text});
+            TTSAdapter.customMessage({ command: message.text });
             break;
           case 'input':
-            TTSAdapter.getInstance().customMessage(
-              this.commandMode ? {command: message.text} : {input: message.text}
+            TTSAdapter.customMessage(
+              this.commandMode ? { command: message.text } : { input: message.text },
             );
             break;
           case 'done': {
@@ -68,7 +68,7 @@ export default class TTSConsolePanel {
         } else if (['>', '>>', '>cmd'].includes(message.text)) this.commandMode = true;
       },
       null,
-      this._disposables
+      this._disposables,
     );
 
     TTSConsolePanel.currentPanel = this;
@@ -81,14 +81,14 @@ export default class TTSConsolePanel {
   public appendToPanel(rawText: string | undefined, optional?: object) {
     if (!rawText) return;
     const htmlString = BBCode.parse(rawText);
-    let msg = {command: 'append', htmlString};
-    if (optional) msg = {...msg, ...optional};
+    let msg = { command: 'append', htmlString };
+    if (optional) msg = { ...msg, ...optional };
     this._panel.webview.postMessage(msg);
   }
 
   public clearPanel() {
     console.log('clearing panel');
-    this._panel.webview.postMessage({command: 'clear'});
+    this._panel.webview.postMessage({ command: 'clear' });
   }
 
   public dispose() {
@@ -113,18 +113,18 @@ export default class TTSConsolePanel {
   private _getHtmlForWebview(webview: vscode.Webview) {
     // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
     const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, 'assets', 'console.js')
+      vscode.Uri.joinPath(this._extensionUri, 'assets', 'console.js'),
     );
 
     // Do the same for the stylesheet.
     const styleResetUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, 'assets', 'reset.css')
+      vscode.Uri.joinPath(this._extensionUri, 'assets', 'reset.css'),
     );
     const styleVSCodeUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, 'assets', 'vscode.css')
+      vscode.Uri.joinPath(this._extensionUri, 'assets', 'vscode.css'),
     );
     const styleMainUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, 'assets', 'console.css')
+      vscode.Uri.joinPath(this._extensionUri, 'assets', 'console.css'),
     );
     const codiconsUri = webview.asWebviewUri(
       vscode.Uri.joinPath(
@@ -132,8 +132,8 @@ export default class TTSConsolePanel {
         'node_modules',
         '@vscode/codicons',
         'dist',
-        'codicon.css'
-      )
+        'codicon.css',
+      ),
     );
 
     // Use a nonce to only allow a specific script to be run.

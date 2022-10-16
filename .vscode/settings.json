@@ -1,21 +1,50 @@
 // Place your settings in this file to overwrite default and user settings.
 {
-    "files.exclude": {
-        "out": false, // set this to true to hide the "out" folder with the compiled JS files
-        ".vscode-test": false,
-        "node_modules": false
-    },
-    "search.exclude": {
-        "out": true, // set this to false to include "out" folder in search results
-        ".vscode-test": true,
-        "node_modules": true
-    },
-    // Turn off tsc task auto detection since we have the necessary tasks as npm scripts
-    "typescript.tsc.autoDetect": "off",
-    "yaml.schemas": {
-        "https://json.schemastore.org/github-workflow.json": [
-            ".github/workflows/build-docs.yaml",
-            ".github/workflows/deploy-to-marketplace.yaml"
-        ]
-    }
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true,
+    "source.fixAll.eslint": true,
+    "source.fixAll.tslint": true,
+    "source.organizeImports": true
+  },
+  "editor.formatOnSave": true,
+  "prettier.ignorePath": ".gitignore",
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "files.exclude": {
+    "out": false, // set this to true to hide the "out" folder with the compiled JS files
+    ".vscode-test": false,
+    "node_modules": false
+  },
+  "search.exclude": {
+    "out": true, // set this to false to include "out" folder in search results
+    ".vscode-test": true,
+    "node_modules": true
+  },
+  // Linting.
+  "eslint.validate": [
+    "javascript",
+    "json",
+    "typescript"
+  ],
+  "eslint.lintTask.enable": true,
+  "editor.tabSize": 2,
+  "editor.detectIndentation": false,
+  // Turn off tsc task auto detection since we have the necessary tasks as npm scripts
+  "typescript.tsc.autoDetect": "off",
+  "yaml.schemas": {
+    "https://json.schemastore.org/github-workflow.json": [
+      ".github/workflows/build-docs.yaml",
+      ".github/workflows/deploy-to-marketplace.yaml"
+    ]
+  }
 }

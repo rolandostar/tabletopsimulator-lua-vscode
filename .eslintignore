@@ -1,2 +1,3 @@
-out/
-docs/
+docs
+dist
+node_modules

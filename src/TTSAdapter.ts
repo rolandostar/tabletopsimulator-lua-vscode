@@ -1,278 +1,227 @@
-import * as vscode from 'vscode';
-import * as net from 'net';
+import { ErrorMessage, IncomingJsonObject, OutgoingJsonObject } from '@matanlurey/tts-editor';
 import * as fs from 'fs';
-
-import path = require('path');
 import bundler from 'luabundle';
-import {resolveModule} from 'luabundle/bundle/process';
+import { resolveModule } from 'luabundle/bundle/process';
 import * as bundleErr from 'luabundle/errors';
+import * as path from 'path';
+import * as vscode from 'vscode';
+import CustomExternalEditorApi from './CustomExternalEditorApi';
+import { handleBundleError } from './ErrorHandling';
+import TTSConsolePanel from './TTSConsole';
+import TTSWorkDir from './TTSWorkDir';
+import { getLuaSearchPatterns, getSearchPaths } from './utils/searchPaths';
+import * as ws from './vscode/workspace';
 
-import * as ws from '@/vscode/workspace';
-import * as TTSTypes from '@/TTSTypes';
-import TTSConsolePanel from '@/TTSConsole';
-import TTSWorkDir from '@/vscode/TTSWorkDir';
-import LocalStorageService from './vscode/LocalStorageService';
-
-type InGameObjectsList = {[key: string]: {name?: string; type?: string; iname?: string}};
-
-/**
- * Forms an array with directory paths where to look for files to be included
- * @param searchPattern - Patterns array to form paths with
- */
-function getSearchPaths(searchPattern: string[]): string[] {
-  const includePaths: string[] =
-    vscode.workspace.getConfiguration('ttslua.fileManagement').get('includePaths') || [];
-  // Search pattern can be undefined, if it is
-  const vsFolders = vscode.workspace.workspaceFolders || [];
-
-  /* DISABLED:
-   * This would make relative require work anywhere, but will probably be too many locations to
-   * search for modules
-   */
-  // const possibleLocations = vsFolders
-  //   .map(vsFolder => glob.sync('**/*/', {cwd: vsFolder.uri.fsPath, absolute: true}))
-  //   .reduce((acc, cur) => acc.concat(cur), []);
-
-  /* We could only do that when we are working with version control */
-  // const workDirLocs = !TTSWorkDir.instance.isDefault()
-  //   ? glob.sync('**/*/', {
-  //       cwd: TTSWorkDir.instance.getUri().fsPath,
-  //       absolute: true,
-  //     })
-  //   : [];
-
-  const paths = searchPattern
-    .filter(pattern => pattern.length > 0)
-    .map(pattern => [
-      path.join(ws.docsFolder, pattern),
-      ...includePaths.map(p => path.join(p, pattern)),
-      ...vsFolders.map(val => path.join(val.uri.fsPath, pattern)),
-      // ...workDirLocs.map(val => path.join(val, pattern)),
-      pattern, // For absolute paths
-    ])
-    // Flatten so all paths are in one top level array
-    .reduce((acc, val) => acc.concat(val), []);
-  // Flatten res
-  if (vscode.workspace.getConfiguration('ttslua.misc').get('debugSearchPaths'))
-    console.log('[TTSLua] Search Paths:\n->', paths.join('\n-> '), '\n');
-  return paths;
-}
-
-/**
- * Returns a list patterns, validating that '?.lua' is always included
- */
-function getLuaSearchPatterns(): string[] {
-  const patterns = vscode.workspace
-    .getConfiguration('ttslua.fileManagement')
-    .get('luaSearchPattern') as string[];
-  if (!patterns.includes('?')) patterns.push('?');
-  if (!patterns.includes('?.lua')) patterns.push('?.lua');
-  return patterns;
-}
+type OutgoingJsonObjectWithName = OutgoingJsonObject & { name: string };
+type InGameObjectsList = {
+  [key: string]: { name?: string; type?: string; iname?: string };
+};
 
 /**
  * TTS Adapter singleton
  */
-export default class TTSAdapter extends vscode.Disposable {
-  private static instance: TTSAdapter;
-  private _inGameObjects: InGameObjectsList = {};
-  private _serverPort = 39998;
-  private _server: net.Server;
-  private _lastSentScripts: {[key: string]: TTSTypes.ScriptState} = {};
-  private _retIdCounter = 0;
+export default abstract class TTSAdapter extends vscode.Disposable {
+  private static _api = new CustomExternalEditorApi();
+  private static _inGameObjects: InGameObjectsList = {};
+  private static _lastSentScripts: OutgoingJsonObjectWithName[] = [];
+  private static _disposables: vscode.Disposable[] = [];
 
-  public static getInstance(): TTSAdapter {
-    if (!TTSAdapter.instance) TTSAdapter.instance = new TTSAdapter();
-    return TTSAdapter.instance;
-  }
-
-  /**
-   * Creates a server to listen for messages from the game at init time
-   */
-  constructor() {
-    super(() => this.dispose());
-    this._server = net.createServer(socket => {
-      const chunks: Buffer[] = [];
-      socket.on('data', data => chunks.push(data));
-      socket.on('close', () => {
-        this.handleMessage(JSON.parse(chunks.join('').toString()));
-      });
-    });
-    this.isServerRunning();
-    TTSAdapter.instance = this;
-  }
-
-  /**
-   * Converts asyncronouse listen function to Promise.
-   * @returns Promise of server running state
-   */
-  private isServerRunning(): Promise<boolean> {
-    return new Promise(resolve => {
-      if (!this._server.listening)
-        this._server
-          .listen(this._serverPort, 'localhost')
-          .once('listening', () => resolve(true))
-          .once('error', (err: NodeJS.ErrnoException) => {
-            if (err.code === 'EADDRINUSE')
-              vscode.window.showErrorMessage(
-                'Another instance of TTSLua or Atom is already running',
-                {
-                  modal: true,
-                  detail: 'Please close the other instance and try again.',
-                }
-              );
-            else console.error(`[TTSLua] Server ${err}`);
-            resolve(false);
+  public static registerListeners() {
+    TTSAdapter._disposables.push(
+      new vscode.Disposable(
+        TTSAdapter._api.on('pushingNewObject', (e) => {
+          ws.addWorkDirToWorkspace(); // Attempt to open workdir (if not already)
+          // TTSAdapter will add the new object to the suggestion list and open it in the editor
+          TTSAdapter.readFilesFromTTS(e.scriptStates, { single: true });
+        }),
+      ),
+      new vscode.Disposable(
+        TTSAdapter._api.on('loadingANewGame', async (e) => {
+          // Whenever a new game is loaded, we need to update the list of objects
+          TTSAdapter.updateInGameObjectsList();
+          ws.addWorkDirToWorkspace(); // Attempt to open workdir (if not already)
+          TTSAdapter.readFilesFromTTS(e.scriptStates);
+        }),
+      ),
+      new vscode.Disposable(
+        TTSAdapter._api.on('printDebugMessage', async (e) => {
+          // Print all debug messages to console++
+          TTSConsolePanel.currentPanel?.appendToPanel(e.message);
+        }),
+      ),
+      new vscode.Disposable(
+        TTSAdapter._api.on('errorMessage', async (e) => {
+          // Also print error messages in console++ with a custom class
+          TTSConsolePanel.currentPanel?.appendToPanel(e.errorMessagePrefix, {
+            class: 'callout error',
           });
-      else resolve(true);
-    });
+          TTSAdapter.goToTTSError(e).catch((err) => {
+            vscode.window.showErrorMessage(err.message);
+          });
+        }),
+      ),
+      new vscode.Disposable(
+        TTSAdapter._api.on('customMessage', async (e) => {
+          // Mostly unused
+          // console.log('[TTSLua] Custom message from TTS:', e.customMessage);
+        }),
+      ),
+      new vscode.Disposable(
+        // Essential for executeLua to display return value
+        TTSAdapter._api.on('returnMessage', async (e) => {
+          const message = <string>e.returnValue;
+          if (TTSConsolePanel.currentPanel?.isVisible()) {
+            TTSConsolePanel.currentPanel.appendToPanel(message, {
+              class: 'callout return',
+            });
+          } else vscode.window.showInformationMessage(message);
+        }),
+      ),
+      new vscode.Disposable(
+        TTSAdapter._api.on('gameSaved', async (e) => {
+          if (vscode.workspace.getConfiguration('ttslua.console').get('logSaves')) {
+            // Print to console the current timestamp in hh:mm:ss padded format
+            const d = new Date();
+            const h = `${d.getHours()}`.padStart(2, '0');
+            const m = `${d.getMinutes()}`.padStart(2, '0');
+            const s = `${d.getSeconds()}`.padStart(2, '0');
+            const timestamp = `${h}:${m}:${s}`;
+            TTSConsolePanel.currentPanel?.appendToPanel(`[${timestamp}] 💾 Game Saved`, {
+              class: 'save',
+            });
+          }
+          // Store the last save path for the download command
+          // I think its not needed since we can getLuaScripts from asset downloader now
+          // LocalStorageService.setValue('lastSavePath', e.savePath);
+          if (!TTSWorkDir.isDefault()) {
+            //  TODO: TTSAdapter should probably trigger a savegame split instead
+            const saveName = vscode.workspace
+              .getConfiguration('ttslua.fileManagement')
+              .get('saveName');
+            await vscode.workspace.fs.copy(
+              vscode.Uri.file(path.normalize(e.savePath)),
+              TTSWorkDir.getFileUri(saveName + '.json'),
+              { overwrite: true },
+            );
+            vscode.window.showInformationMessage('SaveGame Copied to WorkDir');
+          }
+        }),
+      ),
+      new vscode.Disposable(
+        TTSAdapter._api.on('objectCreated', async (e) => {
+          // Update the list of in-game objects when a new object is created
+          TTSAdapter.updateInGameObjectsList();
+        }),
+      ),
+    );
   }
 
-  /**
-   * Sends a custom structured object
-   * @param object - Table to be sent to game
-   */
-  public customMessage(object: unknown) {
-    this.sendToTTS(TTSTypes.TxMsgType.CustomMessage, {customMessage: object});
+  private static async updateInGameObjectsList() {
+    // A single custom event will be sent with the list of objects
+    TTSAdapter._api.once('customMessage').then((e) => {
+      const getObjectsMessage = <{ type: 'getObjects'; data: string }>e.customMessage;
+      TTSAdapter._inGameObjects = JSON.parse(getObjectsMessage.data);
+    });
+    // Execute Lua
+    await TTSAdapter._api.executeLuaCode(
+      fs.readFileSync(path.join(__dirname, '../lua/getObjects.lua'), 'utf8'),
+    );
   }
 
   /**
    * Requests a list of all scripts from the game
    */
-  public getScripts() {
-    this.sendToTTS(TTSTypes.TxMsgType.GetScripts);
+  public static getScripts() {
+    TTSAdapter._api.getLuaScripts().catch((err) => {
+      if (err.code === 'EADDRINUSE')
+        vscode.window.showErrorMessage('Another instance of TTSLua or Atom is already running', {
+          modal: true,
+          detail: 'Please close the other instance and try again.',
+        });
+      else console.error('[TTSLua] Unexpected Server Error:', err);
+    });
   }
 
   /**
    * Sends all Scripts to the game
    */
-  public async saveAndPlay() {
+  public static async saveAndPlay() {
     // When sending scripts, the Temp folder must be present in workspace
-    if (!ws.isPresent(TTSWorkDir.instance.getUri())) {
+    const workDirUri = TTSWorkDir.getUri();
+    if (!ws.isPresent(workDirUri)) {
       vscode.window.showErrorMessage(
         'The workspace does not contain the Tabletop Simulator folder.\n' +
           'Get Lua Scripts from game before trying to Save and Play.',
-        {modal: true}
+        { modal: true },
       );
       return;
     }
     // Save all files
     await vscode.workspace.saveAll(false);
-    // Read files contained in the Temp folder
-    let files: [string, vscode.FileType][];
-    try {
-      files = await vscode.workspace.fs.readDirectory(TTSWorkDir.instance.getUri());
-    } catch (reason: unknown) {
-      vscode.window.showErrorMessage(
-        'Unable to read TTS Scripts directory.\n' + `Details: ${reason}`
-      );
-      return;
-    }
 
-    // An indexed array is used to backreference the guids when parsing the UI portion
-    const scripts: {[key: string]: TTSTypes.ScriptState} = {};
-    for (const [file] of files.filter(([file]) => file.endsWith('.lua'))) {
-      const [name, guid] = file.split('.');
-      const fileContents = (await TTSWorkDir.instance.readFile(file)).toString();
-      try {
-        scripts[guid] = {
-          name,
-          guid,
-          script: bundler.bundleString(fileContents, {
+    // Big If
+    const objects: OutgoingJsonObjectWithName[] = [];
+    if (TTSWorkDir.isDefault()) {
+      // If the workdir is the default, we can just send the scripts
+      const wsFiles = await vscode.workspace.fs.readDirectory(workDirUri);
+      // Filter to only apply to FileType.File and file extension .lua
+      const scriptFiles = wsFiles
+        .filter((file) => file[1] === vscode.FileType.File && path.extname(file[0]) === '.lua')
+        .map((file) => file[0]);
+      for (const scriptFilename of scriptFiles) {
+        const [name, guid] = scriptFilename.split('.');
+        const obj: OutgoingJsonObject & { name: string } = { guid, name };
+        const scriptContent = (await TTSWorkDir.readFile(scriptFilename)).toString();
+        // Attempt to bundle the script
+        try {
+          obj.script = bundler.bundleString(scriptContent, {
             paths: getSearchPaths(getLuaSearchPatterns()),
-            isolate: true,
-            rootModuleName: file,
-          }),
-        };
-      } catch (err) {
-        if (err instanceof bundleErr.ModuleResolutionError) {
-          vscode.window
-            .showErrorMessage(
-              `Unable to find module "${err.moduleName}" from ${err.parentModuleName}<${err.line}:${err.column}>\n`,
-              'Learn More',
-              'Enable Debug'
-            )
-            .then(selection => {
-              if (selection === 'Learn More')
-                vscode.env.openExternal(
-                  vscode.Uri.parse(
-                    'https://tts-vscode.rolandostar.com/support/debuggingModuleResolution'
-                  )
-                );
-              else if (selection === 'Enable Debug') {
-                if (!vscode.workspace.getConfiguration('ttslua.misc').get('debugSearchPaths')) {
-                  vscode.workspace
-                    .getConfiguration('ttslua.misc')
-                    .update('debugSearchPaths', true, vscode.ConfigurationTarget.Global);
-                  vscode.commands.executeCommand('workbench.action.toggleDevTools');
-                  console.log(
-                    '[TTSLua] Search Paths debug enabled, this window will now output the search paths when attempting to resolve modules.'
-                  );
-                } else {
-                  vscode.window
-                    .showInformationMessage(
-                      'Search Paths debug is already enabled',
-                      'Toggle DevTools'
-                    )
-                    .then(selection => {
-                      if (selection === 'Toggle DevTools')
-                        vscode.commands.executeCommand('workbench.action.toggleDevTools');
-                    });
-                }
-              }
-            });
-          return;
-        } else if (err instanceof SyntaxError) {
-          const e = err as unknown as TTSTypes.BundleSyntaxError;
-          const option = await vscode.window.showErrorMessage(
-            `Syntax Error in ${file}${err.message}`,
-            'Go to Error'
-          );
-          if (!option) return;
-          await vscode.window.showTextDocument(TTSWorkDir.instance.getFileUri(file)),
-            {
-              selection: new vscode.Range(e.line - 1, e.column, e.line, 0),
-            };
+          });
+        } catch (err) {
+          handleBundleError(err, scriptFilename);
           return;
         }
-        vscode.window.showErrorMessage(`${name}:\n${err}`);
+        // Let's check for XML
+        try {
+          const filetext = await TTSWorkDir.readFile(
+            `${path.basename(scriptFilename, '.lua')}.xml`,
+          );
+          obj.ui = await TTSAdapter.insertXmlFiles(filetext.toString());
+        } catch (err) {
+          if ((err as vscode.FileSystemError).code !== 'FileNotFound') {
+            vscode.window.showErrorMessage(
+              `Error while reading XML file for ${scriptFilename}:\n${err}`,
+            );
+            return;
+          }
+        }
+        objects.push(obj);
+      }
+
+      // Validate empty global to avoid lockup
+      const globalObj = objects.find((obj) => obj.guid === '-1');
+      if (globalObj === undefined || globalObj.script === '') {
+        vscode.window
+          .showErrorMessage('Global Script must not be empty', 'Learn More')
+          .then((selection) => {
+            if (selection === 'Learn More')
+              vscode.env.openExternal(
+                vscode.Uri.parse('https://tts-vscode.rolandostar.com/support/globalScriptLock'),
+              );
+          });
         return;
       }
+    } else {
+      // TODO: Git Workspace Save & Play Workflow
     }
-    // Iterate over found scripts, and check if UI file exists
-    for (const guid in scripts) {
-      const script = scripts[guid];
-      try {
-        // Check if file exists with same name and guid
-        const filetext = await TTSWorkDir.instance.readFile(`${script.name}.${script.guid}.xml`);
-        // If Found, add it to the script state object under `ui`
-        scripts[guid].ui = await TTSAdapter.insertXmlFiles(filetext.toString());
-      } catch (reason) {
-        if ((reason as vscode.FileSystemError).code !== 'FileNotFound') {
-          vscode.window.showErrorMessage(`Error reading UI file for ${script.name}:\n${reason}`);
-        }
-      }
-    }
-    // Validate empty global to avoid lockup
-    if (scripts['-1'] === undefined || scripts['-1'].script === '') {
-      vscode.window
-        .showErrorMessage('Global Script must not be empty', 'Learn More')
-        .then(selection => {
-          if (selection === 'Learn More')
-            vscode.env.openExternal(
-              vscode.Uri.parse('https://tts-vscode.rolandostar.com/support/globalScriptLock')
-            );
-        });
-      return;
-    }
-    // Do the sending
-    this._lastSentScripts = scripts;
-    this.sendToTTS(TTSTypes.TxMsgType.SaveAndPlay, {
-      scriptStates: [...Object.values(scripts)],
-    });
-    // Update status bar
+
+    TTSAdapter._lastSentScripts = objects;
+    // TODO: Open edit according to config here!
+    // TTSAdapter can throw beware
+    TTSAdapter._api.saveAndPlay(objects);
+
     const statusBar = vscode.window.setStatusBarMessage(
-      `$(cloud-upload) Sent ${files.length} files`
+      `$(cloud-upload) Sent ${objects.length} files`,
     );
     setTimeout(() => {
       statusBar.dispose();
@@ -280,126 +229,13 @@ export default class TTSAdapter extends vscode.Disposable {
     // Clear the console if configured to do so
     if (vscode.workspace.getConfiguration('ttslua.console').get('clearOnReload'))
       TTSConsolePanel.currentPanel?.clearPanel();
-
-    return true;
-  }
-
-  /**
-   * Calls corresponding function according to message type
-   * @param rawMessage - Message received from TTS
-   */
-  private handleMessage(rawMessage: TTSTypes.GenericTTSMessage) {
-    // console.log('[TTSLua] Received message:');
-    // console.log(rawMessage);
-    switch (rawMessage.messageID) {
-      case TTSTypes.RxMsgType.ObjectPushed: {
-        const ttsMessage = <TTSTypes.ObjectPushedMessage>rawMessage;
-        ws.addWorkDirToWorkspace();
-        // add guid to suggestion
-        this.readFilesFromTTS(ttsMessage.scriptStates, {single: true});
-        break;
-      }
-
-      case TTSTypes.RxMsgType.NewGame: {
-        const ttsMessage = <TTSTypes.NewGameMessage>rawMessage;
-        // if (!this.savedAndPlayed)
-        this.requestObjectGUIDs();
-        ws.addWorkDirToWorkspace();
-        this.readFilesFromTTS(ttsMessage.scriptStates);
-        // this.savedAndPlayed = false;
-        break;
-      }
-
-      case TTSTypes.RxMsgType.PrintDebug: {
-        const ttsMessage = <TTSTypes.PrintDebugMessage>rawMessage;
-        TTSConsolePanel.currentPanel?.appendToPanel(ttsMessage.message);
-        break;
-      }
-
-      case TTSTypes.RxMsgType.Error: {
-        const ttsMessage = <TTSTypes.ErrorMessage>rawMessage;
-        TTSConsolePanel.currentPanel?.appendToPanel(ttsMessage.errorMessagePrefix, {
-          class: 'callout error',
-        });
-        this.goToTTSError(ttsMessage).catch(err => vscode.window.showErrorMessage(err.message));
-        break;
-      }
-
-      case TTSTypes.RxMsgType.CustomMessage: {
-        const ttsMessage = <TTSTypes.CustomMessage>rawMessage;
-        const content = JSON.parse(ttsMessage.customMessage.content);
-        switch (ttsMessage.customMessage.type) {
-          // Process guids for autocompletion
-          case 'guids': {
-            this._inGameObjects = content;
-            break;
-          }
-          default: {
-            console.log('Unknown custom message type');
-          }
-        }
-        break;
-      }
-
-      case TTSTypes.RxMsgType.Return: {
-        const ttsMessage = <TTSTypes.ReturnMessage>rawMessage;
-        if (TTSConsolePanel.currentPanel?.isVisible()) {
-          TTSConsolePanel.currentPanel?.appendToPanel(ttsMessage.returnValue, {
-            class: 'callout return',
-          });
-        } else vscode.window.showInformationMessage(ttsMessage.returnValue);
-        break;
-      }
-
-      case TTSTypes.RxMsgType.GameSaved: {
-        const ttsMessage = <TTSTypes.GameSavedMessaged>rawMessage;
-        if (vscode.workspace.getConfiguration('ttslua.console').get('logSaves')) {
-          const d = new Date();
-          const h = `${d.getHours()}`.padStart(2, '0');
-          const m = `${d.getMinutes()}`.padStart(2, '0');
-          const s = `${d.getSeconds()}`.padStart(2, '0');
-          const timestamp = `${h}:${m}:${s}`;
-          TTSConsolePanel.currentPanel?.appendToPanel(`[${timestamp}] 💾 Game Saved`, {
-            class: 'save',
-          });
-        }
-        LocalStorageService.setValue('lastSavePath', ttsMessage.savePath);
-        if (!TTSWorkDir.instance.isDefault()) {
-          const saveName = vscode.workspace
-            .getConfiguration('ttslua.fileManagement')
-            .get('saveName');
-          vscode.workspace.fs
-            .copy(
-              vscode.Uri.file(path.normalize(ttsMessage.savePath)),
-              TTSWorkDir.instance.getFileUri(saveName + '.json'),
-              {overwrite: true}
-            )
-            .then(() => {
-              vscode.window.showInformationMessage('Game Saved');
-            });
-        }
-        break;
-      }
-      case TTSTypes.RxMsgType.ObjectCreated: {
-        const ttsMessage = <TTSTypes.ObjectCreatedMessage>rawMessage;
-        // Add it to the guid suggestions if not already
-        if (this._inGameObjects[ttsMessage.guid]) return;
-        this._inGameObjects[ttsMessage.guid] = {};
-        break;
-      }
-
-      default:
-        break;
-    }
   }
 
   /**
    * Shows an error from TTS and a button to jump to the line it came from
    * @param message - Error Message received from TTS
    */
-  private async goToTTSError(
-    message: TTSTypes.ErrorMessage
-  ): Promise<vscode.TextEditor | undefined> {
+  private static async goToTTSError(message: ErrorMessage): Promise<vscode.TextEditor | undefined> {
     // Confirm that message.error exists
     // If the error is from Execute Lua or no pattern found, no button is needed
     const match = message.error.match(/.*:\((\d*),(\d*)-(\d*)\):/) ?? null;
@@ -419,25 +255,25 @@ export default class TTSAdapter extends vscode.Disposable {
     // Show Button to User
     const option = await vscode.window.showErrorMessage(message.error, 'Go to Error');
     if (!option) return; // Dismissed
-    if (!this._lastSentScripts) {
+    if (!TTSAdapter._lastSentScripts) {
       vscode.window.showErrorMessage(
-        'Unable to locate Error. Make sure you have sent scripts first with Save & Play'
+        'Unable to locate Error. Make sure you have sent scripts first with Save & Play',
       );
       return;
     }
 
-    const script = this._lastSentScripts[message.guid];
+    const script = TTSAdapter._lastSentScripts.find((obj) => obj.guid === message.guid);
     if (!script) throw Error('No such script loaded.');
     try {
       // Will throw if file isn't bundled
-      const unbundled = bundler.unbundleString(script.script);
+      const unbundled = bundler.unbundleString(script.script || '');
       const modules = Object.values(unbundled.modules);
       for (const m of modules) {
         const mRange = new vscode.Range(m.start.line, m.start.column, m.end.line, m.end.column);
         if (mRange.contains(errorRange)) {
           let uri: vscode.Uri;
           if (m.name === unbundled.metadata.rootModuleName) {
-            uri = TTSWorkDir.instance.getFileUri(`${script.name}.${script.guid}.lua`);
+            uri = TTSWorkDir.getFileUri(`${script.name}.${script.guid}.lua`);
           } else {
             // Find the file the same way we did when we bundled it
             const path = resolveModule(m.name, getSearchPaths(getLuaSearchPatterns()));
@@ -450,7 +286,7 @@ export default class TTSAdapter extends vscode.Disposable {
               errorRange.start.line - mRange.start.line + 1,
               errorRange.start.character,
               errorRange.end.line - mRange.start.line + 1,
-              errorRange.end.character
+              errorRange.end.character,
             ),
           });
         }
@@ -458,10 +294,10 @@ export default class TTSAdapter extends vscode.Disposable {
       return;
     } catch (err: unknown) {
       if (!(err instanceof bundleErr.NoBundleMetadataError)) throw err;
-      // file wasnt bundled, no complexity needed
+      // file wasn't bundled, no complexity needed
       return vscode.window.showTextDocument(
-        TTSWorkDir.instance.getFileUri(`${script.name}.${script.guid}.lua`),
-        {selection: errorRange}
+        TTSWorkDir.getFileUri(`${script.name}.${script.guid}.lua`),
+        { selection: errorRange },
       );
     }
   }
@@ -470,9 +306,9 @@ export default class TTSAdapter extends vscode.Disposable {
    * Creates files into workspace from received scriptStates
    * @param scriptStates - State of all received scripts
    */
-  private async readFilesFromTTS(
-    scriptStates: TTSTypes.ScriptState[],
-    options?: {single?: boolean}
+  private static async readFilesFromTTS(
+    scriptStates: IncomingJsonObject[],
+    options?: { single?: boolean },
   ) {
     // Read scriptStates, write them to files and determine which should be opened
     const filesRecv: ws.FileHandler[] = [];
@@ -483,7 +319,7 @@ export default class TTSAdapter extends vscode.Disposable {
     const createXml = vscode.workspace
       .getConfiguration('ttslua.fileManagement')
       .get('createXML') as boolean;
-    // This would create a status bar with spinning icon, but it finishes too fast to see :(
+    // TTSAdapter would create a status bar with spinning icon, but it finishes too fast to see :(
     /* let statusBar = wd.setStatusBarMessage('$(sync~spin) Receiving scripts'); */
     if (scriptStates) {
       for (const scriptState of scriptStates) {
@@ -496,8 +332,8 @@ export default class TTSAdapter extends vscode.Disposable {
           await xmlHandler.write(
             scriptState.ui?.replace(
               /(<!--\s+include\s+([^\s].*)\s+-->)[\s\S]+?\1/g,
-              (_matched, _open, src) => `<Include src="${src}"/>`
-            ) ?? ''
+              (_matched, _open, src) => `<Include src="${src}"/>`,
+            ) ?? '',
           );
           // if (scriptState.name === 'Global') globalHandlers.push(handler);
           filesRecv.push(xmlHandler);
@@ -509,7 +345,7 @@ export default class TTSAdapter extends vscode.Disposable {
         try {
           // Then, attempt to unbundle
           const data = bundler.unbundleString(scriptState.script);
-          const {content} = data.modules[data.metadata.rootModuleName];
+          const { content } = data.modules[data.metadata.rootModuleName];
           // If unbundle was successful, overwrite the file with the unbundled content
           if (content !== '') await luaHandler.write(content);
         } catch (err: unknown) {
@@ -529,19 +365,19 @@ export default class TTSAdapter extends vscode.Disposable {
       await ws.syncFiles(filesRecv);
       switch (autoOpen) {
         case 'All':
-          filesRecv.forEach(handler => handler.open());
+          filesRecv.forEach((handler) => handler.open());
           break;
         case 'Global':
-          globalHandlers.forEach(handler => handler.open());
+          globalHandlers.forEach((handler) => handler.open());
           break;
         case 'None':
         default:
           break;
       }
-    } else filesRecv[0].open({preview: true});
+    } else filesRecv[0].open({ preview: true });
 
     const statusBar = vscode.window.setStatusBarMessage(
-      `$(cloud-download) Received ${Object.keys(filesRecv).length} scripts from TTS`
+      `$(cloud-download) Received ${Object.keys(filesRecv).length} scripts from TTS`,
     );
     setTimeout(() => statusBar.dispose(), 1500);
   }
@@ -551,28 +387,28 @@ export default class TTSAdapter extends vscode.Disposable {
    * @param messageID - Type of message to be sent
    * @param object - Mutable object according to type
    */
-  private async sendToTTS(messageID: TTSTypes.TxMsgType, object?: object) {
-    if (await !this.isServerRunning()) return;
-    const statusBar = vscode.window.setStatusBarMessage('$(sync~spin) Connecting to TTS');
-    const client = net.connect(39999, 'localhost', () => {
-      client.write(JSON.stringify({messageID, ...object}));
-      statusBar.dispose();
-      client.destroy();
-    });
-    client.on('error', (err: NodeJS.ErrnoException) => {
-      if (err.code === 'ECONNREFUSED') {
-        statusBar.dispose();
-        vscode.window.showErrorMessage(
-          'Unable to connect to Tabletop Simulator.\n\n' +
-            'Check that the game is running and a save has been loaded.',
-          {modal: true}
-        );
-      } else console.error(`[TTSLua] Net Client ${err}`);
-    });
-    client.on('end', () => client.destroy());
-  }
+  // private async sendToTTS(messageID: TTSTypes.TxMsgType, object?: object) {
+  //   if (await !TTSAdapter.isServerRunning()) return;
+  //   const statusBar = vscode.window.setStatusBarMessage('$(sync~spin) Connecting to TTS');
+  //   const client = net.connect(39999, 'localhost', () => {
+  //     client.write(JSON.stringify({ messageID, ...object }));
+  //     statusBar.dispose();
+  //     client.destroy();
+  //   });
+  //   client.on('error', (err: NodeJS.ErrnoException) => {
+  //     if (err.code === 'ECONNREFUSED') {
+  //       statusBar.dispose();
+  //       vscode.window.showErrorMessage(
+  //         'Unable to connect to Tabletop Simulator.\n\n' +
+  //           'Check that the game is running and a save has been loaded.',
+  //         { modal: true },
+  //       );
+  //     } else console.error(`[TTSLua] Net Client ${err}`);
+  //   });
+  //   client.on('end', () => client.destroy());
+  // }
 
-  executeLua(script?: string, guid?: string) {
+  public static executeSelectedLua(script?: string, guid?: string) {
     // Get Current selection from vscode
     const editor = vscode.window.activeTextEditor;
     if (!editor) return;
@@ -589,11 +425,11 @@ export default class TTSAdapter extends vscode.Disposable {
       return;
     }
     // Send to TTS
-    this.sendToTTS(TTSTypes.TxMsgType.ExecuteLua, {script, guid, returnID: this._retIdCounter++});
+    TTSAdapter._api.executeLuaCode(script, guid);
   }
 
-  getInGameObjects() {
-    return this._inGameObjects;
+  public static getInGameObjects() {
+    return TTSAdapter._inGameObjects;
   }
 
   /**
@@ -603,7 +439,7 @@ export default class TTSAdapter extends vscode.Disposable {
    */
   private static async insertXmlFiles(
     text: string | Uint8Array,
-    alreadyInserted: string[] = []
+    alreadyInserted: string[] = [],
   ): Promise<string> {
     if (typeof text !== 'string') text = Buffer.from(text).toString('utf-8');
     const pattern = /(^|\n)([\s]*)(.*)<Include\s+src=('|")(.+)\4\s*\/>/;
@@ -612,7 +448,7 @@ export default class TTSAdapter extends vscode.Disposable {
     // First we extract comments and leave a placeholder, so we don't try to parse them
     // Remember to store them for reinsertion later
     const comments: string[] = [];
-    text = text.replace(/<!--[\s\S]*?-->/g, comment => {
+    text = text.replace(/<!--[\s\S]*?-->/g, (comment) => {
       comments.push(comment);
       return `<!--${nonce}:${comments.length - 1}-->`;
     });
@@ -649,7 +485,7 @@ export default class TTSAdapter extends vscode.Disposable {
             // If the file has already been inserted, skip it
             if (alreadyInserted.includes(lookupPath)) {
               vscode.window.showErrorMessage(
-                `Cyclical include detected. ${insertPath} was previously included`
+                `Cyclical include detected. ${insertPath} was previously included`,
               );
               lines[index] = line.replace(pattern, prefix);
               break;
@@ -660,13 +496,13 @@ export default class TTSAdapter extends vscode.Disposable {
             const content = newText.replace('\n', `\n${indent}`);
             lines[index] = line.replace(
               pattern,
-              `${prefix + marker}\n${indent}${content}\n${indent}${marker}`
+              `${prefix + marker}\n${indent}${content}\n${indent}${marker}`,
             );
             break;
           }
           // Went through all possible paths but no return yet. Inform of error
           vscode.window.showErrorMessage(
-            `Could not catalog <Include /> - file not found: ${insertPath}`
+            `Could not catalog <Include /> - file not found: ${insertPath}`,
           );
           lines[index] = line.replace(pattern, `${prefix + marker}\n${indent}${marker}`);
         }
@@ -679,16 +515,23 @@ export default class TTSAdapter extends vscode.Disposable {
       .replace(new RegExp(`<!--${nonce}:(\\d+)-->`, 'g'), (_match, index) => comments[index]);
   }
 
-  private requestObjectGUIDs() {
-    // read file from disk
-    this.sendToTTS(TTSTypes.TxMsgType.ExecuteLua, {
-      guid: '-1',
-      script: fs.readFileSync(path.join(__dirname, '../lua/requestObjectGUIDs.lua'), 'utf8'),
-    });
+  /**
+   * Sends a custom structured object
+   * @param object - Table to be sent to game
+   */
+  public static customMessage(object: unknown) {
+    TTSAdapter._api.customMessage(object);
   }
 
-  public dispose() {
-    if (this._server) this._server.close();
-    console.log('Server disposed');
+  public static dispose() {
+    while (TTSAdapter._disposables.length) {
+      const x = TTSAdapter._disposables.pop();
+      if (x) {
+        x.dispose();
+      }
+    }
+
+    TTSAdapter._api.close();
+    console.log('[TTSLua] Resources disposed');
   }
 }
