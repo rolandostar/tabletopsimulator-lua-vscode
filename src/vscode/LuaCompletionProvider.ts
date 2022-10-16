@@ -143,7 +143,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
     const insertTextMatchPattern = /\${([0-9]+):([0-9a-zA-Z_]+)\|([0-9a-zA-Z_]+)}/g;
     Object.entries(suggestionList).forEach(([section, suggestionArray]) => {
       const convertSuggestion = (sArray: Suggestion[]) => {
-        return sArray.map((s) => {
+        return sArray.map(s => {
           // Null coalescing operator to handle non-matching values
           let displayText = s.displayText.match(/\b.*(?=\()|\b.*$/g);
           if (displayText === null) displayText = [s.displayText];
@@ -174,7 +174,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
 
     // Check for unhanded sections
     const unhandledSections = Object.keys(suggestionList).filter(
-      (section) => !extraSectionMatcher.includes(section) && !stdSectionMatcher.has(section),
+      section => !extraSectionMatcher.includes(section) && !stdSectionMatcher.has(section),
     );
     if (unhandledSections.length > 0) {
       console.warn('Unhandled sections: \n=> ' + unhandledSections.join('\n=> '));
@@ -184,7 +184,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
           'Check Issue Tracker',
           'Create Issue',
         )
-        .then((selection) => {
+        .then(selection => {
           switch (selection) {
             case 'Check Issue Tracker':
               vscode.env.openExternal(
@@ -233,13 +233,13 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
         title: 'Updating API Intellisense',
         cancellable: false,
       },
-      async (progress) => {
+      async progress => {
         // Create an array of promises, each resolving when the corresponding section is done
         // This also allows for each section to be parsed in parallel
         // Being asyncronous also allows for the progress bar to update correctly 😊
-        await new Promise((resolve) => setTimeout(resolve, 0)); // Force progress bar to show initially
+        await new Promise(resolve => setTimeout(resolve, 0)); // Force progress bar to show initially
         const sgList: (void | { name: string; f: SuggestionGenerator })[] = await Promise.all(
-          splitted.map((section) =>
+          splitted.map(section =>
             // We wrap the progress report function which will update the progress bar as done()
             LuaCompletionProvider._parseSection(section, () =>
               progress.report({ increment: incrementValue }),
@@ -271,7 +271,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
           message: ': Done!',
         });
         // Simple 300ms delay to make sure the progress bar is shown at 100% for a bit
-        return new Promise((resolve) => setTimeout(resolve, 2300));
+        return new Promise(resolve => setTimeout(resolve, 2300));
       },
     );
   }
@@ -334,7 +334,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
       coffeeScript =
         'module.exports = (global_script) ->\n' +
         // Remove first 6 space characters to leave a 2 space indent for the function block
-        sectionLines.map((v) => v.substring(6).replace('\r', '')).join('\n') +
+        sectionLines.map(v => v.substring(6).replace('\r', '')).join('\n') +
         '\n  return suggestions';
     } else {
       // All other sections can be solved with an indent map
@@ -351,7 +351,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
       coffeeScript =
         'module.exports = () ->\n' +
         sectionLines
-          .map((v) => {
+          .map(v => {
             let indent = 0;
             v = v.trimStart().replace('\r', '');
             for (const { pattern, indent: newIndent } of indentMap) {
@@ -421,7 +421,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
       'string.quoted.double.lua',
       'string.quoted.single.lua',
     ];
-    if (skippedScopes.some((v) => token.scopes.includes(v))) return [];
+    if (skippedScopes.some(v => token.scopes.includes(v))) return [];
     // Short circuit some common lua keywords
     if (line.match(/(^|\s)else$/) || line.match(/(^|\s)elseif$/) || line.match(/(^|\s)end$/))
       return [];
@@ -437,11 +437,11 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
     // Tokenize line, which pretty much means, split it into words avoiding depth and symbols
     const [currentToken = '', previousToken = '', previousToken2 = ''] = grammar
       .tokenizeLine(line, null)
-      .tokens.map((v) => line.substring(v.startIndex, v.endIndex))
+      .tokens.map(v => line.substring(v.startIndex, v.endIndex))
       // Revers to get tokens from closest to farthest from cursor
       .reverse()
       // Filter out strings ending with dot or where token are only spaces
-      .filter((v) => !v.endsWith('.') && v.trim().length !== 0);
+      .filter(v => !v.endsWith('.') && v.trim().length !== 0);
     const isCurrentTokenAlfanum = /^[a-zA-Z0-9_]+$/.test(currentToken);
 
     /* ---------------------------------- Function Definitions ---------------------------------- */
@@ -517,7 +517,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
             label: 'function...coroutine...repeat...end',
             snippet: `\n\tfunction ${funcName}()\n\t\trepeat\n\t\t\tcoroutine.yield(0)\n\t\tuntil \${1}\n\t\treturn 1\n\tend\n\tstartLuaCoroutine(self, '${funcName}')\nend`,
           },
-        ].map((v) => {
+        ].map(v => {
           const vci = new vscode.CompletionItem(v.label, vscode.CompletionItemKind.Snippet);
           vci.insertText = new vscode.SnippetString(v.snippet);
           return vci;
@@ -548,7 +548,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
     // Add labeled getObjectFromGUID after static getObjectFromGUID if appropriate
     if (previousToken.includes('=')) {
       // if 'getObjectFromGUID' is included in completionItems
-      const getObjectIndex = completionItems.findIndex((v) =>
+      const getObjectIndex = completionItems.findIndex(v =>
         (v.insertText as vscode.SnippetString).value.startsWith('getObjectFromGUID'),
       );
       if (getObjectIndex >= 0) {
@@ -577,7 +577,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
     if (isGetObjectFromGUID()) {
       // const guidCompletionItems: vscode.CompletionItem[] = CompletionProvider._guids.map(guid => {
       const igObjs = TTSAdapter.getInGameObjects();
-      const guidCompletionItems: vscode.CompletionItem[] = Object.keys(igObjs).map((guid) => {
+      const guidCompletionItems: vscode.CompletionItem[] = Object.keys(igObjs).map(guid => {
         const obj = igObjs[guid];
         const name = obj.name || obj.iname || '';
         const completionItem = new vscode.CompletionItem(

@@ -12,7 +12,7 @@ export function isPresent(dirUri: vscode.Uri) {
   const vsFolders = vscode.workspace.workspaceFolders;
   // If there are no folders in the workspace,
   // OR the requested dir in the workspace do not match any vscode folders path...
-  return vsFolders && vsFolders.findIndex((vsDir) => vsDir.uri.fsPath === dirUri.fsPath) !== -1;
+  return vsFolders && vsFolders.findIndex(vsDir => vsDir.uri.fsPath === dirUri.fsPath) !== -1;
 }
 
 /**
@@ -56,7 +56,7 @@ export function syncFiles(filesRecv: FileHandler[]) {
         'Open Settings',
         'Learn More',
       )
-      .then((res) => {
+      .then(res => {
         if (res === 'Open Settings')
           vscode.commands.executeCommand(
             'workbench.action.openSettings',
@@ -71,12 +71,12 @@ export function syncFiles(filesRecv: FileHandler[]) {
   }
   // Remove lua files non-recusive not marked as received from the workFolder.
   // This is to remove files that were deleted from the game.
-  const filesRecvNames = filesRecv.map((h) => h.filename);
+  const filesRecvNames = filesRecv.map(h => h.filename);
   return Promise.all(
     glob
       .sync('*.lua', { cwd: TTSWorkDir.getUri().fsPath, nodir: true })
-      .filter((file) => !filesRecvNames.includes(file))
-      .map((file) =>
+      .filter(file => !filesRecvNames.includes(file))
+      .map(file =>
         vscode.workspace.fs.delete(vscode.Uri.file(path.join(TTSWorkDir.getUri().fsPath, file))),
       ),
   );
@@ -103,7 +103,7 @@ export function installConsole(extensionPath: string) {
     },
   ];
   return Promise.all(
-    files.map((file) =>
+    files.map(file =>
       vscode.workspace.fs.copy(vscode.Uri.file(file.src), vscode.Uri.file(file.dst), {
         overwrite: true,
       }),
@@ -112,7 +112,7 @@ export function installConsole(extensionPath: string) {
     .then(() => {
       vscode.window.showInformationMessage('Console++ Installation Successful');
     })
-    .catch((reason) => {
+    .catch(reason => {
       vscode.window.showErrorMessage(`Console++ Installation Failed: ${reason}`);
     });
 }

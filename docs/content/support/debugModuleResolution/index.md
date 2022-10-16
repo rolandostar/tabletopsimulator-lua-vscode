@@ -4,7 +4,7 @@ When you are having trouble with module resolution, you can use the `ttslua.misc
 
 ```json
 {
-    "ttslua.misc.debugSearchPaths": "true"
+  "ttslua.misc.debugSearchPaths": "true"
 }
 ```
 

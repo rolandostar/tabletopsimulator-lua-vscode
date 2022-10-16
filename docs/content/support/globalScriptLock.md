@@ -14,6 +14,7 @@ To prevent this from happening, the extension **will not** allow you to save an 
 If you don't require any functionality on the global script, this can be remediated by adding a simple comment.
 
 `Global.-1.lua`:
+
 ```lua
 --
 ```

@@ -9,10 +9,10 @@ const defaultWorkDir = path.join(os.tmpdir(), 'TabletopSimulatorLua');
 function getGitDirs() {
   const vsFolders = vscode.workspace.workspaceFolders || [];
   return Promise.allSettled(
-    vsFolders.map((folder) =>
+    vsFolders.map(folder =>
       vscode.workspace.fs.stat(vscode.Uri.file(path.join(folder.uri.fsPath, '.git'))),
     ) ?? [],
-  ).then((settledArray) =>
+  ).then(settledArray =>
     settledArray.reduce((acc, cur, idx) => {
       if (cur.status === 'fulfilled') {
         acc.push(vsFolders[idx]);
@@ -34,7 +34,7 @@ export default abstract class TTSWorkDir {
     // If not, return to default
     if (
       !vscode.workspace.workspaceFolders?.some(
-        (folder) => folder.uri.fsPath === TTSWorkDir.workDirUri.fsPath,
+        folder => folder.uri.fsPath === TTSWorkDir.workDirUri.fsPath,
       )
     )
       TTSWorkDir.reset();
@@ -69,7 +69,7 @@ export default abstract class TTSWorkDir {
       }
       vscode.window
         .showErrorMessage('No git repositories found in workspace', 'Learn More')
-        .then((res) => {
+        .then(res => {
           if (res === 'Learn More')
             vscode.env.openExternal(
               vscode.Uri.parse('https://tts-vscode.rolandostar.com/guides/versionControl'),
@@ -79,7 +79,7 @@ export default abstract class TTSWorkDir {
     }
     // Prompt for which one to use
     const selection = await vscode.window.showQuickPick(
-      [...gitDirs.map((d) => d.uri.fsPath), '$(refresh) Default'],
+      [...gitDirs.map(d => d.uri.fsPath), '$(refresh) Default'],
       {
         placeHolder: 'Select new working directory to store TTS scripts',
       },

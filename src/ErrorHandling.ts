@@ -33,7 +33,7 @@ export async function handleBundleError(err: unknown, scriptFilename: string) {
       } else {
         vscode.window
           .showInformationMessage('Search Paths debug is already enabled', 'Toggle DevTools')
-          .then((selection) => {
+          .then(selection => {
             if (selection === 'Toggle DevTools')
               vscode.commands.executeCommand('workbench.action.toggleDevTools');
           });
