@@ -11,5 +11,11 @@
         "node_modules": true
     },
     // Turn off tsc task auto detection since we have the necessary tasks as npm scripts
-    "typescript.tsc.autoDetect": "off"
+    "typescript.tsc.autoDetect": "off",
+    "yaml.schemas": {
+        "https://json.schemastore.org/github-workflow.json": [
+            ".github/workflows/build-docs.yaml",
+            ".github/workflows/deploy-to-marketplace.yaml"
+        ]
+    }
 }

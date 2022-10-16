@@ -1,0 +1,9 @@
+# default
+**/.git
+**/.svn
+**/.hg
+**/node_modules
+
+# ignore artifacts:
+**/build
+**/.docusaurus
