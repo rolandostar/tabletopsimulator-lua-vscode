@@ -29,14 +29,14 @@ export default abstract class TTSAdapter extends vscode.Disposable {
   public static registerListeners() {
     TTSAdapter._disposables.push(
       new vscode.Disposable(
-        TTSAdapter._api.on('pushingNewObject', (e) => {
+        TTSAdapter._api.on('pushingNewObject', e => {
           ws.addWorkDirToWorkspace(); // Attempt to open workdir (if not already)
           // TTSAdapter will add the new object to the suggestion list and open it in the editor
           TTSAdapter.readFilesFromTTS(e.scriptStates, { single: true });
         }),
       ),
       new vscode.Disposable(
-        TTSAdapter._api.on('loadingANewGame', async (e) => {
+        TTSAdapter._api.on('loadingANewGame', async e => {
           // Whenever a new game is loaded, we need to update the list of objects
           TTSAdapter.updateInGameObjectsList();
           ws.addWorkDirToWorkspace(); // Attempt to open workdir (if not already)
@@ -44,31 +44,31 @@ export default abstract class TTSAdapter extends vscode.Disposable {
         }),
       ),
       new vscode.Disposable(
-        TTSAdapter._api.on('printDebugMessage', async (e) => {
+        TTSAdapter._api.on('printDebugMessage', async e => {
           // Print all debug messages to console++
           TTSConsolePanel.currentPanel?.appendToPanel(e.message);
         }),
       ),
       new vscode.Disposable(
-        TTSAdapter._api.on('errorMessage', async (e) => {
+        TTSAdapter._api.on('errorMessage', async e => {
           // Also print error messages in console++ with a custom class
           TTSConsolePanel.currentPanel?.appendToPanel(e.errorMessagePrefix, {
             class: 'callout error',
           });
-          TTSAdapter.goToTTSError(e).catch((err) => {
+          TTSAdapter.goToTTSError(e).catch(err => {
             vscode.window.showErrorMessage(err.message);
           });
         }),
       ),
       new vscode.Disposable(
-        TTSAdapter._api.on('customMessage', async (e) => {
+        TTSAdapter._api.on('customMessage', async e => {
           // Mostly unused
           // console.log('[TTSLua] Custom message from TTS:', e.customMessage);
         }),
       ),
       new vscode.Disposable(
         // Essential for executeLua to display return value
-        TTSAdapter._api.on('returnMessage', async (e) => {
+        TTSAdapter._api.on('returnMessage', async e => {
           const message = <string>e.returnValue;
           if (TTSConsolePanel.currentPanel?.isVisible()) {
             TTSConsolePanel.currentPanel.appendToPanel(message, {
@@ -78,7 +78,7 @@ export default abstract class TTSAdapter extends vscode.Disposable {
         }),
       ),
       new vscode.Disposable(
-        TTSAdapter._api.on('gameSaved', async (e) => {
+        TTSAdapter._api.on('gameSaved', async e => {
           if (vscode.workspace.getConfiguration('ttslua.console').get('logSaves')) {
             // Print to console the current timestamp in hh:mm:ss padded format
             const d = new Date();
@@ -108,7 +108,7 @@ export default abstract class TTSAdapter extends vscode.Disposable {
         }),
       ),
       new vscode.Disposable(
-        TTSAdapter._api.on('objectCreated', async (e) => {
+        TTSAdapter._api.on('objectCreated', async e => {
           // Update the list of in-game objects when a new object is created
           TTSAdapter.updateInGameObjectsList();
         }),
@@ -118,7 +118,7 @@ export default abstract class TTSAdapter extends vscode.Disposable {
 
   private static async updateInGameObjectsList() {
     // A single custom event will be sent with the list of objects
-    TTSAdapter._api.once('customMessage').then((e) => {
+    TTSAdapter._api.once('customMessage').then(e => {
       const getObjectsMessage = <{ type: 'getObjects'; data: string }>e.customMessage;
       TTSAdapter._inGameObjects = JSON.parse(getObjectsMessage.data);
     });
@@ -132,7 +132,7 @@ export default abstract class TTSAdapter extends vscode.Disposable {
    * Requests a list of all scripts from the game
    */
   public static getScripts() {
-    TTSAdapter._api.getLuaScripts().catch((err) => {
+    TTSAdapter._api.getLuaScripts().catch(err => {
       if (err.code === 'EADDRINUSE')
         vscode.window.showErrorMessage('Another instance of TTSLua or Atom is already running', {
           modal: true,
@@ -166,8 +166,8 @@ export default abstract class TTSAdapter extends vscode.Disposable {
       const wsFiles = await vscode.workspace.fs.readDirectory(workDirUri);
       // Filter to only apply to FileType.File and file extension .lua
       const scriptFiles = wsFiles
-        .filter((file) => file[1] === vscode.FileType.File && path.extname(file[0]) === '.lua')
-        .map((file) => file[0]);
+        .filter(file => file[1] === vscode.FileType.File && path.extname(file[0]) === '.lua')
+        .map(file => file[0]);
       for (const scriptFilename of scriptFiles) {
         const [name, guid] = scriptFilename.split('.');
         const obj: OutgoingJsonObject & { name: string } = { guid, name };
@@ -199,11 +199,11 @@ export default abstract class TTSAdapter extends vscode.Disposable {
       }
 
       // Validate empty global to avoid lockup
-      const globalObj = objects.find((obj) => obj.guid === '-1');
+      const globalObj = objects.find(obj => obj.guid === '-1');
       if (globalObj === undefined || globalObj.script === '') {
         vscode.window
           .showErrorMessage('Global Script must not be empty', 'Learn More')
-          .then((selection) => {
+          .then(selection => {
             if (selection === 'Learn More')
               vscode.env.openExternal(
                 vscode.Uri.parse('https://tts-vscode.rolandostar.com/support/globalScriptLock'),
@@ -262,7 +262,7 @@ export default abstract class TTSAdapter extends vscode.Disposable {
       return;
     }
 
-    const script = TTSAdapter._lastSentScripts.find((obj) => obj.guid === message.guid);
+    const script = TTSAdapter._lastSentScripts.find(obj => obj.guid === message.guid);
     if (!script) throw Error('No such script loaded.');
     try {
       // Will throw if file isn't bundled
@@ -365,10 +365,10 @@ export default abstract class TTSAdapter extends vscode.Disposable {
       await ws.syncFiles(filesRecv);
       switch (autoOpen) {
         case 'All':
-          filesRecv.forEach((handler) => handler.open());
+          filesRecv.forEach(handler => handler.open());
           break;
         case 'Global':
-          globalHandlers.forEach((handler) => handler.open());
+          globalHandlers.forEach(handler => handler.open());
           break;
         case 'None':
         default:
@@ -448,7 +448,7 @@ export default abstract class TTSAdapter extends vscode.Disposable {
     // First we extract comments and leave a placeholder, so we don't try to parse them
     // Remember to store them for reinsertion later
     const comments: string[] = [];
-    text = text.replace(/<!--[\s\S]*?-->/g, (comment) => {
+    text = text.replace(/<!--[\s\S]*?-->/g, comment => {
       comments.push(comment);
       return `<!--${nonce}:${comments.length - 1}-->`;
     });
