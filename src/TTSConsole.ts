@@ -47,7 +47,7 @@ export default class TTSConsolePanel {
 
     // Handle messages from the webview
     this._panel.webview.onDidReceiveMessage(
-      (message) => {
+      message => {
         switch (message.type) {
           case 'command':
             TTSAdapter.api.customMessage({ command: message.text });

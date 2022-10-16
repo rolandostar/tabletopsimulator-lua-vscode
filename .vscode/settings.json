@@ -17,7 +17,6 @@
     "source.organizeImports": true
   },
   "editor.formatOnSave": true,
-  "prettier.ignorePath": ".gitignore",
   "files.eol": "\n",
   "files.insertFinalNewline": true,
   "files.exclude": {
@@ -30,13 +29,17 @@
     ".vscode-test": true,
     "node_modules": true
   },
-
   // Linting.
   "eslint.validate": ["javascript", "json", "typescript"],
   "eslint.lintTask.enable": true,
   "editor.tabSize": 2,
   "editor.detectIndentation": false,
-
   // Turn off tsc task auto detection since we have the necessary tasks as npm scripts
-  "typescript.tsc.autoDetect": "off"
+  "typescript.tsc.autoDetect": "off",
+  "yaml.schemas": {
+    "https://json.schemastore.org/github-workflow.json": [
+      ".github/workflows/build-docs.yaml",
+      ".github/workflows/deploy-to-marketplace.yaml"
+    ]
+  }
 }

@@ -89,10 +89,10 @@ suite('Extension Test Suite', async () => {
 
       // Check that Console++ does not exist
       const filesExistBefore = await Promise.allSettled(
-        files.map((file) => vscode.workspace.fs.stat(vscode.Uri.file(file.dst))),
+        files.map(file => vscode.workspace.fs.stat(vscode.Uri.file(file.dst))),
       );
 
-      filesExistBefore.forEach((file) => {
+      filesExistBefore.forEach(file => {
         // assert.strictEqual(file.status, 'rejected');
         // If the file exists, test is invalid and should be skipped.
         if (file.status === 'fulfilled') {
@@ -105,9 +105,9 @@ suite('Extension Test Suite', async () => {
       await workspace.installConsole(extension.extensionPath);
       // Check that Console++ was installed
       const filesExistAfter = await Promise.all(
-        files.map((file) => vscode.workspace.fs.stat(vscode.Uri.file(file.dst))),
+        files.map(file => vscode.workspace.fs.stat(vscode.Uri.file(file.dst))),
       );
-      assert.ok(filesExistAfter.every((file) => file.type === vscode.FileType.File));
+      assert.ok(filesExistAfter.every(file => file.type === vscode.FileType.File));
     });
   });
 });

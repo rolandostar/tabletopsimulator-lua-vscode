@@ -74,7 +74,7 @@ export async function activate(context: vscode.ExtensionContext) {
     // Register adapter disposables
     new vscode.Disposable(TTSAdapter.dispose),
     // Register all commands
-    ...commands.map((cmd) => vscode.commands.registerCommand(cmd.id, cmd.fn, context)),
+    ...commands.map(cmd => vscode.commands.registerCommand(cmd.id, cmd.fn, context)),
     // Register providers for completion and hover
     vscode.languages.registerHoverProvider('lua', ttsHoverProvider),
   );

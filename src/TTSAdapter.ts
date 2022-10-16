@@ -36,7 +36,7 @@ export default class TTSAdapter extends vscode.Disposable {
   public static registerListeners() {
     TTSAdapter._disposables.push(
       new vscode.Disposable(
-        TTSAdapter.api.on('pushingNewObject', (e) => {
+        TTSAdapter.api.on('pushingNewObject', e => {
           ws.addWorkDirToWorkspace(); // Attempt to open workdir (if not already)
           // TTSAdapter will add the new object to the suggestion list and open it in the editor
           if (TTSWorkDir.isDefault())
@@ -47,7 +47,7 @@ export default class TTSAdapter extends vscode.Disposable {
         }),
       ),
       new vscode.Disposable(
-        TTSAdapter.api.on('loadingANewGame', async (e) => {
+        TTSAdapter.api.on('loadingANewGame', async e => {
           // Whenever a new game is loaded, we need to update the list of objects
           TTSAdapter.updateInGameObjectsList();
           ws.addWorkDirToWorkspace(); // Attempt to open workdir (if not already)
@@ -57,31 +57,31 @@ export default class TTSAdapter extends vscode.Disposable {
         }),
       ),
       new vscode.Disposable(
-        TTSAdapter.api.on('printDebugMessage', async (e) => {
+        TTSAdapter.api.on('printDebugMessage', async e => {
           // Print all debug messages to console++
           TTSConsolePanel.currentPanel?.appendToPanel(e.message);
         }),
       ),
       new vscode.Disposable(
-        TTSAdapter.api.on('errorMessage', async (e) => {
+        TTSAdapter.api.on('errorMessage', async e => {
           // Also print error messages in console++ with a custom class
           TTSConsolePanel.currentPanel?.appendToPanel(e.errorMessagePrefix, {
             class: 'callout error',
           });
-          TTSAdapter.goToTTSError(e).catch((err) => {
+          TTSAdapter.goToTTSError(e).catch(err => {
             vscode.window.showErrorMessage(err.message);
           });
         }),
       ),
       new vscode.Disposable(
-        TTSAdapter.api.on('customMessage', async (e) => {
+        TTSAdapter.api.on('customMessage', async e => {
           // Mostly unused
           // console.log('[TTSLua] Custom message from TTS:', e.customMessage);
         }),
       ),
       new vscode.Disposable(
         // Essential for executeLua to display return value
-        TTSAdapter.api.on('returnMessage', async (e) => {
+        TTSAdapter.api.on('returnMessage', async e => {
           const message = <string>e.returnValue;
           if (TTSConsolePanel.currentPanel?.isVisible()) {
             TTSConsolePanel.currentPanel.appendToPanel(message, {
@@ -91,7 +91,7 @@ export default class TTSAdapter extends vscode.Disposable {
         }),
       ),
       new vscode.Disposable(
-        TTSAdapter.api.on('gameSaved', async (e) => {
+        TTSAdapter.api.on('gameSaved', async e => {
           const isAutoSave = e.savePath.includes('TS_AutoSave');
           if (getConfig('console.logSaves')) {
             // Print to console the current timestamp in hh:mm:ss padded format
@@ -111,7 +111,7 @@ export default class TTSAdapter extends vscode.Disposable {
         }),
       ),
       new vscode.Disposable(
-        TTSAdapter.api.on('objectCreated', async (e) => {
+        TTSAdapter.api.on('objectCreated', async e => {
           // Update the list of in-game objects when a new object is created
           TTSAdapter.updateInGameObjectsList();
         }),
@@ -121,7 +121,7 @@ export default class TTSAdapter extends vscode.Disposable {
 
   private static async updateInGameObjectsList() {
     // A single custom event will be sent with the list of objects
-    TTSAdapter.api.once('customMessage').then((e) => {
+    TTSAdapter.api.once('customMessage').then(e => {
       const getObjectsMessage = <{ type: 'getObjects'; data: string }>e.customMessage;
       TTSAdapter._inGameObjects = JSON.parse(getObjectsMessage.data);
     });
@@ -201,8 +201,8 @@ export default class TTSAdapter extends vscode.Disposable {
       const wsFiles = await vscode.workspace.fs.readDirectory(workDirUri);
       // Filter to only apply to FileType.File and file extension .lua
       const scriptFiles = wsFiles
-        .filter((file) => file[1] === vscode.FileType.File && path.extname(file[0]) === '.lua')
-        .map((file) => vscode.Uri.joinPath(workDirUri, file[0]).fsPath);
+        .filter(file => file[1] === vscode.FileType.File && path.extname(file[0]) === '.lua')
+        .map(file => vscode.Uri.joinPath(workDirUri, file[0]).fsPath);
       await collectScripts(scriptFiles);
     } else {
       // Git Workspace Save & Play Workflow
@@ -245,7 +245,7 @@ export default class TTSAdapter extends vscode.Disposable {
     }
 
     // Validate empty global to avoid lockup
-    const globalObj = objects.find((obj) => obj.guid === '-1');
+    const globalObj = objects.find(obj => obj.guid === '-1');
     if (globalObj === undefined || globalObj.script === '') return handleEmptyGlobalScript();
 
     TTSAdapter._lastSentScripts = objects;
@@ -294,7 +294,7 @@ export default class TTSAdapter extends vscode.Disposable {
       return;
     }
 
-    const script = TTSAdapter._lastSentScripts.find((obj) => obj.guid === message.guid);
+    const script = TTSAdapter._lastSentScripts.find(obj => obj.guid === message.guid);
     if (!script) throw Error('No such script loaded.');
     try {
       // Will throw if file isn't bundled
@@ -387,10 +387,10 @@ export default class TTSAdapter extends vscode.Disposable {
       .get('autoOpen') as string;
     // If it's not a single script, syncFiles and trigger autoOpen
     if (!options?.single) {
-      await ws.syncFiles(filesRecvMgers.map((m) => m.getUri()));
+      await ws.syncFiles(filesRecvMgers.map(m => m.getUri()));
       switch (autoOpen) {
         case 'All':
-          filesRecvMgers.forEach((m) => m.open());
+          filesRecvMgers.forEach(m => m.open());
           break;
         case 'Global':
           new ws.FileManager(`Global.-1.lua`).open();
@@ -446,7 +446,7 @@ export default class TTSAdapter extends vscode.Disposable {
     // First we extract comments and leave a placeholder, so we don't try to parse them
     // Remember to store them for reinsertion later
     const comments: string[] = [];
-    text = text.replace(/<!--[\s\S]*?-->/g, (comment) => {
+    text = text.replace(/<!--[\s\S]*?-->/g, comment => {
       comments.push(comment);
       return `<!--${nonce}:${comments.length - 1}-->`;
     });

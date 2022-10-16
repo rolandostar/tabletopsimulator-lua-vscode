@@ -5,7 +5,7 @@ import { handleGameNotRunning, handleMultipleInstances } from './utils/errorHand
 export default class CustomExternalEditorApi extends ExternalEditorApi {
   constructor(options: Options = {}) {
     super(options);
-    this.server.on('connection', (socket) => {
+    this.server.on('connection', socket => {
       const chunks: Buffer[] = [];
       socket.on('data', (data: Buffer) => {
         chunks.push(data);
@@ -45,7 +45,7 @@ export default class CustomExternalEditorApi extends ExternalEditorApi {
         reject();
       });
       client.connect(this.clientPort, '127.0.0.1', () => {
-        client.write(JSON.stringify(message), (error) => {
+        client.write(JSON.stringify(message), error => {
           if (error) {
             reject(error);
           } else {

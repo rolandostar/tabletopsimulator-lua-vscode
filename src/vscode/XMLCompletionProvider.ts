@@ -32,13 +32,13 @@ export default class XMLCompletionProvider implements vscode.CompletionItemProvi
       else {
         textTokens = grammar
           .tokenizeLine(currentLine, ruleStack)
-          .tokens.map((t) => {
+          .tokens.map(t => {
             return {
               text: currentLine.substring(t.startIndex, t.endIndex),
               scopes: t.scopes,
             };
           })
-          .filter((v) => v.text.trim().length !== 0)
+          .filter(v => v.text.trim().length !== 0)
           .reverse();
         break;
       }
@@ -73,8 +73,8 @@ export default class XMLCompletionProvider implements vscode.CompletionItemProvi
     const completionItems: vscode.CompletionItem[] = [];
 
     if (isTag) {
-      this.XMLCompletionData.elementTypes.forEach((elementType) => {
-        elementType.items.forEach((item) => {
+      this.XMLCompletionData.elementTypes.forEach(elementType => {
+        elementType.items.forEach(item => {
           const citem = new vscode.CompletionItem(item.tag, vscode.CompletionItemKind.Property);
           citem.documentation = new vscode.MarkdownString(`[[Documentation]](${item.url})`);
           completionItems.push(citem);
@@ -84,10 +84,10 @@ export default class XMLCompletionProvider implements vscode.CompletionItemProvi
       // Search for the tag in XMLCompletionData
       const tag = findNearestTag();
       if (!tag) return [];
-      this.XMLCompletionData.elementTypes.find((elementType) => {
-        return elementType.items.find((element) => {
+      this.XMLCompletionData.elementTypes.find(elementType => {
+        return elementType.items.find(element => {
           if (element.tag === tag) {
-            element.attributes.forEach((attribute) => {
+            element.attributes.forEach(attribute => {
               const citem = new vscode.CompletionItem(
                 attribute.name,
                 vscode.CompletionItemKind.Property,

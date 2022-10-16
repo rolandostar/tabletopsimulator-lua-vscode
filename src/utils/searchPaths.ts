@@ -11,11 +11,11 @@ export function getSearchPaths(searchPattern: string[]): string[] {
   const includePaths: string[] = getConfig('fileManagement.includePaths') || [];
   const vsFolders = vscode.workspace.workspaceFolders || [];
   const paths = searchPattern
-    .filter((pattern) => pattern.length > 0)
-    .map((pattern) => [
+    .filter(pattern => pattern.length > 0)
+    .map(pattern => [
       path.join(ws.docsFolder, pattern),
-      ...includePaths.map((p) => path.join(p, pattern)),
-      ...vsFolders.map((val) => path.join(val.uri.fsPath, pattern)),
+      ...includePaths.map(p => path.join(p, pattern)),
+      ...vsFolders.map(val => path.join(val.uri.fsPath, pattern)),
       pattern, // For absolute paths
     ])
     // Flatten so all paths are in one top level array

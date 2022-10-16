@@ -1,11 +1,10 @@
-
 on:
   workflow_dispatch:
   push:
     branches:
-    - 'main'
+      - 'main'
     paths:
-    - 'docs/**.md'
+      - 'docs/**.md'
 
 name: Build Documentation
 jobs:
@@ -23,7 +22,9 @@ jobs:
           node-version: lts/*
           cache: npm
       - name: Install Dependencies
-        run: npm install --frozen-lockfile 
+        run: npm install --frozen-lockfile
+      - name: Lint Files
+        run: npm run lint
       - name: Build Documentation
         run: npm run build
       - name: Upload Artifact
@@ -35,8 +36,8 @@ jobs:
     needs: build
     # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
     permissions:
-      pages: write      # to deploy to Pages
-      id-token: write   # to verify the deployment originates from an appropriate source
+      pages: write # to deploy to Pages
+      id-token: write # to verify the deployment originates from an appropriate source
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
