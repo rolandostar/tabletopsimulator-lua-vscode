@@ -1,6 +1,6 @@
 import { ErrorMessage, IncomingJsonObject, OutgoingJsonObject } from '@matanlurey/tts-editor';
 import { SplitIO } from '@matanlurey/tts-expander';
-import { SaveState } from '@matanlurey/tts-save-format/src/types';
+import { SaveState } from '@matanlurey/tts-save-files/src/types';
 import * as fs from 'fs';
 import { glob } from 'glob';
 import bundler from 'luabundle';
@@ -12,11 +12,12 @@ import CustomExternalEditorApi from './CustomExternalEditorApi';
 import TTSConsolePanel from './TTSConsole';
 import TTSWorkDir from './TTSWorkDir';
 import { handleBundleError, handleEmptyGlobalScript } from './utils/errorHandling';
+import { collapseGame, xtractGame } from './utils/gameParser';
 import getConfig from './utils/getConfig';
 import { getLuaSearchPatterns, getSearchPaths } from './utils/searchPaths';
 import { uriExists } from './utils/simpleStat';
 import { quickStatus } from './utils/status';
-import { xtractGame } from './utils/xtractGame';
+import LocalStorageService from './vscode/LocalStorageService';
 import * as ws from './vscode/workspace';
 
 type OutgoingJsonObjectWithName = OutgoingJsonObject & { name: string };
@@ -48,6 +49,7 @@ export default class TTSAdapter extends vscode.Disposable {
       ),
       new vscode.Disposable(
         TTSAdapter.api.on('loadingANewGame', async e => {
+          LocalStorageService.setValue('lastSavePath', e.savePath);
           // Whenever a new game is loaded, we need to update the list of objects
           TTSAdapter.updateInGameObjectsList();
           ws.addWorkDirToWorkspace(); // Attempt to open workdir (if not already)
@@ -120,7 +122,7 @@ export default class TTSAdapter extends vscode.Disposable {
   }
 
   private static async updateInGameObjectsList() {
-    // A single custom event will be sent with the list of objects
+    // A single custom event will be fired with the list of objects
     TTSAdapter.api.once('customMessage').then(e => {
       const getObjectsMessage = <{ type: 'getObjects'; data: string }>e.customMessage;
       TTSAdapter._inGameObjects = JSON.parse(getObjectsMessage.data);
@@ -160,6 +162,7 @@ export default class TTSAdapter extends vscode.Disposable {
     /* This function collectScripts, will add objects to the list of OutgoingJsonObjects
      * @param scriptFileNames: string[] - List of absolute script file names. All must end with '.lua'
      */
+    // TODO: Multi-extension support
     const objects: OutgoingJsonObjectWithName[] = [];
     const collectScripts = async (scriptFileNames: string[]) => {
       for (const scriptFilename of scriptFileNames) {
@@ -206,18 +209,24 @@ export default class TTSAdapter extends vscode.Disposable {
       await collectScripts(scriptFiles);
     } else {
       // Git Workspace Save & Play Workflow
-      // We don't know the save path, so we'll have to ask the game
-      const { savePath } = await TTSAdapter.api.getLuaScripts();
+      // const { savePath } = await TTSAdapter.api.getLuaScripts();
+      const savePath = LocalStorageService.getValue<string>('lastSavePath');
+      if (savePath === undefined) {
+        vscode.window.showErrorMessage(
+          'Could not find the last save path. Please try getting scripts before sending them.',
+        );
+        return;
+      }
       // Parse savePath to get save name
       const save: SaveState = JSON.parse(
         (await vscode.workspace.fs.readFile(vscode.Uri.file(savePath))).toString(),
       );
       // Consolitate workdir tree back to save json
       const splitter = new SplitIO();
-      const saveFileJson = await splitter.readAndCollapse(
+      const saveFileJson = await collapseGame(
         path.join(
           TTSWorkDir.getFileUri(getConfig('fileManagement.git.output')).fsPath,
-          save.SaveName + '.json',
+          getConfig('fileManagement.git.saveName') + '.json',
         ),
       );
       // Write back to savePath

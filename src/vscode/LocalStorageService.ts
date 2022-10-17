@@ -4,12 +4,12 @@ export default class LocalStorageService {
   public static storage: Memento | undefined;
   public static getValue<T>(key: string): T | undefined {
     if (!LocalStorageService.storage) throw new Error('Storage not set');
-    return LocalStorageService.storage!.get<T>(key);
+    return LocalStorageService.storage.get<T>(key);
   }
 
   public static setValue<T>(key: string, value: T) {
     if (!LocalStorageService.storage) throw new Error('Storage not set');
-    return LocalStorageService.storage!.update(key, value);
+    return LocalStorageService.storage.update(key, value);
   }
 
   public static upsertValue<T>(key: string, value: T) {
