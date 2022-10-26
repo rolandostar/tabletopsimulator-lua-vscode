@@ -1,8 +1,14 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import * as glob from 'glob';
 import * as os from 'os';
-import * as decaf from 'decaffeinate';
+
+import {
+  CompletionItem,
+  CompletionItemKind,
+  CompletionItemLabel,
+  CompletionItemProvider,
+  CompletionList,
+} from 'vscode';
 
 import axios, {AxiosError} from 'axios';
 import LocalStorageService from './LocalStorageService';
@@ -10,76 +16,42 @@ import LocalStorageService from './LocalStorageService';
 import type * as hscopes from './hscopes';
 import {TextEncoder} from 'util';
 import TTSAdapter from '../TTSAdapter';
+import apiJSON from '../TTSApi';
+
+const apiJSONUrl =
+  'https://raw.githubusercontent.com/Berserk-Games/atom-tabletopsimulator-lua/master/lib/api.json';
 
 const suggestionTempDir = path.join(os.tmpdir(), 'vscode-decaffeinate-suggestions');
 
-/* --- Section Categorization Logic ---
- * Standard autocompletes are built in a Map<sectionName, trigger> format. `trigger` will be the
- * previousToken required to suggest it, while `sectionName` is the name of the section to suggest
- * according to the `provider.coffee` section header.
- *
- * These categories are known categories, when downloading an update to the API, unknown sections
- * will be placed in the "Standard" category. Offering a guess for the trigger, in the form of the
- * lowercase section header name without spaces as well as warning on the console.
- *
- * If special conditions are needed to determine the category auto-completion requirements, a
- * function can be added to the Function Definitions below, and that section can be then added to
- * the extraSectionMatcher object, thus ensuring that that section will not be offered as a
- * standard autocomplete.
- */
+class Behavior {
+  public name: string;
+  public snakedName: string;
 
-const stdSectionMatcher = new Map([
-  ['globalobject', 'Global'],
-  ['dynamic', 'dynamic'],
-  ['bit32', 'bit32'],
-  ['math', 'math'],
-  ['string', 'string'],
-  ['table', 'table'],
-  ['turns', 'Turns'],
-  ['ui', 'UI'],
-  ['coroutine', 'coroutine'],
-  ['os', 'os'],
-  ['clock', 'Clock'],
-  ['counter', 'Counter'],
-  ['lighting', 'Lighting'],
-  ['notes', 'Notes'],
-  ['physics', 'Physics'],
-  ['json', 'JSON'],
-  ['time', 'Time'],
-  ['webrequest', 'WebRequest'],
-  ['rpgfigurine', 'RPGFigurine'],
-  ['texttool', 'TextTool'],
-  ['wait', 'Wait'],
-  // Rolandostar's Mappings
-  ['musicplayer', 'MusicPlayer'],
-  ['vector', 'Vector'],
-  ['layoutzonebehaviour', 'LayoutZone'],
-  ['zonebehaviourhasallzonemembers', 'Zone'],
-  ['color', 'Color'],
-  ['playercolors', 'Player'],
-]);
-
-// All of these are handled manually after the standard section matcher
-const extraSectionMatcher = [
-  'player',
-  'object',
-  'defaultevents-global',
-  'defaultevents',
-  'globallyaccessibleconstantsfunctions',
-];
-
-type SuggestionList = {[key: string]: Suggestion[]};
-
-interface Suggestion {
-  snippet: string;
-  displayText: string;
-  type: string;
-  leftLabel: string;
-  description: string;
-  descriptionMoreURL: string;
+  constructor(name: string) {
+    this.name = name;
+    this.snakedName = camelToSnake(name);
+  }
 }
 
-export default class LuaCompletionProvider implements vscode.CompletionItemProvider {
+class Member {
+  public name: string = '';
+  public kind: string = '';
+  public type: string = '';
+  public description: string = '';
+  public url: string = '';
+  public parameters?: Parameter[] = [];
+  public return_table?: Parameter[] = [];
+  public return_table_items?: Parameter[] = [];
+}
+
+class Parameter {
+  public name: string = '';
+  public type: string = '';
+  public description?: string = '';
+  public parameters?: Parameter[] = [];
+}
+
+export default class LuaCompletionProvider implements CompletionItemProvider {
   // Hyper Scopes is an external extension API used to return the scope inside a document
   // It's used instead of vscode-textmate
   // https://marketplace.visualstudio.com/items?itemName=draivin.hscopes
@@ -90,328 +62,332 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
     })();
   private _hs: hscopes.HScopesAPI | undefined;
 
-  // Standard Sections are resolved by the `isSection` function and uses the SectionMatcher map
-  private _extraSectionCItems: {[key: string]: vscode.CompletionItem[]} = {};
-  private _stdSectionCItems: {[key: string]: vscode.CompletionItem[]} = {};
-  // This is dictionary with simple completions that don't require any parsing
-  private _cDict: {[key: string]: vscode.CompletionItem} = {};
+  // Most of the API goes into _generalCompletions, while a few special items are put into their
+  // own lists.
+  private _generalCompletions = new Map<string, CompletionItem[]>();
+  private _rootNames: CompletionItem[] = [];
+  private _objectCompletions: CompletionItem[] = [];
+  private _objectEventCompletions: CompletionItem[] = [];
+  private _globalEventCompletions: CompletionItem[] = [];
+  private _playerInstanceCompletions: CompletionItem[] = [];
+  private _playerManagerCompletions: CompletionItem[] = [];
+  private _componentCompletions: CompletionItem[] = [];
+  private _gameObjectCompletions: CompletionItem[] = [];
+  private _materialCompletions: CompletionItem[] = [];
+
+  // Behaviors on Objects add extra members to them: for example, a Book has `getPage`
+  // When matching after a variable, we'll check its name against the list of behaviors
+  // to try and guess if we should suggest those extra members.
+  private _behaviors: Behavior[] = [];
+
+  private _parameterFormat: ParameterFormat[] | undefined = undefined;
+  private _loadedApiVersion?: ApiVersion;
 
   constructor() {
     // Restore completion items from stored suggestions at init time
-    if (LocalStorageService.getValue('suggestionList')) {
-      this.loadCompletionItems();
-    } else {
-      this.updateCompletionItems();
-    }
-    // Make sure suggestionTempDir exists, if not, create it
-    const suggestionTempDirUri = vscode.Uri.file(suggestionTempDir);
-    vscode.workspace.fs.stat(suggestionTempDirUri).then(stats => {
-      if (stats.type !== vscode.FileType.Directory) {
-        vscode.workspace.fs.createDirectory(suggestionTempDirUri);
-      }
-    });
-
-    /* ----------------------------- Completion Dictionary Populate ----------------------------- */
-    // This is precalculated at init time to avoid having to do it every time a completion is requested
-    for (const item of [
-      {name: 'endsWithDo', label: 'do...end', snippet: 'do\n\t${0}\nend'},
-      {name: 'endsWithThen', label: 'then...end', snippet: 'then\n\t${0}\nend'},
-      {name: 'endsWithRepeat', label: 'repeat...until', snippet: 'repeat\n\t${1}\nuntil ${0}'},
-      {name: 'fend', label: 'function...end', snippet: '\n\t${0}\nend'},
-      {name: 'require', label: 'require("...")', snippet: 'require("${0}")'},
-      {name: 'rConsole', label: 'require("vscode/console")', snippet: 'require("vscode/console")'},
-    ]) {
-      const completionItem = new vscode.CompletionItem(
-        item.label,
-        vscode.CompletionItemKind.Snippet
-      );
-      completionItem.insertText = new vscode.SnippetString(item.snippet);
-      this._cDict[item.name] = completionItem;
-    }
+    this.loadCompletionItems(this.getApiJSONString());
   }
 
-  public async loadCompletionItems() {
-    const suggestionList = LocalStorageService.getValue('suggestionList') as SuggestionList;
-    // Type <-> Kind
-    const typeToKind: Map<string, vscode.CompletionItemKind> = new Map([
-      ['function', vscode.CompletionItemKind.Function],
-      ['property', vscode.CompletionItemKind.Property],
-      ['constant', vscode.CompletionItemKind.Constant],
-    ]);
+  private getApiJSONString(): string {
+    const storedJSON = LocalStorageService.getValue('apiJSON') as string;
+    if (storedJSON !== undefined) return storedJSON;
+    else return apiJSON;
+  }
 
-    // Pre-Convert suggestions to completionItems
-    const insertTextMatchPattern = /\${([0-9]+):([0-9a-zA-Z_]+)\|([0-9a-zA-Z_]+)}/g;
-    Object.entries(suggestionList).forEach(([section, suggestionArray]) => {
-      const convertSuggestion = (sArray: Suggestion[]) => {
-        return sArray.map(s => {
-          // Null coalescing operator to handle non-matching values
-          const displayText = s.displayText.match(/\b.*(?=\()|\b.*$/g) ?? [s.displayText];
-          const item = new vscode.CompletionItem(displayText[0], typeToKind.get(s.type));
-          item.insertText = new vscode.SnippetString(
-            // TODO: Implement replace types
-            // https://github.com/OliPro007/vscode-tabletopsimulator-lua/blob/master/src/language/completion.ts#L308
-            s.snippet.replace(insertTextMatchPattern, '$${$1:$3}')
-          );
-          item.documentation = new vscode.MarkdownString(
-            `${s.description}\n\n[[More Info]](${s.descriptionMoreURL})\n\n*Section: ${section}*`
-          );
-          item.detail = s.leftLabel
-            ? `(${s.type}) ${s.leftLabel} ${s.displayText}`
-            : `(${s.type}) ${s.displayText}`;
+  public async loadCompletionItems(json: string) {
+    const api = JSON.parse(json);
+    const apiSections = api.sections;
 
-          return item;
-        });
-      };
-
-      // Categorize sections
-      // If the section is not the extraSectionMatcher array, it's a standard section
-      if (!extraSectionMatcher.includes(section)) {
-        this._stdSectionCItems[section] = convertSuggestion(suggestionArray);
-        return;
-      } else this._extraSectionCItems[section] = convertSuggestion(suggestionArray);
-    });
-
-    // Check for unhanded sections
-    const unhandledSections = Object.keys(suggestionList).filter(
-      section => !extraSectionMatcher.includes(section) && !stdSectionMatcher.has(section)
-    );
-    if (unhandledSections.length > 0) {
-      console.warn('Unhandled Sections:', unhandledSections);
-      vscode.window
-        .showWarningMessage(
-          "Unhandled Sections for AutoComplete.\nPlease report this to the extension author if it hasn't already.",
-          'Check Issue Tracker',
-          'Create Issue'
-        )
-        .then(selection => {
-          switch (selection) {
-            case 'Check Issue Tracker':
-              vscode.env.openExternal(
-                vscode.Uri.parse(
-                  'https://github.com/rolandostar/tabletopsimulator-lua-vscode/issues?q=is%3Aissue+is%3Aopen+Unhandled+Sections+for+AutoComplete'
-                )
-              );
-              break;
-            case 'Create Issue':
-              vscode.env.openExternal(
-                vscode.Uri.parse(
-                  'https://github.com/rolandostar/tabletopsimulator-lua-vscode/issues/new?title=Unhandled%20Sections%20for%20AutoComplete&body=%2F%2F%20PLEASE%20DO%20NOT%20SUBMIT%20WITHOUT%20SEARCHING%20-%20Help%20me%20prevent%20duplicates.%0A%0ADetected%20Unhandled%20Sections%3A%20%5B%5D&assignee=rolandostar'
-                )
-              );
-              break;
-          }
-        });
+    const versionString: string = api.version;
+    if (versionString === undefined) {
+      console.error('Error: Could not read `version` in api.json (is api.json malformed?)');
+      return;
     }
+    this._loadedApiVersion = new ApiVersion(versionString);
+    if (this._loadedApiVersion === undefined || !this._loadedApiVersion.valid) {
+      console.error('Error: `version` in api.json should be X.Y.Z.W (is api.json malformed?)');
+      return;
+    }
+    console.log('TTS API Version: ' + versionString);
+
+    this.resetApiData();
+
+    for (let i = 0; i < api.behaviors.length; i++) {
+      const name = api.behaviors[i];
+      this._behaviors.push(new Behavior(name));
+    }
+
+    for (const [name, _members] of Object.entries(apiSections)) {
+      const members = _members as Object;
+      if (name === '/') this.addMembers(this._rootNames, members);
+      else if (name === 'Component') this.addMembers(this._componentCompletions, members);
+      else if (name === 'GameObject') this.addMembers(this._gameObjectCompletions, members);
+      else if (name === 'Material') this.addMembers(this._materialCompletions, members);
+      else if (name === 'Object') this.addMembers(this._objectCompletions, members);
+      else if (name === 'ObjectEvents') this.addMembers(this._objectEventCompletions, members);
+      else if (name === 'GlobalEvents') this.addMembers(this._globalEventCompletions, members);
+      else if (name === 'PlayerInstance') this.addMembers(this._playerInstanceCompletions, members);
+      else if (name === 'PlayerManager') this.addMembers(this._playerManagerCompletions, members);
+      else {
+        this._generalCompletions.set(name, []);
+        this.addMembers(<CompletionItem[]>this._generalCompletions.get(name), members);
+      }
+    }
+    // In an Object's code you have access to object events AND global events, so:
+    this._objectEventCompletions.push(...this._globalEventCompletions);
   }
 
   public async updateCompletionItems(force = false) {
-    const updateStatus = await this._needsUpdate();
-    // If updateStatus is undefined, there was an error, it's handled internally
-    if (updateStatus === undefined) return;
-    // If update is not needed, let the user know
-    if (!updateStatus.required && !force) {
+    const downloaded = await this.downloadApiJSON();
+    if (downloaded === undefined) return;
+
+    if (!downloaded.required && !force) {
       vscode.window.showInformationMessage('No update needed');
       return;
     }
-    // Content is encoded in base64, decode
-    const providerCode = Buffer.from(updateStatus.content, 'base64').toString('utf8');
-    // Split provider code
-    const splitted = providerCode
-      .substring(providerCode.indexOf('# Section: '), providerCode.indexOf('# End of sections'))
-      .split('# Section: ');
-    splitted.shift(); // Remove empty string at the beginning
-    // Make sure the directory is empty before we begin
-    await vscode.workspace.fs
-      .readDirectory(vscode.Uri.file(suggestionTempDir))
-      .then(files =>
-        files.map(file =>
-          vscode.workspace.fs.delete(vscode.Uri.file(path.join(suggestionTempDir, file[0])))
-        )
-      );
-    /* -------------------------- Suggestion Generation Heavy Lifting ------------------------- */
-    // We'll report progress every time a section is parsed
-    // First we calculate values to update progress
-    const incrementValue = Math.floor(100 / splitted.length);
-    // Since API it's discrete we will have a remainder when doing division
-    const lastValue = 100 - incrementValue * splitted.length;
-    await vscode.window.withProgress(
-      {
-        location: vscode.ProgressLocation.Notification,
-        title: 'Updating API Intellisense',
-        cancellable: false,
-      },
-      async progress => {
-        // Create an array of promises, each resolving when the corresponding section is done
-        // This also allows for each section to be parsed in parallel
-        // Being asyncronous also allows for the progress bar to update correctly 😊
-        await new Promise(resolve => setTimeout(resolve, 0)); // Force progress bar to show initially
-        await Promise.all(
-          splitted.map(section =>
-            // We wrap the progress report function which will update the progress bar as done()
-            LuaCompletionProvider._parseSection(section, () =>
-              progress.report({increment: incrementValue})
-            )
-          )
-        );
 
-        /* ------------------------------------------------------------------------------------------ */
-        // We now have all the updated suggestions on disk, let's import them
-        const suggestionList: SuggestionList = {};
-        const files = glob.sync('**/*.js', {cwd: suggestionTempDir});
-        await Promise.all(
-          files.map(async file => {
-            const f: (...args: any[]) => Suggestion[] = await import(
-              path.join(suggestionTempDir, file)
-            );
-            const name = path.basename(file, '.js');
-            if (name === 'defaultevents') suggestionList['defaultevents-global'] = f(true);
+    const downloadedAPI = downloaded.content;
+    if (downloadedAPI.version === undefined) {
+      console.error('Error: Could not read `version` in api.json (is api.json malformed?)');
+      return;
+    }
 
-            suggestionList[name] = f();
-          })
-        );
+    LocalStorageService.setValue('suggestions-meta', {
+      lastUpdated: new Date().getTime(),
+      providerVersion: downloadedAPI.version,
+    });
 
-        // Store suggestion list metadata in memento
-        LocalStorageService.setValue('suggestionList', suggestionList);
-        LocalStorageService.setValue('suggestions-meta', {
-          lastUpdated: new Date().getTime(),
-          providerHash: updateStatus.providerHash,
-        });
-        this.loadCompletionItems();
+    const downloadedApiVersion = new ApiVersion(downloadedAPI.version);
+    if (!downloadedApiVersion.valid) {
+      console.error('Error: `version` in api.json should be X.Y.Z.W (is api.json malformed?)');
+      return;
+    }
 
-        // Let the user know that the update is done
-        progress.report({
-          increment: lastValue,
-          message: ': Done!',
-        });
-        // Simple 300ms delay to make sure the progress bar is shown at 100% for a bit
-        return new Promise(resolve => setTimeout(resolve, 2300));
-      }
-    );
+    if (
+      this._loadedApiVersion === undefined ||
+      downloadedApiVersion.isHigherVersionThan(this._loadedApiVersion)
+    ) {
+      const downloadedJSON = JSON.stringify(downloadedAPI);
+      LocalStorageService.setValue('apiJSON', downloadedJSON);
+      this.loadCompletionItems(downloadedJSON);
+    }
   }
 
-  private async _needsUpdate() {
-    // Retrieve stored hash
+  private resetApiData() {
+    this._generalCompletions.clear();
+    this._rootNames.splice(0, this._rootNames.length);
+    this._objectCompletions.splice(0, this._objectCompletions.length);
+    this._objectEventCompletions.splice(0, this._objectEventCompletions.length);
+    this._globalEventCompletions.splice(0, this._globalEventCompletions.length);
+    this._playerInstanceCompletions.splice(0, this._playerInstanceCompletions.length);
+    this._playerManagerCompletions.splice(0, this._playerManagerCompletions.length);
+    this._componentCompletions.splice(0, this._componentCompletions.length);
+    this._gameObjectCompletions.splice(0, this._gameObjectCompletions.length);
+    this._materialCompletions.splice(0, this._materialCompletions.length);
+    this._behaviors.splice(0, this._behaviors.length);
+  }
+
+  private makeParameterFormat(): ParameterFormat[] {
+    const result: ParameterFormat[] = [];
+    let parameterFormat = vscode.workspace
+      .getConfiguration('ttslua.autocompletion')
+      .get('parameterFormat') as string;
+
+    function bite(s: string): [ParameterFormat, string] {
+      const result: ParameterFormat = {textBeforeToken: '', token: ParameterFormatToken.NONE};
+      while (s.length >= 4) {
+        if (s.startsWith('TYPE')) {
+          result.token = ParameterFormatToken.TYPE;
+          return [result, s.substring(4)];
+        } else if (s.startsWith('Type')) {
+          result.token = ParameterFormatToken.Type;
+          return [result, s.substring(4)];
+        } else if (s.startsWith('type')) {
+          result.token = ParameterFormatToken.type;
+          return [result, s.substring(4)];
+        } else if (s.startsWith('NAME')) {
+          result.token = ParameterFormatToken.NAME;
+          return [result, s.substring(4)];
+        } else if (s.startsWith('Name')) {
+          result.token = ParameterFormatToken.Name;
+          return [result, s.substring(4)];
+        } else if (s.startsWith('name')) {
+          result.token = ParameterFormatToken.name;
+          return [result, s.substring(4)];
+        } else {
+          result.textBeforeToken += s[0];
+          s = s.substring(1);
+        }
+      }
+      result.textBeforeToken += s;
+      return [result, ''];
+    }
+
+    let format: ParameterFormat;
+    while (parameterFormat) {
+      [format, parameterFormat] = bite(parameterFormat);
+      result.push(format);
+    }
+    return result;
+  }
+
+  private makeParameterString(index: number, parameter: Parameter): string {
+    if (this._parameterFormat === undefined) {
+      this._parameterFormat = this.makeParameterFormat();
+    }
+    if (!this._parameterFormat) return parameter.name; // sensible default if we somehow end up without a format
+
+    let result = '';
+    for (const format of this._parameterFormat) {
+      result += format.textBeforeToken;
+      switch (format.token) {
+        case ParameterFormatToken.TYPE:
+          result += parameter.type.toUpperCase();
+          break;
+        case ParameterFormatToken.Type:
+          result += snakeToCamel(parameter.type);
+          break;
+        case ParameterFormatToken.type:
+          result += parameter.type.toLowerCase();
+          break;
+        case ParameterFormatToken.NAME:
+          result += parameter.name.toUpperCase();
+          break;
+        case ParameterFormatToken.Name:
+          result += snakeToCamel(parameter.name);
+          break;
+        case ParameterFormatToken.name:
+          result += parameter.name.toLowerCase();
+          break;
+      }
+    }
+    return '${' + index + ':' + result + '}';
+  }
+
+  private addMembers(destination: CompletionItem[], members: object) {
+    for (const _member of Object.values(members)) {
+      const member = _member as Member;
+      switch (member.kind) {
+        case 'function':
+          this.addFunction(destination, member);
+          break;
+        case 'event':
+          this.addEvent(destination, member);
+          break;
+        case 'property':
+          this.addProperty(destination, member);
+          break;
+        case 'constant':
+          this.addConstant(destination, member);
+          break;
+        default:
+          console.error(
+            'Error: unknown member kind in api.json (is api.json malformed?): ' + member
+          );
+      }
+    }
+  }
+
+  private addFunction(destination: CompletionItem[], member: Member) {
+    const parameterLabels: string[] = [];
+    const parameterSnippets: string[] = [];
+    let tableInfoString = '';
+    if (member.parameters !== undefined) {
+      for (let i = 0; i < member.parameters.length; i++) {
+        const parameter = member.parameters[i] as Parameter;
+        parameterLabels.push(parameter.type + ' ' + parameter.name);
+        parameterSnippets.push(this.makeParameterString(i + 1, parameter));
+        if (parameter.parameters !== undefined)
+          tableInfoString += makeTableComment(parameter.name + ' is a table', parameter.parameters);
+      }
+    }
+    if (member.return_table !== undefined)
+      tableInfoString += makeTableComment('returns table', member.return_table);
+    else if (member.return_table_items !== undefined)
+      tableInfoString += makeTableComment(
+        'returns table of items. item',
+        member.return_table_items
+      );
+
+    const parameterDisplay = '(' + parameterLabels.join(', ') + ')';
+    const completion = completionItem(CompletionItemKind.Function, member, parameterDisplay);
+    completion.insertText = new vscode.SnippetString(
+      member.name + '(' + parameterSnippets.join(', ') + ')$0'
+    );
+    destination.push(completion);
+
+    if (tableInfoString) {
+      const detailed = completionItem(
+        CompletionItemKind.Function,
+        member,
+        parameterDisplay + '...'
+      );
+      detailed.insertText = new vscode.SnippetString(
+        member.name + '(' + parameterSnippets.join(', ') + ')$0' + tableInfoString
+      );
+      destination.push(detailed);
+    }
+  }
+
+  private addEvent(destination: CompletionItem[], member: Member) {
+    const completion = completionItem(CompletionItemKind.Event, member);
+    const parameterNames: string[] = [];
+    let tableInfoString = '';
+    if (member.parameters !== undefined) {
+      for (let i = 0; i < member.parameters.length; i++) {
+        const parameter = member.parameters[i] as Parameter;
+        parameterNames.push(parameter.name);
+        if (parameter.parameters !== undefined)
+          tableInfoString += makeTableComment(parameter.name + ' is a table', parameter.parameters);
+      }
+    }
+    completion.insertText = new vscode.SnippetString(
+      member.name + '(' + parameterNames.join(', ') + ')\n\t$0\nend'
+    );
+    destination.push(completion);
+
+    if (tableInfoString) {
+      const detailed = completionItem(CompletionItemKind.Event, member, '...');
+      detailed.insertText = new vscode.SnippetString(
+        member.name + '(' + parameterNames.join(', ') + ')' + tableInfoString + '\n\t$0\nend'
+      );
+      destination.push(detailed);
+    }
+  }
+
+  private addProperty(destination: CompletionItem[], member: Member) {
+    const completion = completionItem(CompletionItemKind.Property, member);
+    destination.push(completion);
+  }
+
+  private addConstant(destination: CompletionItem[], member: Member) {
+    const completion = completionItem(CompletionItemKind.Constant, member);
+    destination.push(completion);
+  }
+
+  private async downloadApiJSON() {
     const sMeta = LocalStorageService.getOrSet<{
       lastUpdate: number;
-      providerHash: string;
+      providerVersion: string;
     }>('suggestions-meta', {
       lastUpdate: 0,
-      providerHash: '',
+      providerVersion: '',
     });
-    // Download provider hash
+
     try {
-      const providerData: {sha: string; content: string} = (
-        await axios.get(
-          'https://api.github.com/repos/Berserk-Games/atom-tabletopsimulator-lua/contents/lib/provider.coffee'
-        )
-      ).data; // TODO: Correct events url
+      const providerData = (await axios.get(apiJSONUrl)).data;
       // Compare
       return {
-        required: sMeta.providerHash !== providerData.sha,
-        providerHash: providerData.sha,
-        content: providerData.content,
+        required: sMeta.providerVersion !== providerData.version,
+        content: providerData,
       };
     } catch (e) {
       if (e instanceof AxiosError && e.response) {
-        console.error('Error retrieving provider.coffee hash', e.response.data);
+        console.error('Error retrieving api.json', e.response.data);
         vscode.window.showErrorMessage("Unable to contact GitHub's API. Please try again later.");
       }
       return undefined;
     }
-  }
-
-  private static async _parseSection(section: string, done: () => void) {
-    const sectionLines = section.split('\n');
-    // Make sure array is not empty
-    if (sectionLines.length === 0) return;
-    // First line is the section name
-    const sectionName = sectionLines.shift() as string;
-    // Remove lines until we find the suggestion assignment
-    while (sectionLines.length > 0 && !sectionLines[0].trimStart().startsWith('suggestions =')) {
-      sectionLines.shift();
-    }
-
-    let coffeeScript = '';
-
-    // Control Blocks Section is skipped
-    if (sectionName === 'Control blocks') {
-      // This section is implemented in _cDict
-      done();
-      return;
-    }
-
-    // Default Events has a different format
-    if (sectionName === 'Default Events') {
-      coffeeScript =
-        'module.exports = (global_script) ->\n' +
-        // Remove first 6 space characters to leave a 2 space indent for the function block
-        sectionLines.map(v => v.substring(6).replace('\r', '')).join('\n') +
-        '\n  return suggestions';
-    } else {
-      // All other sections can be solved with an indent map
-      // This map means, "Lines which start with...
-      const indentMap = [
-        {pattern: /^[}{]/, indent: 1}, // opening/closing curly braces have lv1 indent
-        {pattern: /^'/, indent: 3}, // single quote has lv3 indent
-        {pattern: /^\]/, indent: 0}, // closing bracket has lv0 indent
-        {pattern: /^suggestions = \[/, indent: 0},
-        {pattern: /^[a-zA-Z]/, indent: 2}, // all other lines have lv2 indent
-      ];
-
-      // Create new file with appropiate indentation levels
-      coffeeScript =
-        'module.exports = () ->\n' +
-        sectionLines
-          .map(v => {
-            let indent = 0;
-            v = v.trimStart().replace('\r', '');
-            for (const {pattern, indent: newIndent} of indentMap) {
-              if (pattern.test(v)) {
-                // We add +1 because everything is inside a getSuggestions function
-                indent = newIndent + 1;
-                break;
-              }
-            }
-            return `${'  '.repeat(indent)}${v}`;
-          })
-          .join('\n') +
-        '\n  return suggestions';
-    }
-    // Formatting is done, time to decaf
-    // Section Name is formatted here, because it will be used to match with isSection function
-    const exportPath = path.join(
-      suggestionTempDir,
-      sectionName
-        .replace('Class', '')
-        .replace(/[^a-zA-Z0-9]/g, '')
-        .toLowerCase()
-    );
-    try {
-      const jsCode = decaf.convert(coffeeScript, {loose: true}).code;
-      await vscode.workspace.fs.writeFile(
-        vscode.Uri.file(exportPath + '.js'),
-        new TextEncoder().encode(jsCode)
-      );
-    } catch (e) {
-      if (e instanceof Error) {
-        console.error(`Error parsing section: ${sectionName}`);
-        console.error(e.message);
-        await vscode.workspace.fs.writeFile(
-          vscode.Uri.file(exportPath + '.coffee'),
-          new TextEncoder().encode(coffeeScript)
-        );
-        console.warn(`Debug File: ${exportPath}.coffee`);
-      }
-    }
-    // console.log(`Section parsed: '${sectionName}'`);
-    done();
-    /* --------- Simulates Long running task --------- */
-    // await new Promise<void>(resolve => {
-    //   setTimeout(() => {
-    //     resolve();
-    //   }, 1000 * getRandomInt(1, 5));
-    // });
-    /* ----------------------------------------------- */
   }
 
   public async provideCompletionItems(
@@ -419,7 +395,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
     position: vscode.Position,
     _token: vscode.CancellationToken,
     context: vscode.CompletionContext
-  ): Promise<vscode.CompletionItem[] | vscode.CompletionList> {
+  ): Promise<CompletionItem[] | CompletionList> {
     if (this._hs === undefined) this._hs = await this._hsExt.activate();
     const line = document.lineAt(position).text.substring(0, position.character);
     const token = this._hs.getScopeAt(document, position);
@@ -428,7 +404,7 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
       return [];
     }
 
-    /* --------------------------------------- Fast Skips --------------------------------------- */
+    // --------------------------------------- Fast Skips ---------------------------------------
     // Skip if we are inside a string or operator
     const skippedScopes = [
       'keyword.operator.lua',
@@ -442,168 +418,399 @@ export default class LuaCompletionProvider implements vscode.CompletionItemProvi
     // If we're in the middle of typing a number then suggest nothing on .
     if (context.triggerCharacter === '.' && token.text.match(/^[0-9]$/)) return [];
 
-    /* -------------------------------------- Tokenization -------------------------------------- */
+    // Syntactic Snippets -----------------------------------------------------------------------
+
+    if (line.endsWith(' do')) return [snippet('do...end', 'do\n\t$0\nend')];
+    if (line.endsWith(' repeat')) return [snippet('repeat...until', 'repeat\n\t$0\nuntil $1')];
+    if (line.endsWith(' then') && !line.includes('elseif'))
+      return [snippet('then...end', 'then\n\t$0\nend')];
+
+    const functionIndex = line.indexOf('function ');
+    const parenIndex = line.indexOf('(');
+    if (functionIndex >= 0 && parenIndex > 0 && line.endsWith(')')) {
+      let name = line.substring(functionIndex + 9, parenIndex).trimStart();
+      name =
+        name.substring(name.lastIndexOf(' ') + 1) +
+        vscode.workspace.getConfiguration('ttslua.autocompletion').get('coroutineSuffix');
+
+      const functionSnippets = [
+        snippet('function...end', '\n\t$0\nend', '1st'),
+        snippet(
+          'function...coroutine...end',
+          `\n\tfunction ${name}()\n\t\t\${0}\n\t\treturn 1\n\tend\n\tstartLuaCoroutine(self, '${name}')\nend`
+        ),
+        snippet(
+          'function...coroutine...repeat...end',
+          `\n\tfunction ${name}()\n\t\trepeat\n\t\t\t\${0}\n\t\t\tcoroutine.yield(0)\n\t\tuntil \${1}\n\t\treturn 1\n\tend\n\tstartLuaCoroutine(self, '${name}')\nend`
+        ),
+      ];
+
+      return functionSnippets;
+    }
+
+    // -------------------------------------- Tokenization --------------------------------------
     const grammar = await this._hs.getGrammar(token.scopes[0]);
     if (grammar === null) {
       console.error('HyperScope returned undefined grammar');
       return [];
     }
-    // Tokenize line, which pretty much means, split it into words avoiding depth and symbols
-    const [currentToken = '', previousToken = '', previousToken2 = ''] = grammar
+
+    enum LuaTokenType {
+      NONE,
+      SCALAR,
+      TABLE,
+      FUNCTION,
+      PERIOD,
+    }
+    class LuaToken {
+      name: string;
+      type: LuaTokenType;
+      constructor(name: string, type: LuaTokenType) {
+        this.name = name;
+        this.type = type;
+      }
+      public isVariable(): boolean {
+        return this.type === LuaTokenType.SCALAR || this.type === LuaTokenType.TABLE;
+      }
+    }
+    const nullLuaToken = new LuaToken('', LuaTokenType.NONE);
+
+    const lineTokens = grammar
       .tokenizeLine(line, null)
-      .tokens.map(v => line.substring(v.startIndex, v.endIndex))
-      // Revers to get tokens from closest to farthest from cursor
-      .reverse()
-      // Filter out strings ending with dot or where token are only spaces
-      .filter(v => !v.endsWith('.') && v.trim().length !== 0);
-    const isCurrentTokenAlfanum = /^[a-zA-Z0-9_]+$/.test(currentToken);
+      .tokens.map(v => line.substring(v.startIndex, v.endIndex));
 
-    /* ---------------------------------- Function Definitions ---------------------------------- */
-    // Functions are defined at completion time to make use of the tokenized lines
-    const isSection = (sectionName: string): boolean => {
-      const isVariableTriggered =
-        (context.triggerCharacter === '.' || token.scopes[1] === 'variable.other.lua') &&
-        currentToken === sectionName;
-      const endsWithSection = line.endsWith(`${sectionName}.`);
-      const isIntact = currentToken === sectionName && isCurrentTokenAlfanum;
-      return isVariableTriggered || endsWithSection || isIntact;
-    };
-    const isPlayerSection = (): boolean => {
-      const isVariableTriggered =
-        (context.triggerCharacter === '.' || token.scopes[1] === 'variable.other.lua') &&
-        previousToken === 'Player';
-      const isPrefixValid = previousToken2.substring(0, 7) === 'Player';
-      return isVariableTriggered || isPrefixValid;
-    };
-    const isObjectSection = (): boolean => {
-      return (
-        context.triggerCharacter === '.' ||
-        token.scopes[1] === 'variable.other.lua' ||
-        (previousToken !== '' && isCurrentTokenAlfanum)
-      );
-    };
-    const isDefaultEventsSection = (): boolean => {
-      return line.startsWith('function') && !line.includes('(');
-    };
-    const isGlobalSection = (): boolean => {
-      const endCondition = !(
-        line.trimEnd().endsWith('}') ||
-        line.trimEnd().endsWith(')') ||
-        line.trimEnd().endsWith(']')
-      );
-      return (
-        endCondition &&
-        !line.includes('function ') &&
-        !currentToken.includes('for ') &&
-        line.match(/\w$/) !== null
-      );
-    };
-    const isGetObjectFromGUID = (): boolean => {
-      return (
-        (previousToken === '(' && previousToken2 === 'getObjectFromGUID') ||
-        (currentToken === '(' && previousToken === 'getObjectFromGUID')
-      );
-    };
+    let nextLuaTokenType = LuaTokenType.SCALAR;
+    let isAssignment = false;
 
-    /* ------------------------------- Completion Item Evaluation ------------------------------- */
-    const completionItems: vscode.CompletionItem[] = [];
-    // Simple Snippets
-    if (line.trimEnd().endsWith(' do')) completionItems.push(this._cDict['endsWithDo']);
-    if (line.trimEnd().endsWith(' then') && !line.includes('elseif'))
-      completionItems.push(this._cDict['endsWithThen']);
-    if (line.trimEnd().endsWith(' repeat')) completionItems.push(this._cDict['endsWithRepeat']);
-    if (line.includes('function') && line.trimEnd().endsWith(')')) {
-      let funcName = currentToken.substring(0, currentToken.lastIndexOf('('));
-      funcName = funcName.substring(funcName.lastIndexOf(' ') + 1);
-      funcName =
-        funcName +
-        vscode.workspace.getConfiguration('ttslua.autocompletion').get('coroutineSuffix');
-      completionItems.push(this._cDict['fend']);
-      completionItems.push(
-        ...[
-          {
-            name: 'fcend',
-            label: 'function...coroutine...end',
-            snippet: `\n\tfunction ${funcName}()\n\t\t\${1}\n\t\treturn 1\n\tend\n\tstartLuaCoroutine(self, '${funcName}')\nend`,
-          },
-          {
-            name: 'fcrend',
-            label: 'function...coroutine...repeat...end',
-            snippet: `\n\tfunction ${funcName}()\n\t\trepeat\n\t\t\tcoroutine.yield(0)\n\t\tuntil \${1}\n\t\treturn 1\n\tend\n\tstartLuaCoroutine(self, '${funcName}')\nend`,
-          },
-        ].map(v => {
-          const vci = new vscode.CompletionItem(v.label, vscode.CompletionItemKind.Snippet);
-          vci.insertText = new vscode.SnippetString(v.snippet);
-          return vci;
-        })
-      );
+    function biteToken(): LuaToken {
+      const result = lineTokens.pop();
+      if (result === undefined) return nullLuaToken;
+      if (result.endsWith('.')) lineTokens.push(result);
+      const resultType = nextLuaTokenType;
+
+      function eatEnclosure(open: string, close: string): string {
+        let openCount = 1;
+        let token = lineTokens.pop();
+        while (token !== undefined) {
+          if (token.endsWith(open)) {
+            openCount--;
+            if (openCount <= 0) return token;
+          } else if (token.startsWith(close)) {
+            openCount++;
+          }
+          token = lineTokens.pop();
+        }
+        return '';
+      }
+
+      nextLuaTokenType = LuaTokenType.SCALAR;
+      while (lineTokens.length > 0) {
+        const lastToken = lineTokens[lineTokens.length - 1];
+        if (lastToken.endsWith('.')) {
+          lineTokens.pop();
+          if (lastToken === '].') {
+            nextLuaTokenType = LuaTokenType.TABLE;
+            eatEnclosure('[', ']');
+          } else if (lastToken === ').') {
+            nextLuaTokenType = LuaTokenType.FUNCTION;
+            const functionName = eatEnclosure('(', ')');
+            if (functionName !== '(' && functionName !== '') {
+              lineTokens.push(functionName.substring(0, functionName.length - 1));
+            }
+            break;
+          }
+        } else if (lastToken === ']') {
+          nextLuaTokenType = LuaTokenType.TABLE;
+          lineTokens.pop();
+          eatEnclosure('[', ']');
+        } else if (lastToken.trim() === '') {
+          if (lineTokens[lineTokens.length - 2] === '=') isAssignment = true;
+          lineTokens.splice(0, lineTokens.length);
+        } else {
+          break;
+        }
+      }
+
+      if (result.endsWith('.')) {
+        return new LuaToken('.', LuaTokenType.PERIOD);
+      } else if (/^[a-zA-Z0-9_]+$/.test(result)) {
+        return new LuaToken(result, resultType);
+      } else {
+        lineTokens.splice(0, lineTokens.length);
+        return nullLuaToken;
+      }
     }
-    // Standard Sections
-    // This is where the magic happens 🎇
-    const findResult = Object.entries(this._stdSectionCItems).find(([n]) =>
-      isSection(stdSectionMatcher.get(n) ?? n)
-    );
-    if (findResult !== undefined) completionItems.push(...findResult[1]);
 
-    // Extra Sections
-    if (isPlayerSection()) completionItems.push(...this._extraSectionCItems['player']);
-    if (isDefaultEventsSection()) {
-      if (document.fileName.endsWith('-1.lua'))
-        completionItems.push(...this._extraSectionCItems['defaultevents-global']);
-      else completionItems.push(...this._extraSectionCItems['defaultevents']);
-    }
-    if (isGlobalSection()) {
-      completionItems.push(this._cDict['require'], this._cDict['rConsole']);
-      completionItems.push(...this._extraSectionCItems['globallyaccessibleconstantsfunctions']);
-    }
-    if (completionItems.length === 0 && isObjectSection())
-      completionItems.push(...this._extraSectionCItems['object']);
+    const currentToken = biteToken(); // first bite may be .PERIOD (subsequent bites will not)
+    const previousToken = biteToken();
+    const previousToken2 = biteToken();
 
-    // Add labeled getObjectFromGUID after static getObjectFromGUID if appropriate
-    if (previousToken.includes('=')) {
-      // if 'getObjectFromGUID' is included in completionItems
-      const getObjectIndex = completionItems.findIndex(v =>
-        (v.insertText as vscode.SnippetString).value.startsWith('getObjectFromGUID')
-      );
-      if (getObjectIndex >= 0) {
-        const id = line.match(/([^\s]+)\s*=[^=]*$/);
-        if (id !== null) {
-          // Filter non alfanumeric characters from identifier
-          const cleanId = id[1].replace(/[^a-zA-Z0-9]/g, '');
-          const guidSuffix = vscode.workspace
-            .getConfiguration('ttslua')
-            .get('guidSuffix') as string;
-          // Deep Copy the completion item
-          const smartGetObjectFromGUID: vscode.CompletionItem = Object.create(
-            completionItems[getObjectIndex]
-          );
-          // Replace the snippet with the new one
-          smartGetObjectFromGUID.label = `getObjectFromGUID(->${cleanId}${guidSuffix})`;
-          smartGetObjectFromGUID.insertText = new vscode.SnippetString(
-            `getObjectFromGUID($\{0:${cleanId}${guidSuffix}})`
-          );
-          // Add the new completion item
-          completionItems.splice(getObjectIndex, 0, smartGetObjectFromGUID);
+    if (currentToken.type === LuaTokenType.PERIOD && /^[0-9]*$/.test(previousToken.name)) {
+      // Typing a number or an isolated '.' so suggest nothing
+      return [];
+    }
+
+    enum LuaScope {
+      SOURCE,
+      VARIABLE,
+      ENTITY,
+      FUNCTION,
+      OTHER,
+    }
+
+    function luaScopeFromScope(scope: string): LuaScope {
+      switch (scope) {
+        case 'source.lua':
+          return LuaScope.SOURCE;
+        case 'variable.other.lua':
+          return LuaScope.VARIABLE;
+        case 'entity.other.attribute.lua':
+          return LuaScope.ENTITY;
+        case 'entity.name.function.lua':
+          return LuaScope.FUNCTION;
+        default:
+          return LuaScope.OTHER;
+      }
+    }
+    let pertinentScope = token.scopes[1];
+    if (pertinentScope === 'meta.function.lua') pertinentScope = token.scopes[2];
+    const luaScope = luaScopeFromScope(pertinentScope);
+    if (luaScope === LuaScope.OTHER) return [];
+
+    const completionItems: CompletionItem[] = [];
+
+    if (luaScope === LuaScope.VARIABLE) {
+      // Typing a name with no dot
+      completionItems.push(...this._rootNames);
+
+      if (isAssignment) {
+        // Add labeled getObjectFromGUID after static getObjectFromGUID if appropriate
+        const itemIndex = completionItems.findIndex(v =>
+          (v.label as CompletionItemLabel).label.startsWith('getObjectFromGUID')
+        );
+        if (itemIndex >= 0) {
+          const id = line.match(/([^\s]+)\s*=[^=]*$/);
+          if (id !== null) {
+            // Filter non alfanumeric characters from identifier
+            const cleanId = id[1].replace(/[^a-zA-Z0-9]/g, '');
+            const guidSuffix = vscode.workspace
+              .getConfiguration('ttslua.autocompletion')
+              .get('guidSuffix') as string;
+            // Deep Copy the completion item
+            const smartGetObjectFromGUID: CompletionItem = Object.create(
+              completionItems[itemIndex]
+            );
+            // Replace the snippet with the new one
+            smartGetObjectFromGUID.label = `getObjectFromGUID(->${cleanId}${guidSuffix})`;
+            smartGetObjectFromGUID.insertText = new vscode.SnippetString(
+              `getObjectFromGUID($\{0:${cleanId}${guidSuffix}})`
+            );
+            // Add the new completion item
+            completionItems.splice(itemIndex, 0, smartGetObjectFromGUID);
+          }
+          // Add truly smart getObjectFromGUID which suggests GUIDs from the game
+          // const guidCompletionItems: CompletionItem[] = CompletionProvider._guids.map(guid => {
+          const igObjs = TTSAdapter.getInstance().getInGameObjects();
+          const guidCompletionItems: CompletionItem[] = Object.keys(igObjs).map(guid => {
+            const obj = igObjs[guid];
+            const name = obj.name || obj.iname || '';
+            const completionItem = new CompletionItem(
+              name.length > 0 ? `${name} (${guid})` : guid,
+              CompletionItemKind.Value
+            );
+            completionItem.insertText = `'${guid}'`;
+            completionItem.detail = obj.type;
+            return completionItem;
+          });
+          completionItems.push(...guidCompletionItems);
+        }
+      }
+      return completionItems;
+    }
+
+    if (
+      luaScope === LuaScope.ENTITY ||
+      (luaScope === LuaScope.SOURCE &&
+        currentToken.type === LuaTokenType.PERIOD &&
+        previousToken.type !== LuaTokenType.NONE)
+    ) {
+      // Typing a name after a dot
+      if (previousToken2.name === 'Player' && previousToken2.type === LuaTokenType.SCALAR) {
+        // If it's Player.Action then it will be handled via _generalCompletions below.
+        // Otherwise: Action is the only non-color member, so we'll treat it as a
+        // PlayerInstance. Note that this logic needs to be updated if Player ever has another
+        // non-color member.
+        if (previousToken.name !== 'Action' || previousToken.type !== LuaTokenType.SCALAR)
+          return this._playerInstanceCompletions;
+      }
+
+      if (previousToken.type === LuaTokenType.SCALAR) {
+        if (previousToken.name === 'Player') return this._playerManagerCompletions;
+        if (previousToken.name.endsWith('game_object')) return this._gameObjectCompletions;
+        if (previousToken.name.endsWith('material')) return this._materialCompletions;
+      } else if (previousToken.type === LuaTokenType.TABLE) {
+        if (previousToken.name === 'Player') return this._playerInstanceCompletions;
+      } else if (previousToken.type === LuaTokenType.FUNCTION) {
+        if (previousToken.name === 'getComponent') return this._componentCompletions;
+      }
+
+      const generalCompletion = this._generalCompletions.get(previousToken.name);
+      if (generalCompletion !== undefined) return generalCompletion;
+
+      // It's not named in the API => treat it as an Object.
+
+      // Before adding the Object completions we'll check if the variable is named something
+      // indicating a behavior, and if it is add those completions first.
+      for (const behavior of this._behaviors) {
+        if (previousToken.name.endsWith(behavior.snakedName)) {
+          const completions = this._generalCompletions.get(behavior.name);
+          if (completions === undefined) continue;
+          // Matching items so add them; copy them so we can set the sortText
+          for (const completionItem of completions) {
+            const sortedCompletionItem: CompletionItem = Object.assign(completionItem);
+            sortedCompletionItem.sortText = '1st';
+            completionItems.push(sortedCompletionItem);
+          }
+          break;
+        }
+      }
+      completionItems.push(...this._objectCompletions);
+      return completionItems;
+    } else if (luaScope === LuaScope.FUNCTION) {
+      // Either writing their own function, or looking for an event, so add the events
+      if (document.fileName.endsWith('-1.lua')) return this._globalEventCompletions;
+      else return this._objectEventCompletions;
+    }
+    return [];
+  }
+}
+
+function completionItem(
+  completionItemKind: CompletionItemKind,
+  member: Member,
+  labelPostfix = ''
+): CompletionItem {
+  const result = new CompletionItem(
+    {label: member.name + labelPostfix, detail: ' ' + member.type, description: member.description},
+    completionItemKind
+  );
+  result.detail = member.description;
+  result.documentation = new vscode.MarkdownString(getURL(member.url));
+  return result;
+}
+
+function snippet(label: string, insert: string, sortText = ''): CompletionItem {
+  const result = new CompletionItem(label, CompletionItemKind.Snippet);
+  result.insertText = new vscode.SnippetString(insert);
+  result.sortText = sortText;
+  return result;
+}
+
+function getURL(url: string): string {
+  if (url.startsWith('/')) return 'https://api.tabletopsimulator.com' + url;
+  else return url;
+}
+
+function makeTableComment(header: string, parameters: Parameter[]): string {
+  let result = '\n\t-- ' + header + ':';
+  for (const table_parameter of parameters) {
+    if (table_parameter.description)
+      result +=
+        '\n\t--   ' +
+        table_parameter.name.padEnd(26) +
+        table_parameter.type.padEnd(9) +
+        table_parameter.description;
+    else result += '\n\t--   ' + table_parameter.name.padEnd(26) + table_parameter.type;
+  }
+  return result;
+}
+
+function camelToSnake(s: string): string {
+  if (s === '') return '';
+  const charA = 'A'.charCodeAt(0);
+  const charZ = 'Z'.charCodeAt(0);
+  let result = s[0].toLowerCase();
+  let upperCaseStartIndex = -1;
+  for (let i = 1; i < s.length; i++) {
+    const c = s[i];
+    const code = c.charCodeAt(0);
+    if (code >= charA && code <= charZ) {
+      if (upperCaseStartIndex < 0) upperCaseStartIndex = i;
+    } else if (upperCaseStartIndex >= 0) {
+      result +=
+        s.substring(upperCaseStartIndex, i - 1).toLowerCase() +
+        '_' +
+        s.substring(i - 1, i).toLowerCase() +
+        c;
+      upperCaseStartIndex = -1;
+    } else {
+      result += c;
+    }
+  }
+  return result;
+}
+
+function snakeToCamel(s: string, capitalize = false): string {
+  if (s === '') return '';
+  let result = capitalize ? s[0].toUpperCase() : s[0];
+  let uppercaseNext = false;
+  for (let i = 1; i < s.length; i++) {
+    const c = s[i];
+    if (c === '_') uppercaseNext = true;
+    else if (uppercaseNext) {
+      result += c.toUpperCase();
+      uppercaseNext = false;
+    } else result += c;
+  }
+  return result;
+}
+
+enum ParameterFormatToken {
+  NONE,
+  TYPE,
+  Type,
+  type,
+  NAME,
+  Name,
+  name,
+}
+
+class ParameterFormat {
+  textBeforeToken: string = '';
+  token: ParameterFormatToken = ParameterFormatToken.NONE;
+}
+
+class ApiVersion {
+  // The version in api.json is standard semantic versioning plus an additional value for API updates.
+  // `major`, `minor`, & `patch` will reflect the version of TTS the api is appropriate for.
+  // `api` will be incremented if the api needs updated within a single TTS version.
+  major: number;
+  minor: number;
+  patch: number;
+  api: number;
+  valid: boolean;
+
+  constructor(versionString: string) {
+    const parts: number[] = versionString.split('.').map(Number);
+    this.valid = parts.length >= 4;
+    this.major = parts[0];
+    this.minor = parts[1];
+    this.patch = parts[2];
+    this.api = parts[3];
+  }
+
+  public isHigherVersionThan(other: ApiVersion): boolean {
+    if (!this.valid) return false;
+    if (this.major > other.major) return true;
+    else if (this.major === other.major) {
+      if (this.minor > other.minor) return true;
+      else if (this.minor === other.minor) {
+        if (this.patch > other.patch) return true;
+        else if (this.patch === other.patch) {
+          return this.api > other.api;
         }
       }
     }
-    // Add truly smart getObjectFromGUID which suggests GUIDs from the game
-    if (isGetObjectFromGUID()) {
-      // const guidCompletionItems: vscode.CompletionItem[] = CompletionProvider._guids.map(guid => {
-      const igObjs = TTSAdapter.getInstance().getInGameObjects();
-      const guidCompletionItems: vscode.CompletionItem[] = Object.keys(igObjs).map(guid => {
-        const obj = igObjs[guid];
-        const name = obj.name || obj.iname || '';
-        const completionItem = new vscode.CompletionItem(
-          name.length > 0 ? `${name} (${guid})` : guid,
-          vscode.CompletionItemKind.Value
-        );
-        completionItem.insertText = `'${guid}'`;
-        completionItem.detail = obj.type;
-        return completionItem;
-      });
-      completionItems.push(...guidCompletionItems);
-    }
-    return completionItems;
+    return false;
   }
 }

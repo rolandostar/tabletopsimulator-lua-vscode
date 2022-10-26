@@ -91,7 +91,7 @@ Download or clone this repository and place it under:
 
 <details>
   <summary>Debug your Lua code <i>step-by-step</i> with Enhanced Moonsharp</summary>
-  
+
 ## Enhanced Moonsharp Debugging
 
 WIP
@@ -100,7 +100,7 @@ WIP
 
 <details>
   <summary>Add source control to your projects and keep track of every change to collaborate with other developers</summary>
-  
+
 ## Source Control
 
 WIP
@@ -109,7 +109,7 @@ WIP
 
 <details>
   <summary>Enable custom suggestions and avoid errors using static analysis with EmmyLua</summary>
-  
+
 ## EmmyLua
 
 WIP
@@ -195,8 +195,7 @@ This extension contributes the following settings:
 | `TTSLua.includeOtherFilesPaths` | Additional paths to search for files                  | `[]`                   |
 | `TTSLua.bundleSearchPattern`    | Pattern used to look for additional files             | `["?.ttslua","?.lua"]` |
 | `TTSLua.logSave`                | Enable to log a message when a save occurs            | `true`                 |
-| `TTSLua.parameterFormat`        | Formatting for Autocomplete                           | `TYPE_name`            |
-| `TTSLua.parameterToDisplay`     | Autocomplete parameter insertion                      | `Both`                 |
+| `TTSLua.parameterFormat`        | Formatting for Autocomplete                           | `Type_name`            |
 
 ## Known Issues
 
