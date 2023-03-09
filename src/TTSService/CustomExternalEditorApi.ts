@@ -1,6 +1,6 @@
 import ExternalEditorApi, { JsonMessage, Options } from '@matanlurey/tts-editor';
 import { AddressInfo, Socket } from 'net';
-import { handleGameNotRunning, handleMultipleInstances } from './utils/errorHandling';
+// import { handleGameNotRunning, handleMultipleInstances } from '../utils/errorHandling';
 
 export default class CustomExternalEditorApi extends ExternalEditorApi {
   constructor(options: Options = {}) {
@@ -36,12 +36,12 @@ export default class CustomExternalEditorApi extends ExternalEditorApi {
 
   protected async send<T extends number>(message: JsonMessage<T>): Promise<void> {
     const client = new Socket();
-    if (!this.server.listening) await this.listen();
+    if (!this.server.listening) {await this.listen();}
     return new Promise<void>((resolve, reject) => {
       client.once('error', (err: NodeJS.ErrnoException) => {
-        if (err.code === 'EADDRINUSE') handleMultipleInstances();
-        if (err.code === 'ECONNREFUSED') handleGameNotRunning();
-        else console.error('[TTSLua] Unexpected Server Error:', err);
+        // if (err.code === 'EADDRINUSE') {handleMultipleInstances();}
+        // if (err.code === 'ECONNREFUSED') {handleGameNotRunning();}
+        // else {console.error('[TTSLua] Unexpected Server Error:', err);}
         reject();
       });
       client.connect(this.clientPort, '127.0.0.1', () => {

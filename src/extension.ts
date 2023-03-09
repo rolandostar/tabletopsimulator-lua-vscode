@@ -1,115 +1,36 @@
+// The module 'vscode' contains the VS Code extensibility API
+// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-// TTS-Specific Imports
-import TTSConsolePanel, { getWebviewOptions } from './TTSConsole';
-// Editor Imports
-import TTSAdapter from './TTSAdapter';
-import * as TTSAssetGen from './TTSAssetGen';
-import TTSWorkDir from './TTSWorkDir';
-import getConfig from './utils/getConfig';
-import TTSHoverProvider from './vscode/HoverProvider';
-import LocalStorageService from './vscode/LocalStorageService';
-import TTSLuaCompletionProvider from './vscode/LuaCompletionProvider';
-import * as workspace from './vscode/workspace';
-import TTSXMLCompletionProvider from './vscode/XMLCompletionProvider';
+import TTSService from './TTSService';
+// import EditorApi from './CustomExternalEditorApi';
 
-export async function activate(context: vscode.ExtensionContext) {
-  // Set context as a global as some tests depend on it
-  (global as any).testExtensionContext = context;
+// this method is called when your extension is activated
+// your extension is activated the very first time the command is executed
+export function activate(context: vscode.ExtensionContext) {
+	
+	// Use the console to output diagnostic information (console.log) and errors (console.error)
+	// This line of code will only be executed once when your extension is activated
+	console.log('Congratulations, your extension "tabletopsimulato-lua-3" is now active!');
 
-  console.log('[TTSLua] Tabletop Simulator Extension Load');
-  // Set Storage Service to global context
-  LocalStorageService.storage = context.globalState;
+	// The command has been defined in the package.json file
+	// Now provide the implementation of the command with registerCommand
+	// The commandId parameter must match the command field in package.json
+	const disposable = vscode.commands.registerCommand('tabletopsimulato-lua-3.helloWorld', () => {
+		// The code you place here will be executed every time your command is executed
+		// Display a message box to the user
+		vscode.window.showInformationMessage('Hello World from TabletopSimulator Lua!');
+	});
 
-  TTSWorkDir.init();
-  TTSAdapter.registerListeners();
+	context.subscriptions.push(disposable);
 
-  const ttsHoverProvider = new TTSHoverProvider();
-  const ttsLuaCompletionProvider = new TTSLuaCompletionProvider();
-  const ttsXMLCompletionProvider = new TTSXMLCompletionProvider();
-  const commands: {
-    id: string;
-    fn: (this: vscode.ExtensionContext, ...args: any[]) => unknown;
-  }[] = [
-    {
-      id: 'ttslua.forceAutocompleteUpdate',
-      fn: () => ttsLuaCompletionProvider.updateCompletionItems(true),
-    },
-    {
-      id: 'ttslua.updateCompletionItems',
-      fn: () => ttsLuaCompletionProvider.updateCompletionItems(),
-    },
-    {
-      id: 'ttslua.addGlobalInclude',
-      fn: () => workspace.addDir2WS(workspace.docsFolder, 'TTS Global Include'),
-    },
-    {
-      id: 'ttslua.openConsole',
-      fn: () => TTSConsolePanel.createOrShow(context.extensionUri),
-    },
-    {
-      id: 'ttslua.installConsole',
-      fn: () => workspace.installConsole(context.extensionPath),
-    },
-    { id: 'ttslua.saveAndPlay', fn: () => TTSAdapter.saveAndPlay() },
-    {
-      id: 'ttslua.getScripts',
-      fn: () =>
-        vscode.window
-          .showInformationMessage(
-            'Get Lua Scripts from game?\n\n This will erase any changes that you have made since' +
-              'the last Save & Play.',
-            { modal: true },
-            'Get Scripts',
-          )
-          .then((answer: 'Get Scripts' | undefined) => {
-            if (answer === 'Get Scripts') TTSAdapter.getScripts();
-          }),
-    },
-    { id: 'ttslua.executeLua', fn: () => TTSAdapter.executeSelectedLua() },
-    { id: 'ttslua.changeWorkDir', fn: () => TTSWorkDir.changeWorkDir() },
-    { id: 'ttslua.downloadAssets', fn: () => TTSAssetGen.downloadAssets() },
-  ];
+  TTSService.start();
 
-  context.subscriptions.push(
-    // Register adapter disposables
-    new vscode.Disposable(TTSAdapter.dispose),
-    // Register all commands
-    ...commands.map(cmd => vscode.commands.registerCommand(cmd.id, cmd.fn, context)),
-    // Register providers for completion and hover
-    vscode.languages.registerHoverProvider('lua', ttsHoverProvider),
-  );
-
-  // Get config and register providers accordingly
-  if (getConfig('autocompletion.luaEnabled')) {
-    context.subscriptions.push(
-      vscode.languages.registerCompletionItemProvider(
-        'lua',
-        ttsLuaCompletionProvider,
-        ...['.', ':', '(', ')', ' '],
-      ),
-    );
-  }
-  if (getConfig('autocompletion.xmlEnabled')) {
-    context.subscriptions.push(
-      vscode.languages.registerCompletionItemProvider(
-        'xml',
-        ttsXMLCompletionProvider,
-        ...['<', '/', ' '],
-      ),
-    );
-  }
-
-  // Register the TTS Console Panel
-  if (vscode.window.registerWebviewPanelSerializer) {
-    // Make sure we register a serializer in activation event
-    vscode.window.registerWebviewPanelSerializer(TTSConsolePanel.viewType, {
-      // Omit State
-      async deserializeWebviewPanel(webviewPanel: vscode.WebviewPanel) {
-        // console.log(`Got state: ${state}`);
-        // Reset the webview options so we use latest uri for `localResourceRoots`.
-        webviewPanel.webview.options = getWebviewOptions(context.extensionUri);
-        TTSConsolePanel.revive(webviewPanel, context.extensionUri);
-      },
-    });
-  }
+  // const api = new EditorApi();
+  // api.on('loadingANewGame', async (e:any) => {
+  //   console.log('loadingANewGame', e);
+  // });
+  // api.listen();
 }
+
+// this method is called when your extension is deactivated
+export function deactivate() {}
