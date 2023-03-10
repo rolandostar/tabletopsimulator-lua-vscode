@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 
 import EditorApi from './CustomExternalEditorApi';
 import listeners from './listeners';
+import {prompts} from '@/vscode/windowManager';
 
 export default class TTSService extends vscode.Disposable {
   public static api = new EditorApi();
@@ -21,7 +22,13 @@ export default class TTSService extends vscode.Disposable {
   }
 
   public static async getScripts() {
+    if (!await prompts.getScriptsConfirmed()) return;
     const { savePath } = await TTSService.api.getLuaScripts();
+    console.log('[TTSLua] Save path:', savePath);
+  }
+
+  public static async saveAndPlay() {
+    console.log('[TTSLua] Save and Play');
   }
 
   public static dispose() {
