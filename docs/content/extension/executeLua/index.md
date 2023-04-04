@@ -14,6 +14,8 @@ This will result in the following:
 
 The message is logged (both in-game and console++) and the return value is displayed in console++ in a special blue callout.
 
+The executed script will be called from the object which is currently selected in the editor. eg. If you execute lua from the `Global.-1.lua` file it will be sent with the `-1` GUID same thing if you were to execute lua from another object. It will run as if it was called from that object itself.
+
 When the Console++ panel is not opened, the return value will be outputted in a Information Message like so:
 
 ![Return Message](returnInfoMessage.png)

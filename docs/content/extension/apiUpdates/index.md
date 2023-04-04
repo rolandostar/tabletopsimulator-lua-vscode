@@ -1,17 +1,16 @@
 ---
 description: Game update just released? Let's update IntelliSense
 ---
+
 # TTS API Updates
 
 As you may know, Tabletop Simulator receives updates from time to time, with these updates there's a good chance that the API offered for Lua has changed, which would mean that there would have to be a separate update for the extension incorporating these changes. For this reason this extension offers a simple and automated way to download the latest **available** API for TTS Lua, and store it locally on your machine to provide autocompletion items for VSCode's IntelliSense WITHOUT having to wait for a separate extension update.
 
 This is done as a best-effort basis since there's no way to predict what might change in the future, the main purpose of this feature is to integrate the latest Lua API changes as soon as possible even if it's not perfect.
 
-
 ## How to use it?
 
 Bring up the command palette <kbd class="kbc-button-sm">Ctrl</kbd>+<kbd class="kbc-button-sm">Shift</kbd>+<kbd class="kbc-button-sm">P</kbd> and begin typing `>Update IntelliSense with latest TTS API` then press <kbd class="kbc-button-sm">Enter</kbd> to execute the command.
-
 
 ## How does it work?
 
