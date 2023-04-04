@@ -1,15 +1,29 @@
 // Place your settings in this file to overwrite default and user settings.
 {
-    "files.exclude": {
-        "out": false, // set this to true to hide the "out" folder with the compiled JS files
-        ".vscode-test": false,
-        "node_modules": false
-    },
-    "search.exclude": {
-        "out": true, // set this to false to include "out" folder in search results
-        ".vscode-test": true,
-        "node_modules": true
-    },
-    // Turn off tsc task auto detection since we have the necessary tasks as npm scripts
-    "typescript.tsc.autoDetect": "off"
+	"files.exclude": {
+		"out": false
+	},
+	"search.exclude": {
+		"out": true,
+		"server": true
+	},
+	"files.trimTrailingWhitespace": true,
+	"editor.insertSpaces": false,
+	"editor.tabSize": 2,
+	"typescript.tsdk": "./node_modules/typescript/lib",
+	"typescript.tsc.autoDetect": "off",
+	"eslint.enable": true,
+	"eslint.validate": [
+		"typescript"
+	],
+	"editor.codeActionsOnSave": {
+		"source.fixAll.eslint": true
+	},
+	"eslint.workingDirectories": [
+		"./src",
+		"./server"
+	],
+	"eslint.trace.server": "off",
+	"eslint.lintTask.enable": false,
+	"eslint.format.enable": false
 }
