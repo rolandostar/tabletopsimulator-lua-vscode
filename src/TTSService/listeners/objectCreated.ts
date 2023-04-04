@@ -1,0 +1,5 @@
+import { type ObjectCreated } from '@matanlurey/tts-editor'
+
+export default (e: ObjectCreated): void => {
+  console.log(e)
+}

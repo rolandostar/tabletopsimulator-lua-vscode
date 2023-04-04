@@ -1,60 +1,64 @@
-const path = require('path');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
-const TerserPlugin = require('terser-webpack-plugin');
+const path = require('path')
+const { TsconfigPathsPlugin } = require('tsconfig-paths-webpack-plugin')
 
 const config = {
   mode: 'none',
   target: 'node',
+  node: {
+    __dirname: false // leave the __dirname-behaviour intact
+  },
   resolve: {
     mainFields: ['module', 'main'],
     extensions: ['.ts', '.js'],
-    alias: {
-      '@': path.resolve(__dirname, 'src'),
-    }
+    plugins: [new TsconfigPathsPlugin()]
   },
-  entry: './src/extension.ts',
+  entry: {
+    client: './src/extension/index.ts',
+    server: './server/index.ts'
+  },
   output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: 'main.js',
+    path: path.resolve(__dirname, 'out'),
+    filename: '[name].bundle.js',
     libraryTarget: 'commonjs2',
     clean: true
   },
   externals: {
-    vscode: 'commonjs vscode',
+    vscode: 'commonjs vscode'
   },
   plugins: [
-    new CopyWebpackPlugin({
-      patterns: [
-        { from: 'node_modules/luabundle/bundle/runtime.lua' },
-      ],
-    }),
+    // new CopyWebpackPlugin({
+    //   patterns: [
+    //     { from: 'node_modules/luabundle/bundle/runtime.lua' },
+    //   ],
+    // }),
   ],
   optimization: {
-    minimizer: [new TerserPlugin({
-      terserOptions: {
-        format: {
-          comments: false,
-        },
-      },
-      extractComments: false,
-    })],
+    // minimizer: [new TerserPlugin({
+    //   terserOptions: {
+    //     format: {
+    //       comments: false,
+    //     },
+    //   },
+    //   extractComments: false,
+    // })],
   },
   module: {
-    rules: [
-      {
-        test: /\.ts$/,
-        exclude: /node_modules/,
-        use: [
-          {
-            loader: 'ts-loader',
-          },
-        ],
-      },
-    ],
-  },
-};
+    rules: [{
+      test: /\.ts$/,
+      exclude: /node_modules/,
+      use: [{
+        loader: 'ts-loader',
+        options: {
+          compilerOptions: {
+            sourceMap: true
+          }
+        }
+      }]
+    }]
+  }
+}
 module.exports = (env, argv) => {
   config.optimization.minimize = argv.mode === 'production'
-  config.devtool = argv.mode === 'production' ? 'hidden-source-map' : 'eval-source-map'
+  config.devtool = argv.mode === 'production' ? 'hidden-source-map' : 'source-map'
   return config
-};
+}
