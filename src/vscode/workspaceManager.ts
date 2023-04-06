@@ -1,5 +1,5 @@
 import { tmpdir } from 'os'
-import { join } from 'path'
+import { basename, join } from 'path'
 import {
   Uri, window, StatusBarAlignment, workspace, env,
   type WorkspaceFoldersChangeEvent,
@@ -18,11 +18,11 @@ const statusBarItem = createStatusBarItem({
   tooltip: L.workDir.hover()
 })
 let workDirUri = Uri.file(defaultWorkDir)
-
+export function getWorkDir (): Uri { return workDirUri }
 /**
  * @returns True if currently selected workDir is the default workDir
  */
-function isDefault (): boolean {
+export function isWorkdirDefault (): boolean {
   return workDirUri.fsPath.localeCompare(defaultWorkDir, undefined, {
     sensitivity: 'accent'
   }) === 0
@@ -72,9 +72,10 @@ async function updateStatusBar (_e?: WorkspaceFoldersChangeEvent): Promise<void>
   // Get currently selected workspace folder Uri
   const folder = workspace.getWorkspaceFolder(Uri.file(workDirUri.fsPath))
   // Update Status bar accordingly
-  const dfault = L.workDir.defaultTag()
-  statusBarItem.text = `$(root-folder) TTS [${!isDefault() ? folder?.name ?? dfault : dfault}]`
-  const _isDefault = isDefault()
+  statusBarItem.text = `$(root-folder) TTS [${
+    !isWorkdirDefault() ? folder?.name ?? 'Removed' : L.workDir.defaultTag()
+  }]`
+  const _isDefault = isWorkdirDefault()
   switch (true) {
     case gitFolders.length > 0 && !_isDefault:
       changeTheme(statusBarItem, 'default')
@@ -82,7 +83,11 @@ async function updateStatusBar (_e?: WorkspaceFoldersChangeEvent): Promise<void>
     case gitFolders.length > 0 && _isDefault:
       changeTheme(statusBarItem, 'error')
       break
-    case gitFolders.length === 0:
+    case gitFolders.length === 0 && folder === undefined:
+      changeTheme(statusBarItem, 'error')
+      statusBarItem.tooltip = L.workDir.removed()
+      break
+    case gitFolders.length === 0 && folder !== undefined:
       changeTheme(statusBarItem, 'warning')
       break
   }
@@ -103,7 +108,11 @@ export async function initWorkspace (): Promise<Disposable> {
     folder => folder.uri.fsPath === workDirUri.fsPath
   ) === false) reset()
   // Check if Temp folder exists, if not create it
-  if (isDefault()) await Promise.resolve(workspace.fs.createDirectory(workDirUri)).catch(workDirCreateFailed)
+  if (isWorkdirDefault()) {
+    await Promise.resolve(
+      workspace.fs.createDirectory(workDirUri)
+    ).catch(workDirCreateFailed)
+  }
   // Update on new workspaces
   workspace.onDidChangeWorkspaceFolders(updateStatusBar)
   void updateStatusBar()
@@ -118,11 +127,13 @@ export async function changeWorkDir (): Promise<void> {
   // If there are no git repos detected
   if (gitFolders.length === 0) {
     // If workDir is not default, reset it
-    if (!isDefault()) { reset(); return }
+    if (!isWorkdirDefault()) { reset(); return }
     // If workDir is default, show error message
     void window.showErrorMessage(L.workDir.noGitReposInWorkspace(), L.docs.learnMore())
       .then(res => {
-        if (res === L.docs.learnMore()) { void env.openExternal(Uri.parse(L.docs.urls.versionControl())) }
+        if (res === L.docs.learnMore()) {
+          void env.openExternal(Uri.parse(L.docs.urls.versionControl()))
+        }
       }); return
   }
   // If git repos are detected prompt for which one to use
@@ -157,11 +168,15 @@ export async function readFile (filename: string): Promise<Uint8Array> {
   ))
 }
 
-/**
- * Returns a URI of the filename in the workdir
- * @param filename
- * @returns Uri of the file
- */
-export function getFileUri (filename: string): Uri {
-  return Uri.file(join(workDirUri.fsPath, filename))
+export async function addWorkDir (): Promise<void> {
+  await addDir(workDirUri.fsPath, 'In-Game Scripts')
+}
+
+export async function addDir (dir: string, name?: string): Promise<void> {
+  const uri = Uri.file(dir)
+  const vsFolders = workspace.workspaceFolders
+  console.log(workspace.updateWorkspaceFolders(vsFolders?.length ?? 0, null, {
+    uri,
+    name: name ?? basename(uri.fsPath)
+  }))
 }

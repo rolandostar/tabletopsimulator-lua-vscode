@@ -26,3 +26,8 @@ export function changeTheme (item: StatusBarItem, theme: 'default' | 'error' | '
   item.color = new ThemeColor(`statusBarItem.${theme}Foreground`)
   item.show()
 }
+
+export function quickStatus (message: string, timeout = 1500): void {
+  const statusBar = window.setStatusBarMessage(message)
+  setTimeout(() => statusBar.dispose(), timeout)
+}

@@ -1,8 +1,16 @@
 import type * as vscode from 'vscode'
 // import ttsLuaCompletionProvider from '@/providers/luaCompletion'
-import TTSService from '@/TTSService'
+import { getScripts, saveAndPlay } from '@/TTSService'
 import { changeWorkDir } from '@/vscode/workspaceManager'
 
+/**
+ * Commands are functions which are called when the user invokes a command.
+ * They are registered in the `package.json` file.
+ *
+ * For commands being called within classes, make sure to wrap the function call
+ * instead of passing the function itself, e.g. `() => { myInstance.myMethod() }`.
+ * This ensures that the correct `this` context is used.
+ */
 export default [
   // {
   //   id: 'ttslua.forceAutocompleteUpdate',
@@ -24,8 +32,14 @@ export default [
   //   id: 'ttslua.installConsole',
   //   fn: () => workspace.installConsole(context.extensionPath),
   // },
-  { id: 'ttslua.saveAndPlay', fn: TTSService.getInstance().saveAndPlay },
-  { id: 'ttslua.getScripts', fn: TTSService.getInstance().getScripts },
+  {
+    id: 'ttslua.changeObjectView',
+    fn: () => {
+      console.log('changeToXML')
+    }
+  },
+  { id: 'ttslua.saveAndPlay', fn: saveAndPlay },
+  { id: 'ttslua.getScripts', fn: getScripts },
   // { id: 'ttslua.executeLua', fn: () => TTSAdapter.executeSelectedLua() },
   { id: 'ttslua.changeWorkDir', fn: changeWorkDir }
   // { id: 'ttslua.downloadAssets', fn: () => TTSAssetGen.downloadAssets() },

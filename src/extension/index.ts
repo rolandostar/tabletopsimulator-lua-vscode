@@ -2,7 +2,7 @@ import { type ExtensionContext, commands, Disposable } from 'vscode'
 
 import myCommands from './commands'
 import langClientBuilder from './langClient'
-import TTSService from '@/TTSService'
+import { start as TTSServiceInit } from '@/TTSService'
 import { setLocalStorage } from '@Utils/LocalStorageService'
 import { initWorkspace } from '@/vscode/workspaceManager'
 import registerProviders from '@/providers'
@@ -16,7 +16,7 @@ export async function activate (context: ExtensionContext): Promise<void> {
   context.subscriptions.push(
     new Disposable(langClient.dispose),
     await initWorkspace(),
-    await TTSService.getInstance().start(),
+    ...await TTSServiceInit(),
     ...myCommands.map(cmd => commands.registerCommand(cmd.id, cmd.fn, context)),
     ...registerProviders()
   )

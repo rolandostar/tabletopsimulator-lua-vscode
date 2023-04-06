@@ -1,0 +1,134 @@
+{
+  "0": {
+    "body": "",
+    "color": "Grey",
+    "id": 0,
+    "title": "Rules",
+    "visibleColor": {
+      "b": 0.5,
+      "g": 0.5,
+      "r": 0.5
+    }
+  },
+  "1": {
+    "body": "",
+    "color": "White",
+    "id": 1,
+    "title": "White",
+    "visibleColor": {
+      "b": 1,
+      "g": 1,
+      "r": 1
+    }
+  },
+  "10": {
+    "body": "",
+    "color": "Pink",
+    "id": 10,
+    "title": "Pink",
+    "visibleColor": {
+      "b": 0.807,
+      "g": 0.439,
+      "r": 0.96
+    }
+  },
+  "11": {
+    "body": "",
+    "color": "Black",
+    "id": 11,
+    "title": "Black",
+    "visibleColor": {
+      "b": 0.25,
+      "g": 0.25,
+      "r": 0.25
+    }
+  },
+  "2": {
+    "body": "",
+    "color": "Brown",
+    "id": 2,
+    "title": "Brown",
+    "visibleColor": {
+      "b": 0.09,
+      "g": 0.231,
+      "r": 0.443
+    }
+  },
+  "3": {
+    "body": "",
+    "color": "Red",
+    "id": 3,
+    "title": "Red",
+    "visibleColor": {
+      "b": 0.094,
+      "g": 0.1,
+      "r": 0.856
+    }
+  },
+  "4": {
+    "body": "",
+    "color": "Orange",
+    "id": 4,
+    "title": "Orange",
+    "visibleColor": {
+      "b": 0.113,
+      "g": 0.392,
+      "r": 0.956
+    }
+  },
+  "5": {
+    "body": "This tab was edited via script.",
+    "color": "Yellow",
+    "id": 5,
+    "title": "Edited Title",
+    "visibleColor": {
+      "b": 0.172,
+      "g": 0.898,
+      "r": 0.905
+    }
+  },
+  "6": {
+    "body": "",
+    "color": "Green",
+    "id": 6,
+    "title": "Green",
+    "visibleColor": {
+      "b": 0.168,
+      "g": 0.701,
+      "r": 0.192
+    }
+  },
+  "7": {
+    "body": "",
+    "color": "Blue",
+    "id": 7,
+    "title": "Blue",
+    "visibleColor": {
+      "b": 1,
+      "g": 0.53,
+      "r": 0.118
+    }
+  },
+  "8": {
+    "body": "",
+    "color": "Teal",
+    "id": 8,
+    "title": "Teal",
+    "visibleColor": {
+      "b": 0.607,
+      "g": 0.694,
+      "r": 0.129
+    }
+  },
+  "9": {
+    "body": "",
+    "color": "Purple",
+    "id": 9,
+    "title": "Purple",
+    "visibleColor": {
+      "b": 0.941,
+      "g": 0.125,
+      "r": 0.627
+    }
+  }
+}
