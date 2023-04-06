@@ -63,7 +63,7 @@ const config = {
 module.exports = (env, argv) => {
   if (argv.mode !== 'production') {
     config.optimization.minimize = false
-    config.devtool = 'nosources-cheap-source-map'
+    config.devtool = 'source-map'
   }
   return config
 }

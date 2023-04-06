@@ -67,7 +67,7 @@ end
 }
 ```
 
-```xml
+```ui
 <bookstore>
   <book category="Science Fiction">
     <title>The Hitchhiker's Guide to the Galaxy</title>
@@ -84,7 +84,7 @@ end
 </bookstore>
 ```
 
-```lua
+```script
 function onLoad()
   print("From Blue")
 end

@@ -1,10 +1,17 @@
 {
   "scopeName": "source.tso",
-  "patterns": [{ "include": "#block" }],
-  "repository": {
-    "block": {
-      "patterns":[ {"include": "#json"}, {"include": "#xml"}, {"include": "#lua"}]
+  "patterns": [
+    {
+      "include": "#json"
     },
+    {
+      "include": "#xml"
+    },
+    {
+      "include": "#lua"
+    }
+  ],
+  "repository": {
     "json": {
       "begin": "\\`\\`\\`object",
       "end": "\\`\\`\\`",
