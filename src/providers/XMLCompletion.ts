@@ -1,5 +1,5 @@
 import {
-  type CompletionItem, type CompletionList, type Position, type TextDocument,
+  CompletionItem, type CompletionList, type Position, type TextDocument,
   type CompletionItemProvider
 } from 'vscode'
 
@@ -8,6 +8,8 @@ export default class XMLCompletionProvider implements CompletionItemProvider {
     document: TextDocument,
     position: Position
   ): Promise<CompletionItem[] | CompletionList> {
-    return []
+    return [
+      new CompletionItem('An XML Suggestion')
+    ]
   }
 }

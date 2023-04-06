@@ -81,8 +81,12 @@
     "languages": [
       {
         "id": "tso",
-        "aliases": ["Tabletop Simulator Object"],
-        "extensions": [".tso"],
+        "aliases": [
+          "Tabletop Simulator Object"
+        ],
+        "extensions": [
+          ".tso"
+        ],
         "icon": {
           "light": "media/tts.svg",
           "dark": "media/tts.svg"

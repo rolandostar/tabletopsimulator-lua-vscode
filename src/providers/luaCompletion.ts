@@ -1,5 +1,5 @@
 import {
-  type CancellationToken, type CompletionContext, type CompletionItem, type CompletionList,
+  type CancellationToken, type CompletionContext, CompletionItem, type CompletionList,
   type Position, type TextDocument, type CompletionItemProvider
 } from 'vscode'
 
@@ -10,6 +10,8 @@ export default class LuaCompletionProvider implements CompletionItemProvider {
     _token: CancellationToken,
     context: CompletionContext
   ): Promise<CompletionItem[] | CompletionList> {
-    return []
+    return [
+      new CompletionItem('A suggestion')
+    ]
   }
 }

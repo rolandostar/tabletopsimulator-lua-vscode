@@ -13,14 +13,18 @@ documents.listen(connection)
 connection.onInitialize(() => {
   return {
     capabilities: {
-      codeActionProvider: true,
-      textDocumentSync: {
-        openClose: true,
-        change: TextDocumentSyncKind.Incremental
-      },
-      executeCommandProvider: {
-        commands: ['sample.fixMe']
+      completionProvider: {
+        resolveProvider: true,
+        triggerCharacters: ['.', ':']
       }
+      // codeActionProvider: true,
+      // textDocumentSync: {
+      //   openClose: true,
+      //   change: TextDocumentSyncKind.Incremental
+      // },
+      // executeCommandProvider: {
+      //   commands: ['sample.fixMe']
+      // }
     }
   }
 })
