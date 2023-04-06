@@ -17,6 +17,12 @@
 		"eqeqeq": "error",
 		"indent": "off",
 		"@typescript-eslint/indent": ["warn", 2, { "SwitchCase": 1 } ],
-		"max-len": ["warn", { "code": 120, "ignoreComments": true, "ignoreUrls": true }]
+		"max-len": ["warn", {
+      "code": 100,
+      "ignoreComments": true,
+      "ignoreUrls": true,
+      "ignoreStrings": true,
+      "ignoreTemplateLiterals": true
+    }]
 	}
 }

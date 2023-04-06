@@ -1,0 +1,56 @@
+[
+  {
+    "CustomDecal": {
+      "ImageURL": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtm4rBADAJa_IHiMR6RNnEa4ozYddkVoByJQ\u0026usqp=CAU",
+      "Name": "Test",
+      "Size": 1
+    },
+    "Transform": {
+      "posX": -11.5501146,
+      "posY": 0.9711349,
+      "posZ": -2.89419365,
+      "rotX": 90,
+      "rotY": 358.833832,
+      "rotZ": 0,
+      "scaleX": 1,
+      "scaleY": 1,
+      "scaleZ": 1
+    }
+  },
+  {
+    "CustomDecal": {
+      "ImageURL": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtm4rBADAJa_IHiMR6RNnEa4ozYddkVoByJQ\u0026usqp=CAU",
+      "Name": "Test",
+      "Size": 1
+    },
+    "Transform": {
+      "posX": -8.761883,
+      "posY": 0.9711349,
+      "posZ": -8.9869175,
+      "rotX": 90,
+      "rotY": 358.833832,
+      "rotZ": 0,
+      "scaleX": 1,
+      "scaleY": 1,
+      "scaleZ": 1
+    }
+  },
+  {
+    "CustomDecal": {
+      "ImageURL": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtm4rBADAJa_IHiMR6RNnEa4ozYddkVoByJQ\u0026usqp=CAU",
+      "Name": "Test",
+      "Size": 1
+    },
+    "Transform": {
+      "posX": -4.83668375,
+      "posY": 0.9711349,
+      "posZ": -2.972392,
+      "rotX": 90,
+      "rotY": 358.833832,
+      "rotZ": 0,
+      "scaleX": 1,
+      "scaleY": 1,
+      "scaleZ": 1
+    }
+  }
+]

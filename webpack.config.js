@@ -1,5 +1,7 @@
 const path = require('path')
 const { TsconfigPathsPlugin } = require('tsconfig-paths-webpack-plugin')
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 
 const config = {
   mode: 'none',
@@ -26,21 +28,22 @@ const config = {
     vscode: 'commonjs vscode'
   },
   plugins: [
-    // new CopyWebpackPlugin({
-    //   patterns: [
-    //     { from: 'node_modules/luabundle/bundle/runtime.lua' },
-    //   ],
-    // }),
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: 'node_modules/luabundle/bundle/runtime.lua' },
+      ],
+    }),
   ],
   optimization: {
-    // minimizer: [new TerserPlugin({
-    //   terserOptions: {
-    //     format: {
-    //       comments: false,
-    //     },
-    //   },
-    //   extractComments: false,
-    // })],
+    minimize: true,
+    minimizer: [new TerserPlugin({
+      terserOptions: {
+        format: {
+          comments: false,
+        },
+      },
+      extractComments: false,
+    })],
   },
   module: {
     rules: [{
@@ -58,7 +61,9 @@ const config = {
   }
 }
 module.exports = (env, argv) => {
-  config.optimization.minimize = argv.mode === 'production'
-  config.devtool = argv.mode === 'production' ? 'hidden-source-map' : 'source-map'
+  if (argv.mode !== 'production') {
+    config.optimization.minimize = false
+    config.devtool = 'nosources-cheap-source-map'
+  }
   return config
 }

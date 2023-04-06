@@ -18,11 +18,13 @@ export default importFolder(
   require.context('./', false, /\.ts$/),
   (name: string) => name !== './index.ts'
 ) as Array<{
-  eventname:
+  file:
   'pushingNewObject' | 'loadingANewGame' | 'printDebugMessage' | 'errorMessage' |
   'customMessage' | 'returnMessage' | 'gameSaved' | 'objectCreated'
-  callback: (e:
-  PushingNewObject | LoadingANewGame | PrintDebugMessage | ErrorMessage |
-  CustomMessage | ReturnMessage | GameSaved | ObjectCreated
-  ) => void
+  content: {
+    default: (e:
+    PushingNewObject | LoadingANewGame | PrintDebugMessage | ErrorMessage |
+    CustomMessage | ReturnMessage | GameSaved | ObjectCreated
+    ) => void
+  }
 }>

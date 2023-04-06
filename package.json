@@ -33,6 +33,7 @@
   "dependencies": {
     "@matanlurey/tts-editor": "github:rolandostar/tts-editor#dist",
     "@vscode/codicons": "^0.0.32",
+    "luabundle": "^1.6.0",
     "typesafe-i18n": "^5.24.3",
     "vscode-languageclient": "^8.1.0",
     "vscode-languageserver": "^8.1.0",
@@ -45,6 +46,7 @@
     "@typescript-eslint/eslint-plugin": "^5.57.0",
     "@typescript-eslint/parser": "^5.57.0",
     "concurrently": "^8.0.1",
+    "copy-webpack-plugin": "^11.0.0",
     "eslint": "^8.37.0",
     "eslint-config-standard-with-typescript": "^34.0.1",
     "eslint-plugin-import": "^2.27.5",
@@ -52,6 +54,7 @@
     "eslint-plugin-promise": "^6.1.1",
     "merge-options": "^3.0.4",
     "rimraf": "^4.4.1",
+    "terser-webpack-plugin": "^5.3.7",
     "ts-loader": "^9.4.2",
     "tsconfig-paths-webpack-plugin": "^4.0.1",
     "typescript": "^5.0.3",
@@ -75,7 +78,33 @@
     "onCommand:ttslua.downloadAssets"
   ],
   "contributes": {
+    "languages": [
+      {
+        "id": "tso",
+        "aliases": ["Tabletop Simulator Object"],
+        "extensions": [".tso"],
+        "icon": {
+          "light": "media/tts.svg",
+          "dark": "media/tts.svg"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "tso",
+        "scopeName": "source.tso",
+        "path": "./syntaxes/tso.tmLanguage.json"
+      }
+    ],
     "commands": [
+      {
+        "command": "ttslua.changeObjectView",
+        "title": "Toggle TTS view between Lua/XML/Json",
+        "icon": {
+          "light": "media/arrow-switch_light.svg",
+          "dark": "media/arrow-switch.svg"
+        }
+      },
       {
         "command": "ttslua.updateCompletionItems",
         "title": "Update IntelliSense with latest TTS API",
@@ -136,6 +165,12 @@
           "when": "editorHasSelection",
           "command": "ttslua.executeLua",
           "group": "0_Custom"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "ttslua.changeObjectView",
+          "group": "navigation"
         }
       ]
     },
@@ -358,6 +393,12 @@
             "markdownDescription": "When enabled, the extension will output the paths and patterns it's using to locate includes and requires. Useful for debugging `ModuleResolution` errors.[Learn More](https://tts-vscode.rolandostar.com/support/debuggingModuleResolution)\n\nOpen the Developer Tools to see the output, default hotkey `Ctrl+Shift+I`.",
             "type": "boolean",
             "default": false
+          },
+          "ttslua.misc.host": {
+            "markdownDescription": "The host to use for the extension. [Learn More](http://tts-vscode.rolandostar.com/support/host)",
+            "type": "string",
+            "default": "localhost",
+            "minLength": 1
           }
         }
       }

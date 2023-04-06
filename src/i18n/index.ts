@@ -5,7 +5,7 @@ import getConfig from '@/lib/utils/getConfig'
 
 loadAllLocales()
 
-const locale = getConfig<Locales>('misc.locale')
+const locale: Locales = getConfig('misc.locale')
 let L: TranslationFunctions = i18n()[locale]
 
 export async function switchLocale (locale: Locales): Promise<void> {

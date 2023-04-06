@@ -1,0 +1,91 @@
+```script
+function onLoad()
+  print("From Blue")
+end
+```
+
+```ui
+<bookstore>
+  <book category="Science Fiction">
+    <title>The Hitchhiker's Guide to the Galaxy</title>
+    <author>Douglas Adams</author>
+    <year>1979</year>
+    <price>12.99</price>
+  </book>
+  <book category="Mystery">
+    <title>The Da Vinci Code</title>
+    <author>Dan Brown</author>
+    <year>2003</year>
+    <price>14.99</price>
+  </book>
+</bookstore>
+```
+
+```object
+{
+  "AltLookAngle": {
+    "x": 0,
+    "y": 0,
+    "z": 0
+  },
+  "Autoraise": true,
+  "ColorDiffuse": {
+    "b": 0.82353,
+    "g": 0.20157,
+    "r": 0
+  },
+  "Description": "",
+  "DragSelectable": true,
+  "GMNotes": "",
+  "GUID": "10c02e",
+  "Grid": true,
+  "GridProjection": false,
+  "Hands": false,
+  "HideWhenFaceDown": false,
+  "IgnoreFoW": false,
+  "LayoutGroupSortIndex": 0,
+  "Locked": false,
+  "LuaScriptState": "",
+  "MeasureMovement": false,
+  "Name": "BlockRectangle",
+  "Nickname": "",
+  "Snap": true,
+  "Sticky": true,
+  "Tooltip": true,
+  "Transform": {
+    "posX": 0.72,
+    "posY": 1.46,
+    "posZ": -6.282,
+    "rotX": 0,
+    "rotY": 317,
+    "rotZ": 0,
+    "scaleX": 1,
+    "scaleY": 1,
+    "scaleZ": 1
+  },
+  "Value": 0
+}
+```
+
+```xml
+<bookstore>
+  <book category="Science Fiction">
+    <title>The Hitchhiker's Guide to the Galaxy</title>
+    <author>Douglas Adams</author>
+    <year>1979</year>
+    <price>12.99</price>
+  </book>
+  <book category="Mystery">
+    <title>The Da Vinci Code</title>
+    <author>Dan Brown</author>
+    <year>2003</year>
+    <price>14.99</price>
+  </book>
+</bookstore>
+```
+
+```lua
+function onLoad()
+  print("From Blue")
+end
+```
