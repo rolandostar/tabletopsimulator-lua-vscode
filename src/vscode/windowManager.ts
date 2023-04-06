@@ -1,5 +1,6 @@
 import * as vscode from 'vscode'
-
+type Prompt = () => Promise<boolean>
+type PromptMap = Record<string, Prompt>
 /**
  * Prompts are functions which prompt the user for an action.
  *
@@ -9,8 +10,6 @@ import * as vscode from 'vscode'
  *
  * They must never reject, as this will cause vscode to show a ~scary~ error message.
  */
-type Prompt = () => Promise<boolean>
-type PromptMap = Record<string, Prompt>
 export const prompts: PromptMap = {
   getScriptsConfirmed: async () => {
     return await vscode.window

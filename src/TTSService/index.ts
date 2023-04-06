@@ -1,39 +1,56 @@
-import * as vscode from 'vscode'
-
+import { Disposable } from 'vscode'
 import EditorApi from './CustomExternalEditorApi'
 import listeners from './listeners'
 import { prompts } from '@/vscode/windowManager'
 
-export default class TTSService extends vscode.Disposable {
-  public static api = new EditorApi()
-  private static readonly _disposables: vscode.Disposable[] = []
+type InGameObjectsList = Record<string, { name?: string, type?: string, iname?: string }>
 
-  public static async start (): Promise<void> {
+export default class TTSService {
+  private static instance: TTSService
+  private readonly api = new EditorApi()
+  private readonly _disposables: Disposable[] = []
+
+  private constructor () {
     // Register all listeners with corresponding callbacks, make sure we can dispose them later
     listeners.forEach(listener => {
       this._disposables.push(
-        new vscode.Disposable(
-          TTSService.api.on(listener.eventname, listener.callback)
-        )
+        new Disposable(this.api.on(listener.eventname, listener.callback))
       )
     })
-    // Start listening for incoming events
-    await TTSService.api.listen()
   }
 
-  public static async getScripts (): Promise<void> {
+  public static getInstance (): TTSService {
+    if (TTSService.instance === undefined) {
+      TTSService.instance = new TTSService()
+    }
+    return TTSService.instance
+  }
+
+  public async start (): Promise<Disposable> {
+    await this.api.listen()
+    return new Disposable(this.dispose)
+  }
+
+  public async getScripts (): Promise<void> {
     if (!await prompts.getScriptsConfirmed()) return
-    const { savePath } = await TTSService.api.getLuaScripts()
+    const { savePath } = await this.api.getLuaScripts()
     console.log('[TTSLua] Save path:', savePath)
   }
 
-  public static saveAndPlay (): void {
+  public saveAndPlay (): void {
     console.log('[TTSLua] Save and Play')
   }
 
-  public static dispose (): void {
-    TTSService._disposables.forEach(d => d.dispose())
-    TTSService.api.close()
+  public getInGameObjects (): InGameObjectsList {
+    return {}
+  }
+
+  public executeLuaCode (script: string, guid: string): void {
+  }
+
+  private dispose (): void {
+    this._disposables.forEach(d => d.dispose())
+    this.api.close()
     console.log('[TTSLua] Adapter resources disposed')
   }
 }

@@ -3,12 +3,12 @@
   "displayName": "Tabletop Simulator Lua",
   "author": "Rolando Romero <contact@rolandostar.com> (https://rolandostar.com/)",
   "description": "Extension for VSCode to make writing Lua scripts for Tabletop Simulator easier.",
-  "version": "2.0.0-rc1",
+  "version": "2.0.0-alpha.1",
   "publisher": "rolandostar",
   "license": "MIT",
   "engines": {
     "node": ">=12.9.0",
-    "vscode": "^1.72.0"
+    "vscode": "^1.77.0"
   },
   "repository": {
     "type": "git",
@@ -18,20 +18,20 @@
     "Programming Languages",
     "Other"
   ],
+  "main": "./out/client.bundle.js",
   "scripts": {
     "compile": "webpack --mode development",
     "watch": "webpack --mode development --watch",
     "lint": "eslint",
-    "pretest": "npm run lint && npm run test-compile",
-    "test-compile": "tsc",
-    "test": "node ./dist/test/runTest.js",
     "vscode:prepublish": "webpack --mode production",
-    "package": "vsce package"
+    "package": "vsce package",
+    "i18n": "typesafe-i18n"
   },
   "extensionDependencies": [
     "draivin.hscopes"
   ],
   "dependencies": {
+    "@matanlurey/tts-editor": "github:rolandostar/tts-editor#dist",
     "@vscode/codicons": "^0.0.32",
     "axios": "^1.1.2",
     "glob": "^8.0.3",
@@ -39,34 +39,36 @@
     "luabundle": "^1.6.0",
     "nodejs-file-downloader": "^4.10.2",
     "require-module-from-string": "^1.0.19",
-		"@matanlurey/tts-editor": "github:rolandostar/tts-editor#dist",
 		"vscode-languageclient": "^8.1.0",
 		"vscode-languageserver": "^8.1.0",
-		"vscode-languageserver-textdocument": "^1.0.8"
+		"vscode-languageserver-textdocument": "^1.0.8",
+    "typesafe-i18n": "^5.24.3"
   },
   "devDependencies": {
-		"@types/node": "^18.15.11",
-		"@types/vscode": "^1.77.0",
-		"@types/webpack-env": "^1.18.0",
-		"@typescript-eslint/eslint-plugin": "^5.57.0",
-		"@typescript-eslint/parser": "^5.57.0",
-		"concurrently": "^8.0.1",
-		"eslint": "^8.37.0",
-		"eslint-config-standard-with-typescript": "^34.0.1",
-		"eslint-plugin-import": "^2.27.5",
-		"eslint-plugin-n": "^15.7.0",
-		"eslint-plugin-promise": "^6.1.1",
-		"merge-options": "^3.0.4",
-		"rimraf": "^4.4.1",
-		"ts-loader": "^9.4.2",
-		"tsconfig-paths-webpack-plugin": "^4.0.1",
-		"typescript": "^5.0.3",
-		"webpack": "^5.77.0",
-		"webpack-cli": "^5.0.1"
+    "@types/node": "^18.15.11",
+    "@types/vscode": "^1.77.0",
+    "@types/webpack-env": "^1.18.0",
+    "@typescript-eslint/eslint-plugin": "^5.57.0",
+    "@typescript-eslint/parser": "^5.57.0",
+    "concurrently": "^8.0.1",
+    "eslint": "^8.37.0",
+    "eslint-config-standard-with-typescript": "^34.0.1",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-n": "^15.7.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "merge-options": "^3.0.4",
+    "rimraf": "^4.4.1",
+    "ts-loader": "^9.4.2",
+    "tsconfig-paths-webpack-plugin": "^4.0.1",
+    "typescript": "^5.0.3",
+    "webpack": "^5.77.0",
+    "webpack-cli": "^5.0.1"
   },
   "activationEvents": [
     "onWebviewPanel:TTSConsole",
     "workspaceContains:*.lua",
+    "workspaceContains:*.tts",
+    "workspaceContains:*.ttslua",
     "onLanguage:lua",
     "onCommand:ttslua.openConsole",
     "onCommand:ttslua.getScripts",
@@ -78,7 +80,6 @@
     "onCommand:ttslua.changeWorkDir",
     "onCommand:ttslua.downloadAssets"
   ],
-  "main": "./dist/main.js",
   "contributes": {
     "commands": [
       {
@@ -224,6 +225,18 @@
         "id": "ttslua.autocompletion",
         "title": "Autocompletion",
         "properties": {
+          "ttslua.autocompletion.luaEnabled": {
+            "title": "Enable Lua Autocompletion",
+            "description": "Enable autocompletion for Lua files.",
+            "type": "boolean",
+            "default": "true"
+          },
+          "ttslua.autocompletion.xmlEnabled": {
+            "title": "Enable XML Autocompletion",
+            "description": "Enable autocompletion for XML files.",
+            "type": "boolean",
+            "default": "true"
+          },
           "ttslua.autocompletion.coroutineSuffix": {
             "title": "Coroutine Suffix",
             "description": "When automatically creating an internal coroutine function this is appended to the parent function's name.",
@@ -293,6 +306,15 @@
         "id": "ttslua.misc",
         "title": "Miscellaneous",
         "properties": {
+          "ttslua.misc.locale": {
+            "markdownDescription": "Select the language to use for the extension. [Learn More](http://tts-vscode.rolandostar.com/support/locales)",
+            "type": "string",
+            "default": "en-US",
+            "enum": [
+              "en-US",
+              "es-MX"
+            ]
+          },
           "ttslua.misc.disableDirectoryWarning": {
             "markdownDescription": "When enabled, the extension will not show a warning when directories are deteced in the In-Game Files. [Learn More](http://tts-vscode.rolandostar.com/support/dirWarning)",
             "type": "boolean",
