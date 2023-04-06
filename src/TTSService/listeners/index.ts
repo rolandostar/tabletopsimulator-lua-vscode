@@ -1,4 +1,4 @@
-import importFolder from 'Utilities/importFolder'
+import importFolder from '@Utils/importFolder'
 import {
   type CustomMessage,
   type ErrorMessage,
@@ -14,7 +14,10 @@ import {
  *  This file exports all other files in this directory making use of the importFolder function.
  */
 
-export default importFolder(require.context('./', false, /\.ts$/), (name: string) => name !== './index.ts') as Array<{
+export default importFolder(
+  require.context('./', false, /\.ts$/),
+  (name: string) => name !== './index.ts'
+) as Array<{
   eventname:
   'pushingNewObject' | 'loadingANewGame' | 'printDebugMessage' | 'errorMessage' |
   'customMessage' | 'returnMessage' | 'gameSaved' | 'objectCreated'

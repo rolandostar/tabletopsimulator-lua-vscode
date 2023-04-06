@@ -1,55 +1,27 @@
-import * as path from 'path'
-import { type ExtensionContext, window as Window, commands as vsCommands } from 'vscode'
-import {
-  RevealOutputChannelOn, LanguageClient, TransportKind,
-  type ServerOptions, type LanguageClientOptions
-} from 'vscode-languageclient/node'
-import TTSService from '../TTSService'
-import commands from './commands'
+import { type ExtensionContext, commands, Disposable } from 'vscode'
+
+import myCommands from './commands'
+import langClientBuilder from './langClient'
+import TTSService from '@/TTSService'
+import { setLocalStorage } from '@Utils/LocalStorageService'
+import { initWorkspace } from '@/vscode/workspaceManager'
+import registerProviders from '@/providers'
+import L from '@/i18n'
 
 export async function activate (context: ExtensionContext): Promise<void> {
-  console.log('[TTSLua] Activating extension')
-  const serverModule = context.asAbsolutePath(path.join('out', 'server.bundle.js'))
-  console.log(serverModule)
-  const serverOptions: ServerOptions = {
-    run: { module: serverModule, transport: TransportKind.ipc, options: { cwd: process.cwd() } },
-    debug: { module: serverModule, transport: TransportKind.ipc, options: { cwd: process.cwd() } }
-  }
-
-  const clientOptions: LanguageClientOptions = {
-    documentSelector: [{ scheme: 'file', language: 'plaintext' }],
-    diagnosticCollectionName: 'sample',
-    revealOutputChannelOn: RevealOutputChannelOn.Never,
-    progressOnInitialization: true,
-    middleware: {
-      executeCommand: async (command, args, next) => {
-        const selected = await Window.showQuickPick(['Visual Studio', 'Visual Studio Code'])
-        if (selected === undefined) {
-          return next(command, args)
-        }
-        args = args.slice(0)
-        args.push(selected)
-        return next(command, args)
-      }
-    }
-  }
-
-  let client: LanguageClient
-  try {
-    client = new LanguageClient('UI Sample', serverOptions, clientOptions)
-  } catch (err) {
-    await Window.showErrorMessage('The extension couldn\'t be started. See the output channel for details.')
-    return
-  }
-  client.registerProposedFeatures()
-  await client.start()
-
-  console.log('[TTSLua] Tabletop Simulator Extension Load')
-  await TTSService.start()
+  console.info(L.activation())
+  setLocalStorage(context.globalState)
+  const langClient = langClientBuilder(context)
 
   context.subscriptions.push(
-    ...commands.map(cmd => vsCommands.registerCommand(cmd.id, cmd.fn, context))
+    new Disposable(langClient.dispose),
+    await initWorkspace(),
+    await TTSService.getInstance().start(),
+    ...myCommands.map(cmd => commands.registerCommand(cmd.id, cmd.fn, context)),
+    ...registerProviders()
   )
+
+  await langClient.start()
 }
 
 export function deactivate (): void {

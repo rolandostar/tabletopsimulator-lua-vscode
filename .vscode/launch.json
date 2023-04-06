@@ -9,7 +9,8 @@
 			"runtimeExecutable": "${execPath}",
 			"args": [
         "--extensionDevelopmentPath=${workspaceFolder}",
-        "--profile='Ext Dev'"
+        "--profile='Ext Dev'",
+        "${workspaceFolder}/src/lib/tests/fixture/"
       ],
 			"autoAttachChildProcesses": true,
 			"sourceMaps": true,
