@@ -4,12 +4,14 @@ import * as vscode from 'vscode'
 import { executeLuaCode, getInGameObjects } from '@/TTSService'
 
 export default class LuaHoverProvider implements vscode.HoverProvider {
-  async provideHover (document: vscode.TextDocument, position: vscode.Position): Promise<vscode.Hover | null> {
+  async provideHover (
+    document: vscode.TextDocument,
+    position: vscode.Position
+  ): Promise<vscode.Hover | null> {
     // Get hovered text
     const range = document.getWordRangeAtPosition(position)
     const text = document.getText(range)
     // check if hovered text is GUID format
-    console.log(text)
     const igObjs = getInGameObjects()
     if (text in igObjs) {
       // If so, return a hover with the object name

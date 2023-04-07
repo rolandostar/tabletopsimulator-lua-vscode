@@ -1,4 +1,4 @@
-import importFolder from '@Utils/importFolder'
+import importFolder from '@utils/importFolder'
 import {
   type CustomMessage,
   type ErrorMessage,

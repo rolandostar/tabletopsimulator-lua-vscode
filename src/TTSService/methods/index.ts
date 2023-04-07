@@ -1,4 +1,4 @@
-import importFolder from '@Utils/importFolder'
+import importFolder from '@utils/importFolder'
 /**
  *  This file exports all other files in this directory making use of the importFolder function.
  */

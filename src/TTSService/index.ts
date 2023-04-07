@@ -3,6 +3,7 @@ import EditorApi from './CustomExternalEditorApi'
 import listeners from './listeners'
 
 import getScripts from './methods/getScripts'
+import saveAndPlay from './methods/saveAndPlay'
 
 type InGameObjectsList = Record<string, { name?: string, type?: string, iname?: string }>
 
@@ -18,14 +19,10 @@ export async function start (): Promise<Disposable[]> {
   return disposables
 }
 
-export function saveAndPlay (): void {
-  console.log('[TTSLua] Save and Play')
-}
-
 export function getInGameObjects (): InGameObjectsList {
   return {}
 }
 
 export function executeLuaCode (script: string, guid: string): void {
 }
-export { getScripts }
+export { getScripts, saveAndPlay }
