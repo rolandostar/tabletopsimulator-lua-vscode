@@ -2,27 +2,27 @@
   "scopeName": "source.tso",
   "patterns": [
     {
-      "include": "#json"
+      "include": "#object"
     },
     {
-      "include": "#xml"
+      "include": "#ui"
     },
     {
-      "include": "#lua"
+      "include": "#script"
     }
   ],
   "repository": {
-    "json": {
+    "object": {
       "begin": "\\`\\`\\`object",
       "end": "\\`\\`\\`",
-      "name": "embedded.json",
+      "name": "embedded.yaml",
       "patterns": [
         {
-          "include": "source.json"
+          "include": "source.yaml"
         }
       ]
     },
-    "xml": {
+    "ui": {
       "begin": "\\`\\`\\`ui",
       "end": "\\`\\`\\`",
       "name": "embedded.xml",
@@ -32,7 +32,7 @@
         }
       ]
     },
-    "lua": {
+    "script": {
       "begin": "\\`\\`\\`script",
       "end": "\\`\\`\\`",
       "name": "embedded.lua",

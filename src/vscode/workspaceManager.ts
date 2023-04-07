@@ -5,7 +5,7 @@ import {
   type WorkspaceFoldersChangeEvent,
   type WorkspaceFolder, Disposable
 } from 'vscode'
-import * as LSS from '@Utils/LocalStorageService'
+import * as LSS from '@utils/LocalStorageService'
 import { changeTheme, createStatusBarItem } from './statusBarManager'
 import L from '@/i18n'
 import { workDirCreateFailed } from './errorHandler'

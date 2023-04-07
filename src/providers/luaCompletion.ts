@@ -1,3 +1,4 @@
+import getConfig from '@utils/getConfig'
 import {
   type CancellationToken, type CompletionContext, CompletionItem, type CompletionList,
   type Position, type TextDocument, type CompletionItemProvider
@@ -10,8 +11,9 @@ export default class LuaCompletionProvider implements CompletionItemProvider {
     _token: CancellationToken,
     context: CompletionContext
   ): Promise<CompletionItem[] | CompletionList> {
+    if (!getConfig<boolean>('autocompletion.luaEnabled')) return []
     return [
-      new CompletionItem('A suggestion')
+      new CompletionItem('A Lua suggestion')
     ]
   }
 }

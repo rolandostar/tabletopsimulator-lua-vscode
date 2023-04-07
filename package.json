@@ -36,6 +36,7 @@
     "axios": "^1.1.2",
     "glob": "^8.0.3",
     "html-escaper": "^3.0.3",
+    "js-yaml": "^4.1.0",
     "luabundle": "^1.6.0",
     "nodejs-file-downloader": "^4.10.2",
     "require-module-from-string": "^1.0.19",

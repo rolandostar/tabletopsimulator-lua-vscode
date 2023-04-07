@@ -1,3 +1,4 @@
+import getConfig from '@utils/getConfig'
 import {
   CompletionItem, type CompletionList, type Position, type TextDocument,
   type CompletionItemProvider
@@ -8,6 +9,7 @@ export default class XMLCompletionProvider implements CompletionItemProvider {
     document: TextDocument,
     position: Position
   ): Promise<CompletionItem[] | CompletionList> {
+    if (!getConfig<boolean>('autocompletion.xmlEnabled')) return []
     return [
       new CompletionItem('An XML Suggestion')
     ]

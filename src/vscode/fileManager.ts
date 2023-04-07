@@ -1,7 +1,7 @@
 import { normalize, join, dirname } from 'path'
 import { Uri, workspace, window, type TextEditor } from 'vscode'
 import { getWorkDir } from './workspaceManager'
-import uriExists from '@Utils/uriExists'
+import uriExists from '@utils/uriExists'
 
 export class FileManager {
   private readonly FileUri: Uri

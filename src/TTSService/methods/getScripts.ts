@@ -1,5 +1,5 @@
 import { FileManager } from '@/vscode/fileManager'
-import getConfig from '@Utils/getConfig'
+import getConfig from '@utils/getConfig'
 import L from '@/i18n'
 import bundler from 'luabundle'
 import { NoBundleMetadataError } from 'luabundle/errors'
