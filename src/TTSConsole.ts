@@ -1,8 +1,9 @@
 import * as vscode from 'vscode';
-import * as BBCode from './BBCode';
-import TTSAdapter from './TTSAdapter';
 
-export class TTSConsolePanel {
+import * as BBCode from '@/BBCode';
+import TTSAdapter from '@/TTSAdapter';
+
+export default class TTSConsolePanel {
   public static currentPanel: TTSConsolePanel | undefined;
   public static readonly viewType = 'TTSConsole';
   private _disposables: vscode.Disposable[] = [];
@@ -126,7 +127,13 @@ export class TTSConsolePanel {
       vscode.Uri.joinPath(this._extensionUri, 'assets', 'console.css')
     );
     const codiconsUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, 'assets', 'codicon.css')
+      vscode.Uri.joinPath(
+        this._extensionUri,
+        'node_modules',
+        '@vscode/codicons',
+        'dist',
+        'codicon.css'
+      )
     );
 
     // Use a nonce to only allow a specific script to be run.
@@ -158,13 +165,13 @@ export class TTSConsolePanel {
                 --ttslua-console-input-height: ${consoleConfig.get('inputHeight') as number}px;
               }
               </style>
-              <link rel="preconnect" href="https://fonts.googleapis.com">
-              <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-              <link href="https://fonts.googleapis.com/css2?family=Amaranth&family=Roboto+Mono&display=swap" rel="stylesheet">
+              <link rel="preconnect" href="https://fonts.googleapis.com" />
+              <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+              <link href="https://fonts.googleapis.com/css2?family=Amaranth&family=Roboto+Mono&display=swap" rel="stylesheet" />
               <link href="${codiconsUri}" rel="stylesheet" />
-              <link href="${styleResetUri}" rel="stylesheet">
-              <link href="${styleVSCodeUri}" rel="stylesheet">
-              <link href="${styleMainUri}" rel="stylesheet">
+              <link href="${styleResetUri}" rel="stylesheet" />
+              <link href="${styleVSCodeUri}" rel="stylesheet" />
+              <link href="${styleMainUri}" rel="stylesheet" />
               <script nonce="${nonce}" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
               <title>Tabletop Simulator Console++</title>
           </head>
@@ -202,6 +209,9 @@ function getNonce() {
 export function getWebviewOptions(extensionUri: vscode.Uri): vscode.WebviewOptions {
   return {
     enableScripts: true,
-    localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'assets')],
+    localResourceRoots: [
+      vscode.Uri.joinPath(extensionUri, 'node_modules', '@vscode/codicons', 'dist'),
+      vscode.Uri.joinPath(extensionUri, 'assets'),
+    ],
   };
 }

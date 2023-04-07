@@ -1,7 +1,3 @@
-export interface readFilesOptions {
-  single?: boolean;
-}
-
 /**
  * Shape of data received from TTS
  */
@@ -11,7 +7,7 @@ export interface GenericTTSMessage {
 
 export interface ObjectPushedMessage {
   messageID: RxMsgType.ObjectPushed;
-  scriptStates: [ScriptState];
+  scriptStates: ScriptState[];
 }
 
 export interface NewGameMessage {

@@ -1,15 +1,17 @@
 import * as vscode from 'vscode';
-import * as TTSTypes from './TTSTypes';
 import * as net from 'net';
-import * as ws from './vscode/workspace';
 import * as fs from 'fs';
 
 import path = require('path');
 import bundler from 'luabundle';
 import {resolveModule} from 'luabundle/bundle/process';
 import * as bundleErr from 'luabundle/errors';
-import {TTSConsolePanel} from './TTSConsole';
-import LuaCompletionProvider from './vscode/LuaCompletionProvider';
+
+import * as ws from '@/vscode/workspace';
+import * as TTSTypes from '@/TTSTypes';
+import TTSConsolePanel from '@/TTSConsole';
+import TTSWorkDir from '@/vscode/TTSWorkDir';
+import LocalStorageService from './vscode/LocalStorageService';
 
 type InGameObjectsList = {[key: string]: {name?: string; type?: string; iname?: string}};
 
@@ -22,12 +24,30 @@ function getSearchPaths(searchPattern: string[]): string[] {
     vscode.workspace.getConfiguration('ttslua.fileManagement').get('includePaths') || [];
   // Search pattern can be undefined, if it is
   const vsFolders = vscode.workspace.workspaceFolders || [];
+
+  /* DISABLED:
+   * This would make relative require work anywhere, but will probably be too many locations to
+   * search for modules
+   */
+  // const possibleLocations = vsFolders
+  //   .map(vsFolder => glob.sync('**/*/', {cwd: vsFolder.uri.fsPath, absolute: true}))
+  //   .reduce((acc, cur) => acc.concat(cur), []);
+
+  /* We could only do that when we are working with version control */
+  // const workDirLocs = !TTSWorkDir.instance.isDefault()
+  //   ? glob.sync('**/*/', {
+  //       cwd: TTSWorkDir.instance.getUri().fsPath,
+  //       absolute: true,
+  //     })
+  //   : [];
+
   const paths = searchPattern
     .filter(pattern => pattern.length > 0)
     .map(pattern => [
       path.join(ws.docsFolder, pattern),
       ...includePaths.map(p => path.join(p, pattern)),
       ...vsFolders.map(val => path.join(val.uri.fsPath, pattern)),
+      // ...workDirLocs.map(val => path.join(val, pattern)),
       pattern, // For absolute paths
     ])
     // Flatten so all paths are in one top level array
@@ -41,12 +61,13 @@ function getSearchPaths(searchPattern: string[]): string[] {
 /**
  * Returns a list patterns, validating that '?.lua' is always included
  */
-function getLuaSearchPattern(): string[] {
-  const pattern = vscode.workspace
+function getLuaSearchPatterns(): string[] {
+  const patterns = vscode.workspace
     .getConfiguration('ttslua.fileManagement')
     .get('luaSearchPattern') as string[];
-  if (!pattern.includes('?.lua')) pattern.push('?.lua');
-  return pattern;
+  if (!patterns.includes('?')) patterns.push('?');
+  if (!patterns.includes('?.lua')) patterns.push('?.lua');
+  return patterns;
 }
 
 /**
@@ -126,9 +147,8 @@ export default class TTSAdapter extends vscode.Disposable {
    * Sends all Scripts to the game
    */
   public async saveAndPlay() {
-    // TODO: Be more clear about how searchPatterns work in package.json (Maybe link support page)
     // When sending scripts, the Temp folder must be present in workspace
-    if (!ws.isPresent(ws.workFolder)) {
+    if (!ws.isPresent(TTSWorkDir.instance.getUri())) {
       vscode.window.showErrorMessage(
         'The workspace does not contain the Tabletop Simulator folder.\n' +
           'Get Lua Scripts from game before trying to Save and Play.',
@@ -141,7 +161,7 @@ export default class TTSAdapter extends vscode.Disposable {
     // Read files contained in the Temp folder
     let files: [string, vscode.FileType][];
     try {
-      files = await vscode.workspace.fs.readDirectory(vscode.Uri.file(ws.workFolder));
+      files = await vscode.workspace.fs.readDirectory(TTSWorkDir.instance.getUri());
     } catch (reason: unknown) {
       vscode.window.showErrorMessage(
         'Unable to read TTS Scripts directory.\n' + `Details: ${reason}`
@@ -153,15 +173,13 @@ export default class TTSAdapter extends vscode.Disposable {
     const scripts: {[key: string]: TTSTypes.ScriptState} = {};
     for (const [file] of files.filter(([file]) => file.endsWith('.lua'))) {
       const [name, guid] = file.split('.');
-      const fileContents = (
-        await vscode.workspace.fs.readFile(vscode.Uri.file(path.join(ws.workFolder, file)))
-      ).toString();
+      const fileContents = (await TTSWorkDir.instance.readFile(file)).toString();
       try {
         scripts[guid] = {
           name,
           guid,
           script: bundler.bundleString(fileContents, {
-            paths: getSearchPaths(getLuaSearchPattern()),
+            paths: getSearchPaths(getLuaSearchPatterns()),
             isolate: true,
             rootModuleName: file,
           }),
@@ -175,9 +193,12 @@ export default class TTSAdapter extends vscode.Disposable {
               'Enable Debug'
             )
             .then(selection => {
-              //TODO: Open documentation
               if (selection === 'Learn More')
-                vscode.env.openExternal(vscode.Uri.parse('https://google.com'));
+                vscode.env.openExternal(
+                  vscode.Uri.parse(
+                    'https://tts-vscode.rolandostar.com/support/debuggingModuleResolution'
+                  )
+                );
               else if (selection === 'Enable Debug') {
                 if (!vscode.workspace.getConfiguration('ttslua.misc').get('debugSearchPaths')) {
                   vscode.workspace
@@ -208,9 +229,10 @@ export default class TTSAdapter extends vscode.Disposable {
             'Go to Error'
           );
           if (!option) return;
-          await vscode.window.showTextDocument(vscode.Uri.file(path.join(ws.workFolder, file)), {
-            selection: new vscode.Range(e.line - 1, e.column, e.line, 0),
-          });
+          await vscode.window.showTextDocument(TTSWorkDir.instance.getFileUri(file)),
+            {
+              selection: new vscode.Range(e.line - 1, e.column, e.line, 0),
+            };
           return;
         }
         vscode.window.showErrorMessage(`${name}:\n${err}`);
@@ -220,25 +242,27 @@ export default class TTSAdapter extends vscode.Disposable {
     // Iterate over found scripts, and check if UI file exists
     for (const guid in scripts) {
       const script = scripts[guid];
-      // Check if file exists with same name and guid
-      await vscode.workspace.fs
-        .readFile(vscode.Uri.file(path.join(ws.workFolder, `${script.name}.${script.guid}.xml`)))
-        .then(
-          // If Found, add it to the script state object under `ui`
-          fileContents => (scripts[guid].ui = TTSAdapter.insertXmlFiles(fileContents.toString())),
-          reason => {
-            if (reason.code !== 'FileNotFound') {
-              vscode.window.showErrorMessage(
-                `Error reading UI file for ${script.name}:\n${reason}`
-              );
-            }
-          }
-        );
+      try {
+        // Check if file exists with same name and guid
+        const filetext = await TTSWorkDir.instance.readFile(`${script.name}.${script.guid}.xml`);
+        // If Found, add it to the script state object under `ui`
+        scripts[guid].ui = await TTSAdapter.insertXmlFiles(filetext.toString());
+      } catch (reason) {
+        if ((reason as vscode.FileSystemError).code !== 'FileNotFound') {
+          vscode.window.showErrorMessage(`Error reading UI file for ${script.name}:\n${reason}`);
+        }
+      }
     }
     // Validate empty global to avoid lockup
     if (scripts['-1'] === undefined || scripts['-1'].script === '') {
-      // TODO: Make it verbose, link to support page?
-      vscode.window.showErrorMessage('Global Script must not be empty');
+      vscode.window
+        .showErrorMessage('Global Script must not be empty', 'Learn More')
+        .then(selection => {
+          if (selection === 'Learn More')
+            vscode.env.openExternal(
+              vscode.Uri.parse('https://tts-vscode.rolandostar.com/support/globalScriptLock')
+            );
+        });
       return;
     }
     // Do the sending
@@ -256,6 +280,8 @@ export default class TTSAdapter extends vscode.Disposable {
     // Clear the console if configured to do so
     if (vscode.workspace.getConfiguration('ttslua.console').get('clearOnReload'))
       TTSConsolePanel.currentPanel?.clearPanel();
+
+    return true;
   }
 
   /**
@@ -264,11 +290,11 @@ export default class TTSAdapter extends vscode.Disposable {
    */
   private handleMessage(rawMessage: TTSTypes.GenericTTSMessage) {
     // console.log('[TTSLua] Received message:');
-    console.log(rawMessage);
+    // console.log(rawMessage);
     switch (rawMessage.messageID) {
       case TTSTypes.RxMsgType.ObjectPushed: {
         const ttsMessage = <TTSTypes.ObjectPushedMessage>rawMessage;
-        ws.addDir2WS(ws.workFolder, 'TTS In-Game Files');
+        ws.addWorkDirToWorkspace();
         // add guid to suggestion
         this.readFilesFromTTS(ttsMessage.scriptStates, {single: true});
         break;
@@ -277,9 +303,8 @@ export default class TTSAdapter extends vscode.Disposable {
       case TTSTypes.RxMsgType.NewGame: {
         const ttsMessage = <TTSTypes.NewGameMessage>rawMessage;
         // if (!this.savedAndPlayed)
-        // CompletionProvider.setGuids();
         this.requestObjectGUIDs();
-        ws.addDir2WS(ws.workFolder, 'TTS In-Game Files');
+        ws.addWorkDirToWorkspace();
         this.readFilesFromTTS(ttsMessage.scriptStates);
         // this.savedAndPlayed = false;
         break;
@@ -326,7 +351,8 @@ export default class TTSAdapter extends vscode.Disposable {
         break;
       }
 
-      case TTSTypes.RxMsgType.GameSaved:
+      case TTSTypes.RxMsgType.GameSaved: {
+        const ttsMessage = <TTSTypes.GameSavedMessaged>rawMessage;
         if (vscode.workspace.getConfiguration('ttslua.console').get('logSaves')) {
           const d = new Date();
           const h = `${d.getHours()}`.padStart(2, '0');
@@ -337,8 +363,23 @@ export default class TTSAdapter extends vscode.Disposable {
             class: 'save',
           });
         }
+        LocalStorageService.setValue('lastSavePath', ttsMessage.savePath);
+        if (!TTSWorkDir.instance.isDefault()) {
+          const saveName = vscode.workspace
+            .getConfiguration('ttslua.fileManagement')
+            .get('saveName');
+          vscode.workspace.fs
+            .copy(
+              vscode.Uri.file(path.normalize(ttsMessage.savePath)),
+              TTSWorkDir.instance.getFileUri(saveName + '.json'),
+              {overwrite: true}
+            )
+            .then(() => {
+              vscode.window.showInformationMessage('Game Saved');
+            });
+        }
         break;
-
+      }
       case TTSTypes.RxMsgType.ObjectCreated: {
         const ttsMessage = <TTSTypes.ObjectCreatedMessage>rawMessage;
         // Add it to the guid suggestions if not already
@@ -396,10 +437,10 @@ export default class TTSAdapter extends vscode.Disposable {
         if (mRange.contains(errorRange)) {
           let uri: vscode.Uri;
           if (m.name === unbundled.metadata.rootModuleName) {
-            uri = vscode.Uri.file(path.join(ws.workFolder, `${script.name}.${script.guid}.lua`));
+            uri = TTSWorkDir.instance.getFileUri(`${script.name}.${script.guid}.lua`);
           } else {
             // Find the file the same way we did when we bundled it
-            const path = resolveModule(m.name, getSearchPaths(getLuaSearchPattern()));
+            const path = resolveModule(m.name, getSearchPaths(getLuaSearchPatterns()));
             if (!path) throw Error('Module containing error not found in search paths.');
             uri = vscode.Uri.file(path);
           }
@@ -418,8 +459,10 @@ export default class TTSAdapter extends vscode.Disposable {
     } catch (err: unknown) {
       if (!(err instanceof bundleErr.NoBundleMetadataError)) throw err;
       // file wasnt bundled, no complexity needed
-      const uri = vscode.Uri.file(path.join(ws.workFolder, `${script.name}.${script.guid}.lua`));
-      return vscode.window.showTextDocument(uri, {selection: errorRange});
+      return vscode.window.showTextDocument(
+        TTSWorkDir.instance.getFileUri(`${script.name}.${script.guid}.lua`),
+        {selection: errorRange}
+      );
     }
   }
 
@@ -429,7 +472,7 @@ export default class TTSAdapter extends vscode.Disposable {
    */
   private async readFilesFromTTS(
     scriptStates: TTSTypes.ScriptState[],
-    options?: TTSTypes.readFilesOptions
+    options?: {single?: boolean}
   ) {
     // Read scriptStates, write them to files and determine which should be opened
     const filesRecv: ws.FileHandler[] = [];
@@ -453,7 +496,7 @@ export default class TTSAdapter extends vscode.Disposable {
           await xmlHandler.write(
             scriptState.ui?.replace(
               /(<!--\s+include\s+([^\s].*)\s+-->)[\s\S]+?\1/g,
-              match => `<Include src="${match[2].replace('"', '\\"')}"/>`
+              (_matched, _open, src) => `<Include src="${src}"/>`
             ) ?? ''
           );
           // if (scriptState.name === 'Global') globalHandlers.push(handler);
@@ -461,7 +504,7 @@ export default class TTSAdapter extends vscode.Disposable {
         }
         // Lua File Creation
         // First create the file as-is
-        const luaHandler = new ws.FileHandler(`${scriptState.name}.${scriptState.guid}.lua`);
+        const luaHandler = new ws.FileHandler(`${scriptState.name}.${scriptState.guid}.lua`.replace(/\n/gi, ''));
         await luaHandler.write(scriptState.script);
         try {
           // Then, attempt to unbundle
@@ -535,7 +578,7 @@ export default class TTSAdapter extends vscode.Disposable {
     if (!editor) return;
     if (!script && !guid) {
       script = editor.document.getText(editor.selection);
-      path.basename(editor.document.fileName).split('.')[1];
+      guid = path.basename(editor.document.fileName).split('.')[1];
     } else if (!script || !guid) {
       console.error('Script or GUID not provided');
       return;
@@ -553,58 +596,87 @@ export default class TTSAdapter extends vscode.Disposable {
     return this._inGameObjects;
   }
 
-  // REVIEW
   /**
    * Recursive XML Include
    * @param text - Text to be replaced
    * @param alreadyInserted - Tracking array to prevent cyclical includes
-   * @remarks
-   * Ported from Atom's Plugin
    */
-  private static insertXmlFiles(text: string | Uint8Array, alreadyInserted: string[] = []): string {
+  private static async insertXmlFiles(
+    text: string | Uint8Array,
+    alreadyInserted: string[] = []
+  ): Promise<string> {
     if (typeof text !== 'string') text = Buffer.from(text).toString('utf-8');
-    return text.replace(
-      /(^|\n)([\s]*)(.*)<Include\s+src=('|")(.+)\4\s*\/>/g,
-      (_matched, prefix, indentation, content, _quote, insertPath): string => {
-        prefix = prefix + indentation + content;
-        const {path, filetext} = getSearchPaths([insertPath]).reduce(
-          (result, lookupPath) => {
-            if (result.filetext.length > 0 || result.path.length > 0) return result;
-            try {
-              // const filetext = fs.readFileSync(lookupPath).toString('utf-8');
-              vscode.workspace.fs.readFile(vscode.Uri.file(lookupPath)).then(filetext => {
-                return {
-                  filetext,
-                  path: lookupPath,
-                };
-              });
-            } catch (error) {
-              if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
-            }
-            return {path: '', filetext: ''};
-          },
-          {path: '', filetext: ''}
-        );
+    const pattern = /(^|\n)([\s]*)(.*)<Include\s+src=('|")(.+)\4\s*\/>/;
+    const getNonce = () => Math.random().toString(36).substring(7);
+    const nonce = getNonce();
+    // First we extract comments and leave a placeholder, so we don't try to parse them
+    // Remember to store them for reinsertion later
+    const comments: string[] = [];
+    text = text.replace(/<!--[\s\S]*?-->/g, comment => {
+      comments.push(comment);
+      return `<!--${nonce}:${comments.length - 1}-->`;
+    });
+    // Then we perform the actual replacement
+
+    // Split text by lines
+    const lines = text.split(/\r?\n/);
+    // Iterate each line
+    for (const [index, line] of lines.entries()) {
+      // If line contains an include (with regex)
+      const match = line.match(pattern);
+      if (match) {
+        const [, pre, indent, before, , insertPath] = match;
+        const prefix = pre + indent + before;
         const marker = `<!-- include ${insertPath} -->`;
-        if (filetext.length > 0) {
-          if (alreadyInserted.includes(path)) {
-            vscode.window.showErrorMessage(
-              `Cyclical include detected. ${insertPath} was previously included`
-            );
-            return prefix;
+        const possiblePaths = getSearchPaths([insertPath]);
+        // Try to open each possible path, and insert the first one that works
+        for (const lookupPath of possiblePaths) {
+          // Check if the file exists before attempting to open it
+          try {
+            await vscode.workspace.fs.stat(vscode.Uri.file(lookupPath));
+          } catch (err) {
+            if ((err as vscode.FileSystemError).code !== 'FileNotFound') {
+              vscode.window.showErrorMessage(`Error reading ${lookupPath}: ${err}`);
+              throw err;
+            }
+            // If it doesn't, just try with the next one
+            continue;
           }
-          alreadyInserted.push(path);
-          const insertText =
-            indentation +
-            TTSAdapter.insertXmlFiles(filetext, alreadyInserted).replace('\n', `\n${indentation}`);
-          return `${prefix + marker}\n${insertText}\n${indentation}${marker}`;
+          // Found an existing file, so open it
+          const moduleUri = vscode.Uri.file(lookupPath);
+          const moduleContent = await vscode.workspace.fs.readFile(moduleUri);
+          if (moduleContent.length > 0) {
+            // If the file has already been inserted, skip it
+            if (alreadyInserted.includes(lookupPath)) {
+              vscode.window.showErrorMessage(
+                `Cyclical include detected. ${insertPath} was previously included`
+              );
+              lines[index] = line.replace(pattern, prefix);
+              break;
+            }
+            // File hasn't been inserted yet.
+            alreadyInserted.push(lookupPath);
+            const newText = await TTSAdapter.insertXmlFiles(moduleContent, alreadyInserted);
+            const content = newText.replace('\n', `\n${indent}`);
+            lines[index] = line.replace(
+              pattern,
+              `${prefix + marker}\n${indent}${content}\n${indent}${marker}`
+            );
+            break;
+          }
+          // Went through all possible paths but no return yet. Inform of error
+          vscode.window.showErrorMessage(
+            `Could not catalog <Include /> - file not found: ${insertPath}`
+          );
+          lines[index] = line.replace(pattern, `${prefix + marker}\n${indent}${marker}`);
         }
-        vscode.window.showErrorMessage(
-          `Could not catalog <Include /> - file not found: ${insertPath}`
-        );
-        return `${prefix + marker}\n${indentation}${marker}`;
       }
-    );
+    }
+
+    // Reinsert comments
+    return lines
+      .join('\n')
+      .replace(new RegExp(`<!--${nonce}:(\\d+)-->`, 'g'), (_match, index) => comments[index]);
   }
 
   private requestObjectGUIDs() {

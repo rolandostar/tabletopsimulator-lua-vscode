@@ -46,7 +46,7 @@ export default {
       items: [
         {
           tag: 'Include',
-          url: 'TODO: mysite',
+          url: 'https://tts-vscode.rolandostar.com/extension/moduleResolution',
           attributes: [
             {
               name: 'src',

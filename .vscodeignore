@@ -1,11 +1,25 @@
-.vscode/**
-.vscode-test/**
-node_modules/**
-src/**
+# Promotional Assets
+media/
+!media/marketplace/icon.png
+
+# Non-Production Files
+src/
+node_modules/
+!node_modules/@vscode/codicons/dist/codicon.css
+!node_modules/@vscode/codicons/dist/codicon.ttf
+
+# Configs
+.vscode
+.github/
+.eslintignore
+.node-version
 .gitignore
 .yarnrc
-vsc-extension-quickstart.md
 **/tsconfig.json
 **/.eslintrc.json
 **/*.map
 **/*.ts
+
+# Docs
+CHANGELOG.md
+docs/
