@@ -6,7 +6,9 @@
  * @returns array of imported modules
  */
 
-export default function (r: __WebpackModuleApi.RequireContext, skip: (name: string) => boolean = () => true): any {
+export default function (
+  r: __WebpackModuleApi.RequireContext, skip: (name: string) => boolean = () => true
+): any {
   return r.keys().filter(skip).map((key: string) => ({
     file: key.replace(/(\.\/|\.ts)/g, ''),
     content: r(key)

@@ -3,6 +3,8 @@ import { type HScopesAPI } from './hscopes'
 import LuaCompletionProvider from './luaCompletion'
 import XMLCompletionProvider from './XMLCompletion'
 import TSOCompletionProvider from './tsoCompletion'
+import YAMLCompletionProvider from './yamlCompletion'
+
 import TSOHoverProvider from './tsoHover'
 import LuaHoverProvider from './luaHover'
 
@@ -39,6 +41,7 @@ export default function registerProviders (): Disposable[] {
     languages.registerHoverProvider('lua', new LuaHoverProvider()),
     languages.registerCompletionItemProvider('tso', new TSOCompletionProvider()),
     languages.registerCompletionItemProvider('lua', new LuaCompletionProvider(), '.', ':', '(', ')', ' '),
-    languages.registerCompletionItemProvider('xml', new XMLCompletionProvider(), '<', '/', ' ')
+    languages.registerCompletionItemProvider('xml', new XMLCompletionProvider(), '<', '/', ' '),
+    languages.registerCompletionItemProvider('yaml', new YAMLCompletionProvider())
   ]
 }

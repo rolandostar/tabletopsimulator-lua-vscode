@@ -1,0 +1,8 @@
+<bookstore>
+  <book category="Science Fiction">
+    <title>The Hitchhiker's Guide to the Galaxy</title>
+    <author>Douglas Adams</author>
+    <year>1979</year>
+    <price>12.99</price>
+  </book>
+</bookstore>

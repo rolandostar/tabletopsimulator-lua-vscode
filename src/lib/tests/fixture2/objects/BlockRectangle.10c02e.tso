@@ -1,11 +1,8 @@
 ```script
 function onLoad() 
+  print("HEllo World")
+end
 ```
-
-```script
-  print("Hello World")
-```
-
 ```object
 AltLookAngle:
   x: 0
@@ -52,13 +49,6 @@ Value: 0
   <book category="Science Fiction">
     <title>The Hitchhiker's Guide to the Galaxy</title>
     <author>Douglas Adams</author>
-```
-
-```script
-end
-```
-
-```ui
     <year>1979</year>
     <price>12.99</price>
   </book>

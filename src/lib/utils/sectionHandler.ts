@@ -17,15 +17,22 @@ export const AuthorityToType: Record<string, SectionType> = {
 }
 
 /**
- * Extracts all blocks of a given type from a document, and returns them as a single string
- * separated by newlines. If no blocks are found, returns null.
+ * Extracts all blocks of a given type from a document, by replacing all non-block lines with spaces
+ * separated by newlines.
  * @param type The type of block to extract
  * @param document The document to extract from
- * @returns The extracted string, or null if no blocks were found
+ * @returns The extracted string
  */
-export function extract (type: SectionType, document: TextDocument): string | null {
-  const regex = new RegExp('```' + type + '([\\s\\S]*?)```', 'g')
-  const blocks = [...document.getText().matchAll(regex)]
-  if (blocks == null) return null
-  return blocks.map(b => b[1].trim()).join('\n')
+export function extract (type: SectionType, document: TextDocument): string {
+  let result = ''
+  let inTargetSection = false
+  for (let i = 0; i < document.lineCount; i++) {
+    const line = document.lineAt(i).text
+    if (line.startsWith('```')) {
+      const blockType = line.slice(3).trim()
+      inTargetSection = blockType === type
+    }
+    result = result.concat(inTargetSection ? line : ' '.repeat(line.length)) + '\n'
+  }
+  return result
 }

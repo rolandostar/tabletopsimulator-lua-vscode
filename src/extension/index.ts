@@ -1,4 +1,4 @@
-import { type ExtensionContext, commands, type DocumentSelector, window } from 'vscode'
+import { type ExtensionContext, commands } from 'vscode'
 
 import myCommands from './commands'
 // import langClientBuilder from './langClient'

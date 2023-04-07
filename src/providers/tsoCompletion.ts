@@ -31,7 +31,6 @@ export default class TSOCompletionProvider implements CompletionItemProvider {
           const authority = scopes[1].split('.')[1]
           const originalUri = document.uri.toString(true)
           const vdocContent = Sections.extract(Sections.AuthorityToType[authority], document)
-          if (vdocContent === null) return []
           virtualDocumentContents.set(originalUri, vdocContent)
           return await Promise.resolve(commands.executeCommand<CompletionList>(
             'vscode.executeCompletionItemProvider',
