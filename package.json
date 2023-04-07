@@ -35,7 +35,6 @@
   "dependencies": {
     "@vscode/codicons": "^0.0.32",
     "axios": "^1.1.2",
-    "decaffeinate": "^8.1.3",
     "glob": "^8.0.3",
     "html-escaper": "^3.0.3",
     "luabundle": "^1.6.0",
@@ -237,49 +236,9 @@
             "minLength": 1
           },
           "ttslua.autocompletion.parameterFormat": {
-            "description": "Select capitalization format for parameters being autocompleted.",
+            "description": "How parameters will be formatted in autocomplete suggestions.  Use keywords TYPE and NAME to insert those parameter fields, with the desired casing (i.e. type vs Type vs TYPE).",
             "type": "string",
-            "default": "Type_name",
-            "enum": [
-              "TYPE_NAME",
-              "TYPE_Name",
-              "TYPE_name",
-              "Type_NAME",
-              "Type_Name",
-              "Type_name",
-              "type_NAME",
-              "type_Name",
-              "type_name"
-            ],
-            "enumDescriptions": [
-              "printToColor(STRING MESSAGE, STRING PLAYER_COLOR, TABLE TEXT_COLOR)",
-              "printToColor(STRING Message, STRING Player_color, TABLE Text_color)",
-              "printToColor(STRING message, STRING player_color, TABLE text_color)",
-              "printToColor(String MESSAGE, String PLAYER_COLOR, Table TEXT_COLOR)",
-              "printToColor(String Message, String Player_color, Table Text_color)",
-              "printToColor(String message, String player_color, Table text_color)",
-              "printToColor(string MESSAGE, string PLAYER_COLOR, table TEXT_COLOR)",
-              "printToColor(string Message, string Player_color, table Text_color)",
-              "printToColor(string message, string player_color, table text_color)"
-            ]
-          },
-          "ttslua.autocompletion.parameterToDisplay": {
-            "title": "Function Parameters",
-            "description": "This will determine how autocomplete inserts parameters into your script.",
-            "type": "string",
-            "default": "Both",
-            "enum": [
-              "None",
-              "Type",
-              "Name",
-              "Both"
-            ],
-            "enumDescriptions": [
-              "printToColor()",
-              "printToColor(String, String, Table)",
-              "printToColor(message, player_color, text_color)",
-              "printToColor(String Message, String Player_color, Table Text_color)"
-            ]
+            "default": "Type_name"
           }
         }
       },
