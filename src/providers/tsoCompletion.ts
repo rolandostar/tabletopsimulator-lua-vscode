@@ -4,7 +4,7 @@ import {
 } from 'vscode'
 import { hs, virtualDocumentContents } from '.'
 import { SnippetString } from 'vscode'
-import * as Sections from '@utils/sectionHandler'
+import * as vDocContent from '@/lib/utils/vDocContent'
 /**
  * Provides completion items for the root scope of a TSO document
  * @implements {CompletionItemProvider}
@@ -30,11 +30,11 @@ export default class TSOCompletionProvider implements CompletionItemProvider {
           // extract what comes after 'embedded'
           const authority = scopes[1].split('.')[1]
           const originalUri = document.uri.toString(true)
-          const vdocContent = Sections.extract(Sections.AuthorityToType[authority], document)
+          const vdocContent = vDocContent.extract(vDocContent.AuthorityToType[authority], document)
           virtualDocumentContents.set(originalUri, vdocContent)
           return await Promise.resolve(commands.executeCommand<CompletionList>(
             'vscode.executeCompletionItemProvider',
-            Uri.parse(`tts-embedded-content://${authority}/${encodeURIComponent(document.uri.toString(true))}.${authority}`),
+            Uri.parse(`tts-embedded-content://${authority}/${encodeURIComponent(originalUri)}.${authority}`),
             position,
             context.triggerCharacter
           ))

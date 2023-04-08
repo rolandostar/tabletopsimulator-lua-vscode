@@ -6,10 +6,12 @@ import uriExists from '@utils/uriExists'
 export class FileManager {
   private readonly FileUri: Uri
 
-  public constructor (public filename: string, fromWorkDir = true) {
-    this.FileUri = fromWorkDir
-      ? Uri.file(normalize(join(getWorkDir().fsPath, filename)))
-      : Uri.file(normalize(filename))
+  public constructor (public filename: string | Uri, fromWorkDir = true) {
+    if (typeof filename === 'string') {
+      this.FileUri = fromWorkDir
+        ? Uri.file(normalize(join(getWorkDir().fsPath, filename)))
+        : Uri.file(normalize(filename))
+    } else this.FileUri = filename
   }
 
   public async write (text: string): Promise<void> {
@@ -25,6 +27,10 @@ export class FileManager {
 
   public async open ({ preserveFocus = true, preview = false } = {}): Promise<TextEditor> {
     return await Promise.resolve(window.showTextDocument(this.FileUri, { preserveFocus, preview }))
+  }
+
+  public async erase (): Promise<void> {
+    await Promise.resolve(workspace.fs.delete(this.FileUri))
   }
 
   public getUri (): Uri { return this.FileUri }

@@ -1,6 +1,6 @@
 import { type HoverProvider, type TextDocument, type Position, type Hover, commands, Uri } from 'vscode'
 import { hs, virtualDocumentContents } from '.'
-import * as Sections from '@utils/sectionHandler'
+import * as vDocContent from '@/lib/utils/vDocContent'
 
 /**
  * Provides hover information for embedded lua code
@@ -17,7 +17,7 @@ export default class TSOHoverProvider implements HoverProvider {
     if (scopes.length > 1 && scopes[0] === 'source.tso' && scopes[1] === 'embedded.lua') {
       const originalUri = document.uri.toString(true)
       // Extract the embedded lua code from the TSO file
-      const vdocContent = Sections.extract(Sections.SectionType.Lua, document)
+      const vdocContent = vDocContent.extract(vDocContent.SectionType.Lua, document)
       if (vdocContent === null) return null
       // Create a virtual document with the extracted lua code
       virtualDocumentContents.set(originalUri, vdocContent)

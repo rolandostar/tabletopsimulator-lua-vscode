@@ -1,6 +1,7 @@
 import type { BaseTranslation } from '../i18n-types'
 
 const urls = {
+  luaCompletionApi: 'https://raw.git.com/Berserk-Games/atom-tabletopsimulator-lua/master/lib/api.json',
   versionControl: 'https://tts-vscode.rolandostar.com/guides/versionControl',
   settings: {
     fileManagement: 'https://tts-vscode.rolandostar.com/extension/configuration#file-management'
@@ -22,9 +23,9 @@ const enUS = {
     removed: 'The currently selected working directory is not available in the workspace.\nPlease select a new one or re-add it to the workspace.\n\nDefault working directory will be added when getting scripts. (Ctrl + Alt + L)'
   },
   docs: {
-    learnMore: 'Learn More',
-    urls
+    learnMore: 'Learn More'
   },
+  urls,
   errors: {
     uriStatUnexpected: 'Unexpected error while checking if "{0:string}" exists: {1:string}'
   }

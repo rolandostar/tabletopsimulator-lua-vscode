@@ -1,13 +1,17 @@
-import { type Memento } from 'vscode'
+import { FileManager } from '@/vscode/fileManager'
+import { Uri, type Memento, type ExtensionContext } from 'vscode'
 
-let storage: Memento | undefined
+let kvStorage: Memento | undefined
+let storageUri: Uri | undefined
 
 /**
  * Sets the storage to be used by the service
  * @param newStorage The storage to be used by the service
  */
-export function setLocalStorage (newStorage: Memento): void {
-  storage = newStorage
+export function setStorage (KVStorage: Memento, GlobalStorageUri: Uri): void {
+  kvStorage = KVStorage
+  storageUri = GlobalStorageUri
+  console.debug('Storage Uri: ' + storageUri.fsPath)
 }
 
 /**
@@ -16,8 +20,8 @@ export function setLocalStorage (newStorage: Memento): void {
  * @returns The value of the key, or undefined if it doesn't exist
  */
 export function get<T> (key: string): T | undefined {
-  if (storage == null) throw new Error('Storage not set when trying to get key')
-  return storage.get<T>(key)
+  if (kvStorage == null) throw new Error('Storage not set when trying to get key')
+  return kvStorage.get<T>(key)
 }
 
 /**
@@ -27,8 +31,8 @@ export function get<T> (key: string): T | undefined {
  * @returns A promise that resolves when the operation is complete
  */
 export async function set<T> (key: string, value: T): Promise<void> {
-  if (storage == null) throw new Error('Storage not set when trying to set key')
-  await Promise.resolve(storage.update(key, value))
+  if (kvStorage == null) throw new Error('Storage not set when trying to set key')
+  await Promise.resolve(kvStorage.update(key, value))
 }
 
 /**
@@ -38,9 +42,9 @@ export async function set<T> (key: string, value: T): Promise<void> {
  * @returns The current value of the key after the operation
  */
 export async function upsert<T> (key: string, value: T): Promise<T> {
-  if (storage == null) throw new Error('Storage not set when trying to upsert key')
-  const currentValue = storage.get<T>(key, value)
-  await storage.update(key, currentValue)
+  if (kvStorage == null) throw new Error('Storage not set when trying to upsert key')
+  const currentValue = kvStorage.get<T>(key, value)
+  await kvStorage.update(key, currentValue)
   return currentValue
 }
 
@@ -51,10 +55,10 @@ export async function upsert<T> (key: string, value: T): Promise<T> {
  * @returns The current value of the key, or the value that was set if it was empty
  */
 export function querySet<T> (key: string, value: T): T {
-  if (storage == null) throw new Error('Storage not set when trying to query and set key')
-  const current = storage.get<T>(key)
+  if (kvStorage == null) throw new Error('Storage not set when trying to query and set key')
+  const current = kvStorage.get<T>(key)
   const wasDefined = current !== undefined
-  if (!wasDefined) void storage.update(key, value)
+  if (!wasDefined) void kvStorage.update(key, value)
   return wasDefined ? current : value
 }
 
@@ -63,7 +67,37 @@ export function querySet<T> (key: string, value: T): T {
  * @param key Key of element to be deleted
  * @returns A promise that resolves when the operation is complete
  */
-export async function del (key: string): Promise<void> {
-  if (storage == null) throw new Error('Storage not set when trying to delete key')
-  await Promise.resolve(storage.update(key, undefined))
+export async function clear (key: string): Promise<void> {
+  if (kvStorage == null) throw new Error('Storage not set when trying to clear key')
+  await Promise.resolve(kvStorage.update(key, undefined))
+}
+
+/**
+ * Writes a file to extension's storage directory
+ * See {@link ExtensionContext.storageUri storageUri} for more information
+ * @param path Path of file to be written, starting at storageUri
+ * @param content Content to be written to file
+ */
+export async function write (path: string, content: string): Promise<void> {
+  if (storageUri == null) throw new Error('Storage not set when trying to write file')
+  await new FileManager(Uri.joinPath(storageUri, path)).write(content)
+}
+
+/**
+ * Reads a file from extension's storage directory
+ * @param path Path of file to be read, starting at storageUri
+ * @returns The content of the file
+ */
+export async function read (path: string): Promise<string> {
+  if (storageUri == null) throw new Error('Storage not set when trying to read file')
+  return await new FileManager(Uri.joinPath(storageUri, path)).read()
+}
+
+/**
+ * Erases a file from extension's storage directory
+ * @param path Path of file to be erased, starting at storageUri
+ */
+export async function erase (path: string): Promise<void> {
+  if (storageUri == null) throw new Error('Storage not set when trying to erase file')
+  await new FileManager(Uri.joinPath(storageUri, path)).erase()
 }

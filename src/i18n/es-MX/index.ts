@@ -1,7 +1,7 @@
 import enUS from '../en-US'
 import { extendDictionary } from '../i18n-util'
 
-const { urls } = enUS.docs
+const { urls } = enUS
 
 const esMX = extendDictionary(enUS, {
   // this is an example Translation, just rename or delete this folder if you want

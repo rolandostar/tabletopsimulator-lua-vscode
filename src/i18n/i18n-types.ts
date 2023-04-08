@@ -64,17 +64,21 @@ type RootTranslation = {
 		 * L​e​a​r​n​ ​M​o​r​e
 		 */
 		learnMore: string
-		urls: {
+	}
+	urls: {
+		/**
+		 * h​t​t​p​s​:​/​/​r​a​w​.​g​i​t​.​c​o​m​/​B​e​r​s​e​r​k​-​G​a​m​e​s​/​a​t​o​m​-​t​a​b​l​e​t​o​p​s​i​m​u​l​a​t​o​r​-​l​u​a​/​m​a​s​t​e​r​/​l​i​b​/​a​p​i​.​j​s​o​n
+		 */
+		luaCompletionApi: string
+		/**
+		 * h​t​t​p​s​:​/​/​t​t​s​-​v​s​c​o​d​e​.​r​o​l​a​n​d​o​s​t​a​r​.​c​o​m​/​g​u​i​d​e​s​/​v​e​r​s​i​o​n​C​o​n​t​r​o​l
+		 */
+		versionControl: string
+		settings: {
 			/**
-			 * h​t​t​p​s​:​/​/​t​t​s​-​v​s​c​o​d​e​.​r​o​l​a​n​d​o​s​t​a​r​.​c​o​m​/​g​u​i​d​e​s​/​v​e​r​s​i​o​n​C​o​n​t​r​o​l
+			 * h​t​t​p​s​:​/​/​t​t​s​-​v​s​c​o​d​e​.​r​o​l​a​n​d​o​s​t​a​r​.​c​o​m​/​e​x​t​e​n​s​i​o​n​/​c​o​n​f​i​g​u​r​a​t​i​o​n​#​f​i​l​e​-​m​a​n​a​g​e​m​e​n​t
 			 */
-			versionControl: string
-			settings: {
-				/**
-				 * h​t​t​p​s​:​/​/​t​t​s​-​v​s​c​o​d​e​.​r​o​l​a​n​d​o​s​t​a​r​.​c​o​m​/​e​x​t​e​n​s​i​o​n​/​c​o​n​f​i​g​u​r​a​t​i​o​n​#​f​i​l​e​-​m​a​n​a​g​e​m​e​n​t
-				 */
-				fileManagement: string
-			}
+			fileManagement: string
 		}
 	}
 	errors: {
@@ -137,17 +141,21 @@ export type TranslationFunctions = {
 		 * Learn More
 		 */
 		learnMore: () => LocalizedString
-		urls: {
+	}
+	urls: {
+		/**
+		 * https://raw.git.com/Berserk-Games/atom-tabletopsimulator-lua/master/lib/api.json
+		 */
+		luaCompletionApi: () => LocalizedString
+		/**
+		 * https://tts-vscode.rolandostar.com/guides/versionControl
+		 */
+		versionControl: () => LocalizedString
+		settings: {
 			/**
-			 * https://tts-vscode.rolandostar.com/guides/versionControl
+			 * https://tts-vscode.rolandostar.com/extension/configuration#file-management
 			 */
-			versionControl: () => LocalizedString
-			settings: {
-				/**
-				 * https://tts-vscode.rolandostar.com/extension/configuration#file-management
-				 */
-				fileManagement: () => LocalizedString
-			}
+			fileManagement: () => LocalizedString
 		}
 	}
 	errors: {

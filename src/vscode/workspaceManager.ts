@@ -132,7 +132,7 @@ export async function changeWorkDir (): Promise<void> {
     void window.showErrorMessage(L.workDir.noGitReposInWorkspace(), L.docs.learnMore())
       .then(res => {
         if (res === L.docs.learnMore()) {
-          void env.openExternal(Uri.parse(L.docs.urls.versionControl()))
+          void env.openExternal(Uri.parse(L.urls.versionControl()))
         }
       }); return
   }

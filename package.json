@@ -38,12 +38,13 @@
     "html-escaper": "^3.0.3",
     "js-yaml": "^4.1.0",
     "luabundle": "^1.6.0",
+    "node-fetch": "^3.3.1",
     "nodejs-file-downloader": "^4.10.2",
     "require-module-from-string": "^1.0.19",
-		"vscode-languageclient": "^8.1.0",
-		"vscode-languageserver": "^8.1.0",
-		"vscode-languageserver-textdocument": "^1.0.8",
-    "typesafe-i18n": "^5.24.3"
+    "typesafe-i18n": "^5.24.3",
+    "vscode-languageclient": "^8.1.0",
+    "vscode-languageserver": "^8.1.0",
+    "vscode-languageserver-textdocument": "^1.0.8"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",
