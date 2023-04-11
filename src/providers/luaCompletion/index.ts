@@ -1,82 +1,80 @@
-import getConfig from '@utils/getConfig'
+import { TableGenerator } from '@utils/tableGen'
 import {
-  type CancellationToken, type CompletionContext, CompletionItem, CompletionList,
-  type Position, type TextDocument, type CompletionItemProvider, CompletionItemKind, MarkdownString
+  CompletionItem,
+  CompletionItemKind, MarkdownString, SnippetString
 } from 'vscode'
-import * as apiManager from './apiManager'
+import type { DownloadedAPI, Member } from './apiManager'
 
-export default class LuaCompletionProvider implements CompletionItemProvider {
-  private luaCompletion: apiManager.LuaCompletion | undefined
+const StringToCompletionKind: Record<string, CompletionItemKind> = {
+  function: CompletionItemKind.Function,
+  event: CompletionItemKind.Event,
+  property: CompletionItemKind.Property,
+  constant: CompletionItemKind.Constant
+}
 
-  public async preload (): Promise<void> {
-    const latestApi = await apiManager.loadApi().catch(async err => {
-      // Unable to read from disk, let's download it instead
-      if (err.code !== 'FileNotFound') throw err
-      return await apiManager.downloadApi()
-    })
-    this.luaCompletion = new apiManager.LuaCompletion(latestApi)
+export class LuaCompletion {
+  public readonly completionStore: Record<string, CompletionItem[]> = {}
+
+  constructor (public api: DownloadedAPI) {
+    for (const sectionName in api.sections) {
+      // Segregate General and Specific
+      if ([
+        'Component', 'GameObject', 'Material', 'Object', 'ObjectEvents', 'GlobalEvents',
+        'PlayerInstance', 'PlayerManager'
+      ].includes(sectionName)) this.addMembers(sectionName, api.sections[sectionName])
+      else this.addMembers('General', api.sections[sectionName])
+    }
   }
 
-  public async provideCompletionItems (
-    document: TextDocument,
-    position: Position,
-    _token: CancellationToken,
-    context: CompletionContext
-  ): Promise<CompletionItem[] | CompletionList> {
-    if (!getConfig<boolean>('autocompletion.luaEnabled')) return []
-    const range = document.getWordRangeAtPosition(position)
-    const text = document.getText(range)
-    console.log(text)
-    const myCompletion = new CompletionItem({
-      label: 'head',
-      description: 'WebRequest',
-      detail: '(url, callback_function)'
-    })
-    myCompletion.kind = CompletionItemKind.Method
-    const md = new MarkdownString('<p>Performs a HTTP HEAD request.</p>')
-    md.value += `Receives parameters:
-    <table>
-    <thead>
-      <tr>
-        <td><span style="color:#000;background-color:#ACC39B;">&nbsp;string&nbsp;</span></td>
-        <td><code>url</code></td>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><span style="color:#FFF;background-color:#DE4816;">&nbsp;&nbsp;func&nbsp;&nbsp;</span></td>
-        <td><code>callback_function</code></td>
-      </tr>
-    </tbody>
-    </table>`
-    // md.appendCodeblock('head(url: string, callback_function: function)', 'typescript')
-    md.value += `<br/>Returns table:
-    <table>
-  <tbody>
-    <tr title="Download percentage, represented as a number in the range 0-1.">
-      <td><span style="color:#000;background-color:#BE9FAD;">&nbsp;&nbsp;bool&nbsp;&nbsp;</span></td>
-      <td><code>download_progress</code>$(info)</td>
-    </tr>
-    <tr title="Reason why the request failed to complete.&#013;If the server responds with a HTTP status code that represents a HTTP error (4xx/5xx), this is not considered a request error.">
-      <td><span style="color:#000;background-color:#ACC39B;">&nbsp;string&nbsp;</span></td>
-      <td><code>error</code>$(info)</td>
-    </tr>
-    <tr title="If the request completed or failed. If the request failed, is_error will be set.">
-      <td><span style="color:#000;background-color:#BE9FAD;">&nbsp;&nbsp;bool&nbsp;&nbsp;</span></td>
-      <td><code>is_done</code>$(info)</td>
-    </tr>
-  </tbody>
-  </table>
-  `
-    md.value += '<br /><a href="https://api.tabletopsimulator.com/webrequest/manager/#head">Official Documentation $(link-external)</a>'
-    md.isTrusted = true
-    md.supportHtml = true
-    md.supportThemeIcons = true
-    myCompletion.documentation = md
+  private addMembers (name: string, members: Member[]): void {
+    // Create Storage if it doesn't exist
+    if (this.completionStore[name] === undefined) this.completionStore[name] = []
+    for (const member of members) {
+      // Initialize variables
+      let detailString = '('
+      const insertText = new SnippetString(`${member.name}(`)
+      const docString = new MarkdownString(`<p>${member.description}</p>`, true)
+      docString.isTrusted = true
+      docString.supportHtml = true
 
-    return new CompletionList([
-      ...this.luaCompletion?.completionStore.WebRequest ?? [],
-      myCompletion
-    ], false)
+      // Create parameter table
+      if (member.parameters != null) {
+        const paramTable = new TableGenerator()
+        member.parameters.forEach((parameter, index) => {
+          if (index !== 0) {
+            detailString += ', '
+            insertText.appendText(', ')
+          }
+          insertText.appendPlaceholder(parameter.name)
+          detailString += parameter.name
+          paramTable.addRow(parameter.type, parameter.name, parameter.description)
+        })
+        docString.value += 'Receives parameters:' + paramTable.toString() + '<br />'
+      }
+      insertText.appendText(')')
+      detailString += ')'
+
+      // Create return table
+      const returnTable = new TableGenerator()
+      if (member.return_table != null) {
+        member.return_table.forEach((returnField, index) => {
+          returnTable.addRow(returnField.type, returnField.name, returnField.description)
+        })
+      } else returnTable.addRow(member.type)
+      docString.value += 'Returns:' + returnTable.toString()
+
+      // Create Completion Item
+      const cItem = new CompletionItem({
+        label: member.name,
+        description: member.type,
+        detail: detailString
+      }, StringToCompletionKind[member.kind] ?? CompletionItemKind.Text)
+      cItem.insertText = insertText
+      cItem.documentation = docString
+      docString.value += `<p><a href="${member.url}">Official Documentation $(link-external)</a></p>`
+
+      // Add to respective storage
+      this.completionStore[name].push(cItem)
+    }
   }
 }

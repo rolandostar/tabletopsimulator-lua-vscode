@@ -1,6 +1,6 @@
 import { type Disposable, languages, workspace, extensions, type Uri, window } from 'vscode'
 import { type HScopesAPI } from './hscopes'
-import LuaCompletionProvider from './luaCompletion'
+import LuaCompletionProvider from './luaCompletion/provider'
 import XMLCompletionProvider from './XMLCompletion'
 import TSOCompletionProvider from './tsoCompletion'
 import YAMLCompletionProvider from './yamlCompletion'
@@ -11,6 +11,11 @@ import LuaHoverProvider from './luaHover'
 // Expose a map of virtual documents to the rest of the providers
 export const virtualDocumentContents = new Map<string, string>()
 export let hs: HScopesAPI
+export const triggers: Record<string, string[]> = {
+  lua: ['.', ':', '(', ')', ' '],
+  xml: ['<', '/', ' '],
+  yaml: [':', ' ']
+}
 
 const [
   luaCompletionProvider,
@@ -63,10 +68,10 @@ export default function registerProviders (): Disposable[] {
   return [
     languages.registerHoverProvider('tso', tsoHoverProvider),
     languages.registerHoverProvider('lua', luaHoverProvider),
-    languages.registerCompletionItemProvider('tso', tsoCompletionProvider),
+    languages.registerCompletionItemProvider('tso', tsoCompletionProvider, ...triggers.lua, ...triggers.xml),
     languages.registerCompletionItemProvider('yaml', yamlCompletionProvider),
-    languages.registerCompletionItemProvider('xml', xmlCompletionProvider, '<', '/', ' '),
-    languages.registerCompletionItemProvider('lua', luaCompletionProvider, '.', ':', '(', ')', ' '),
+    languages.registerCompletionItemProvider('xml', xmlCompletionProvider, ...triggers.xml),
+    languages.registerCompletionItemProvider('lua', luaCompletionProvider, ...triggers.lua),
     workspace.registerTextDocumentContentProvider('tts-embedded-content', ttsEmbeddedContentProvider)
   ]
 }

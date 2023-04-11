@@ -2,7 +2,7 @@ import {
   type CancellationToken, type CompletionContext, type CompletionItem, type CompletionList,
   type Position, type TextDocument, type CompletionItemProvider, commands, Uri
 } from 'vscode'
-import { hs, virtualDocumentContents } from '.'
+import { hs, triggers, virtualDocumentContents } from '.'
 import { SnippetString } from 'vscode'
 import * as vDocContent from '@/lib/utils/vDocContent'
 /**
@@ -29,6 +29,11 @@ export default class TSOCompletionProvider implements CompletionItemProvider {
         if (scopes[1] === 'embedded.lua' || scopes[1] === 'embedded.xml' || scopes[1] === 'embedded.yaml') {
           // extract what comes after 'embedded'
           const authority = scopes[1].split('.')[1]
+          // Check that trigger corresponds to authority
+          if (
+            context.triggerCharacter !== undefined &&
+            !triggers[authority].includes(context.triggerCharacter)
+          ) return []
           const originalUri = document.uri.toString(true)
           const vdocContent = vDocContent.extract(vDocContent.AuthorityToType[authority], document)
           virtualDocumentContents.set(originalUri, vdocContent)
