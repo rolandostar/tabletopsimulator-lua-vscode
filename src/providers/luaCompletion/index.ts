@@ -19,7 +19,7 @@ export class LuaCompletion {
     for (const sectionName in api.sections) {
       // Segregate General and Specific
       if ([
-        'Component', 'GameObject', 'Material', 'Object', 'ObjectEvents', 'GlobalEvents',
+        '/', 'Component', 'GameObject', 'Material', 'Object', 'ObjectEvents', 'GlobalEvents',
         'PlayerInstance', 'PlayerManager'
       ].includes(sectionName)) this.addMembers(sectionName, api.sections[sectionName])
       else this.addMembers('General', api.sections[sectionName])

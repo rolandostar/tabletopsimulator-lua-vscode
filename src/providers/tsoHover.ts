@@ -1,6 +1,5 @@
-import { type HoverProvider, type TextDocument, type Position, type Hover, commands, Uri } from 'vscode'
-import { hs, virtualDocumentContents } from '.'
-import * as vDocContent from '@/lib/utils/vDocContent'
+import { type HoverProvider, type TextDocument, type Position, type Hover } from 'vscode'
+import executeVirtualCommand from '@utils/requestForwarder'
 
 /**
  * Provides hover information for embedded lua code
@@ -11,23 +10,11 @@ import * as vDocContent from '@/lib/utils/vDocContent'
  */
 export default class TSOHoverProvider implements HoverProvider {
   async provideHover (document: TextDocument, position: Position): Promise<Hover | null> {
-    // Obtain scope of hovered text
-    const { scopes } = hs.getScopeAt(document, position) ?? { scopes: [] }
-    // If current hover is occurring in embedded lua code, forward the hover request to the lua
-    if (scopes.length > 1 && scopes[0] === 'source.tso' && scopes[1] === 'embedded.lua') {
-      const originalUri = document.uri.toString(true)
-      // Extract the embedded lua code from the TSO file
-      const vdocContent = vDocContent.extract(vDocContent.SectionType.Lua, document)
-      if (vdocContent === null) return null
-      // Create a virtual document with the extracted lua code
-      virtualDocumentContents.set(originalUri, vdocContent)
-      // Forward the hover request to the lua language server
-      return await commands.executeCommand<Hover | null>(
-        'vscode.executeHoverProvider',
-        Uri.parse(`tts-embedded-content://lua/${encodeURIComponent(originalUri)}.lua`),
-        position
-      )
-    }
-    return null
+    return (await executeVirtualCommand<Hover[]>({
+      command: 'vscode.executeHoverProvider',
+      allowedAuthorities: ['lua'],
+      document,
+      position
+    }) ?? [])[0]
   }
 }

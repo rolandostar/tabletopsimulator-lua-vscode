@@ -5,6 +5,9 @@ import XMLCompletionProvider from './XMLCompletion'
 import TSOCompletionProvider from './tsoCompletion'
 import YAMLCompletionProvider from './yamlCompletion'
 
+import { TSODefinitionProvider } from './tsoDefinition'
+import { LuaDefinitionProvider } from './luaDefinition'
+
 import TSOHoverProvider from './tsoHover'
 import LuaHoverProvider from './luaHover'
 
@@ -23,14 +26,18 @@ const [
   xmlCompletionProvider,
   yamlCompletionProvider,
   tsoHoverProvider,
-  luaHoverProvider
+  luaHoverProvider,
+  tsoDefinitionProvider,
+  luaDefinitionProvider
 ] = [
   new LuaCompletionProvider(),
   new TSOCompletionProvider(),
   new XMLCompletionProvider(),
   new YAMLCompletionProvider(),
   new TSOHoverProvider(),
-  new LuaHoverProvider()
+  new LuaHoverProvider(),
+  new TSODefinitionProvider(),
+  new LuaDefinitionProvider()
 ]
 
 /**
@@ -66,6 +73,8 @@ export default function registerProviders (): Disposable[] {
     throw err
   })
   return [
+    languages.registerDefinitionProvider('tso', tsoDefinitionProvider),
+    languages.registerDefinitionProvider('lua', luaDefinitionProvider),
     languages.registerHoverProvider('tso', tsoHoverProvider),
     languages.registerHoverProvider('lua', luaHoverProvider),
     languages.registerCompletionItemProvider('tso', tsoCompletionProvider, ...triggers.lua, ...triggers.xml),

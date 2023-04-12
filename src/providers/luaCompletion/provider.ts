@@ -1,11 +1,12 @@
 import getConfig from '@utils/getConfig'
 import {
   type CompletionItemProvider, type TextDocument, type Position, type CancellationToken,
-  type CompletionContext, CompletionItem, type CompletionList, CompletionItemKind, SnippetString
+  type CompletionContext, CompletionItem, type CompletionList, CompletionItemKind, SnippetString, MarkdownString
 } from 'vscode'
 import { LuaCompletion } from '.'
 import * as apiManager from './apiManager'
 import { hs } from '..'
+import { TableGenerator } from '@/lib/utils/tableGen'
 
 function snippet (label: string, insert: string, sortText = ''): CompletionItem {
   const result = new CompletionItem(label, CompletionItemKind.Snippet)
@@ -45,10 +46,20 @@ export default class LuaCompletionProvider implements CompletionItemProvider {
     const skippedScopes = [
       'keyword.operator.lua',
       'string.quoted.double.lua',
-      'string.quoted.single.lua'
+      'string.quoted.single.lua',
+      'comment.line.double-dash.lua'
     ]
     if (skippedScopes.some(v => token.scopes.includes(v))) return []
 
+    const whitelistedScopes = [
+      'source.lua',
+      'variable.other.lua',
+      'entity.name.function.lua',
+      'entity.other.attribute.lua'
+    ]
+    if (!whitelistedScopes.some(allowedScope =>
+      token.scopes[token.scopes[1] === 'meta.function.lua' ? 2 : 1].includes(allowedScope)
+    )) return []
     // Short circuit some common lua keywords
     if (
       (line.match(/(^|\s)else$/) != null) ||
@@ -96,5 +107,58 @@ export default class LuaCompletionProvider implements CompletionItemProvider {
       .tokenizeLine(line, null)
       .tokens.map(v => line.substring(v.startIndex, v.endIndex))
     console.log(lineTokens)
+
+    // Tokenize line, which pretty much means, split it into words avoiding depth and symbols
+    const [currentToken = '', previousToken = '', previousToken2 = ''] = grammar
+      .tokenizeLine(line, null)
+      .tokens.map(v => line.substring(v.startIndex, v.endIndex))
+      // Revers to get tokens from closest to farthest from cursor
+      .reverse()
+      // Filter out strings ending with dot or where token are only spaces
+      .filter(v => !v.endsWith('.') && v.trim().length !== 0)
+    const isCurrentTokenAlfanum = /^[a-zA-Z0-9_]+$/.test(currentToken)
+    console.log(currentToken, previousToken, previousToken2)
+    const myCi = new CompletionItem('myCi', CompletionItemKind.Snippet)
+    const table = new TableGenerator()
+    table.addRow('RPGFigurine', 'Something')
+    table.addRow('int', 'Something')
+    table.addRow('string', 'Something')
+    table.addRow('function', 'Something')
+    table.addRow('bool', 'Something')
+    table.addRow('Color', 'Something')
+    table.addRow('float', 'Something')
+    table.addRow('table', 'Something')
+    table.addRow('Object', 'Something')
+    table.addRow('any', 'Something')
+    table.addRow('int', 'Something')
+    table.addRow('Player', 'Something')
+    table.addRow('coroutine', 'Something')
+    table.addRow('Action', 'Something')
+    table.addRow('Vector', 'Something')
+    table.addRow('time', 'Something')
+    table.addRow('void', 'Something')
+    table.addRow('number', 'Something')
+    table.addRow('thread', 'Something')
+    table.addRow('GameObject', 'Something')
+    table.addRow('Component', 'Something')
+    table.addRow('captures', 'Something')
+    table.addRow('class', 'Something')
+    table.addRow('AssetBundle', 'Something')
+    table.addRow('Clock', 'Something')
+    table.addRow('Counter', 'Something')
+    table.addRow('LayoutZone', 'Something')
+    table.addRow('RPGFigurine', 'Something')
+    table.addRow('int', 'Something')
+    table.addRow('TextTool', 'Something')
+    const docString = new MarkdownString('', true)
+    docString.isTrusted = true
+    docString.supportHtml = true
+    docString.value += table.toString()
+    myCi.documentation = docString
+    return [
+      ...this.luaCompletion?.completionStore['/'] ?? [],
+      ...this.luaCompletion?.completionStore.Component ?? [],
+      myCi
+    ]
   }
 }

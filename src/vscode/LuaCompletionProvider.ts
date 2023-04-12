@@ -489,6 +489,11 @@ export default class LuaCompletionProvider implements CompletionItemProvider {
       if (result.endsWith('.')) lineTokens.push(result);
       const resultType = nextLuaTokenType;
 
+      // This function is used to eat the enclosing open and close strings.
+      // It takes the open string and close string as parameters.
+      // It will then count the number of open strings, and then until the number of open strings equals the number of close strings,
+      // it will pop from the lineTokens array and return it.
+
       function eatEnclosure(open: string, close: string): string {
         let openCount = 1;
         let token = lineTokens.pop();

@@ -16,38 +16,52 @@ enum Styles {
   var =    'color:#000;background-color:#e0e270;' // Unused in parameters
 }
 
+interface DocType { display: string, style: Styles }
+
 // Strings extracted from api.json
-export const StringToType: Record<string, { display: string, style: Styles }> = {
-  string:    { style: Styles.string, display: '&nbsp;string&nbsp;' },
-  function:  { style: Styles.func,   display: '&nbsp;&nbsp;func&nbsp;&nbsp;' },
-  bool:      { style: Styles.bool,   display: '&nbsp;&nbsp;bool&nbsp;&nbsp;' },
-  Color:     { style: Styles.color,  display: '&nbsp;&nbsp;color&nbsp;&nbsp;' },
-  float:     { style: Styles.float,  display: '&nbsp;&nbsp;float&nbsp;&nbsp;' },
-  table:     { style: Styles.table,  display: '&nbsp;&nbsp;table&nbsp;' },
-  Object:    { style: Styles.object, display: '&nbsp;object&nbsp;' },
-  any:       { style: Styles.nil,    display: '&nbsp;&nbsp;&nbsp;any&nbsp;&nbsp;&nbsp;' },
-  int:       { style: Styles.int,    display: '&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;&nbsp;&nbsp;&nbsp;' },
-  Player:    { style: Styles.player, display: '&nbsp;player&nbsp;' },
-  coroutine: { style: Styles.func,   display: 'coroutine' },
-  Action:    { style: Styles.var,    display: '&nbsp;action&nbsp;' },
-  Vector:    { style: Styles.vector, display: '&nbsp;vector&nbsp;' },
-  time:      { style: Styles.var,    display: '&nbsp;&nbsp;time&nbsp;&nbsp;' },
+export const StringToType: Record<string, DocType> = {
+  string:      { style: Styles.string, display: 'string' },
+  function:    { style: Styles.func,   display: 'func' },
+  bool:        { style: Styles.bool,   display: 'bool' },
+  Color:       { style: Styles.color,  display: 'color' },
+  float:       { style: Styles.float,  display: 'float' },
+  table:       { style: Styles.table,  display: 'table' },
+  Object:      { style: Styles.object, display: 'object' },
+  any:         { style: Styles.nil,    display: 'any' },
+  int:         { style: Styles.int,    display: 'int' },
+  Player:      { style: Styles.player, display: 'player' },
+  coroutine:   { style: Styles.func,   display: 'coroutine' },
+  Action:      { style: Styles.var,    display: 'action' },
+  Vector:      { style: Styles.vector, display: 'vector' },
+  time:        { style: Styles.var,    display: 'time' },
   // Non-Param Types
-  void:      { style: Styles.nil,    display: '&nbsp;&nbsp;void&nbsp;&nbsp;' },
-  number:    { style: Styles.int,    display: '&nbsp;number&nbsp;' },
-  thread:    { style: Styles.func,    display: '&nbsp;thread&nbsp;' },
-  GameObject: { style: Styles.object, display: 'GameObject' },
-  Component: { style: Styles.object, display: 'Component' },
-  captures:  { style: Styles.var,    display: 'captures' }
+  void:        { style: Styles.nil,    display: 'void' },
+  number:      { style: Styles.int,    display: 'number' },
+  thread:      { style: Styles.func,   display: 'thread' },
+  GameObject:  { style: Styles.object, display: 'GameObject' },
+  Component:   { style: Styles.object, display: 'Component' },
+  captures:    { style: Styles.var,    display: 'captures' },
+  class:       { style: Styles.var,    display: 'class' },
+  AssetBundle: { style: Styles.var,    display: 'AssetBundle' },
+  Clock:       { style: Styles.var,    display: 'Clock' },
+  Counter:     { style: Styles.var,    display: 'Counter' },
+  LayoutZone:  { style: Styles.var,    display: 'LayoutZone' },
+  RPGFigurine: { style: Styles.var,    display: 'RPGFigurine' },
+  TextTool:    { style: Styles.var,    display: 'TextTool' }
 }
 
 export class TableGenerator {
+  private readonly padding = 2
   private html = '<table><tbody>'
 
   public addRow (type: string, name?: string, description?: string): TableGenerator {
-    const localType = StringToType[type] ?? { display: type, style: Styles.var }
-    // pad on both sides with &nbsp; until 8 characters, localType.display should be centered
-    this.html += `<tr${description !== undefined ? ` title="${description}"` : ''}><td><span style="${localType.style}">${localType.display}</span></td>`
+    const localType = StringToType[type] !== undefined
+      ? StringToType[type]
+      : { style: Styles.var, display: type }
+    // Bubble up to User
+    if (localType === undefined) { throw new Error(`Type ${type} not found`) }
+    // pad on both sides with &nbsp; according to pad prop localType.display should be centered
+    this.html += `<tr${description !== undefined ? ` title="${description}"` : ''}><td align="right"><span style="${localType.style}">${'&nbsp;'.repeat(this.padding)}${localType.display}${'&nbsp;'.repeat(this.padding)}</span></td>`
     if (name !== undefined) { this.html += `<td><code>${name}</code>${description !== undefined ? '$(info)' : ''}</td>` }
     this.html += '</tr>'
     return this

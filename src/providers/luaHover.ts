@@ -13,7 +13,7 @@ export default class LuaHoverProvider implements vscode.HoverProvider {
     const text = document.getText(range)
     // check if hovered text is GUID format
     const igObjs = getInGameObjects()
-    if (text in igObjs) {
+    if (text in Object.keys(igObjs)) {
       // If so, return a hover with the object name
       const obj = igObjs[text]
       const name = obj.name ?? obj.iname ?? '(No Name)'
@@ -22,7 +22,8 @@ export default class LuaHoverProvider implements vscode.HoverProvider {
         .replace('%guid%', text)
       executeLuaCode(script, '-1')
       return new vscode.Hover(name)
-    } else if (text.match(/[a-z0-9]{6}/) != null) return new vscode.Hover('No matching object found')
+    // } else if (text.match(/[a-z0-9]{6}/) != null) return new vscode.Hover('No matching object found')
+    }
     return null
   }
 }
