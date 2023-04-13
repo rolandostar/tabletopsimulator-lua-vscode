@@ -3,7 +3,7 @@ import { type ExtensionContext, commands } from 'vscode'
 import myCommands from './commands'
 // import langClientBuilder from './langClient'
 import { start as TTSServiceInit } from '@/TTSService'
-import { setStorage } from '@utils/LocalStorageService'
+import { setStorage, set } from '@utils/LocalStorageService'
 import { initWorkspace } from '@/vscode/workspaceManager'
 import registerProviders from '@/providers'
 import L from '@/i18n'
@@ -11,6 +11,7 @@ import L from '@/i18n'
 export async function activate (context: ExtensionContext): Promise<void> {
   console.info(L.activation())
   setStorage(context.globalState, context.globalStorageUri)
+  await set('extensionPath', context.extensionPath)
   // const langClient = langClientBuilder(context)
 
   context.subscriptions.push(

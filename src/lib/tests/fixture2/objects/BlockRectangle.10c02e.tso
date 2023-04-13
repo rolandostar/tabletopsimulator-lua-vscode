@@ -15,7 +15,15 @@ function onLoad()
         -- pet is dog in this scope
         my
     end
+    function Hello()
+      print("World")
+    end
 end
+
+function wdwda()
+  Player.
+end
+
 ```
 
 ```ui
