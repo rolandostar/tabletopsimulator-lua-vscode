@@ -1,13 +1,19 @@
+/**
+ * @file This file registers all providers for the extension.
+ * Providers are used to provide features like completion, hover, etc.
+ */
+
 import { type Disposable, languages, workspace, extensions, type Uri, window } from 'vscode'
 import { type HScopesAPI } from './hscopes'
+// Completion Providers
 import LuaCompletionProvider from './luaCompletion/provider'
 import XMLCompletionProvider from './XMLCompletion'
 import TSOCompletionProvider from './tsoCompletion'
 import YAMLCompletionProvider from './yamlCompletion'
-
+// Definition Providers
 import { TSODefinitionProvider } from './tsoDefinition'
 import { LuaDefinitionProvider } from './luaDefinition'
-
+// Hover Providers
 import TSOHoverProvider from './tsoHover'
 import LuaHoverProvider from './luaHover'
 

@@ -1,3 +1,9 @@
+/**
+ * @file API Manager
+ * This file manages the API that is used for completion, stuff like downloading the latest API, and
+ * loading it from local storage.
+ */
+
 import L from '@/i18n'
 import * as LSS from '@utils/LocalStorageService'
 import fetch from 'node-fetch'

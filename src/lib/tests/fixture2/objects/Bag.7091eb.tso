@@ -1,5 +1,13 @@
 ```script
-function onLoad()
-  print("From Blue")
+function onChat(message, player)
+    
 end
+```
+
+```ui
+
+```
+
+```object
+
 ```
