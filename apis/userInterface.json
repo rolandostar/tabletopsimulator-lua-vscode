@@ -1,0 +1,268 @@
+{
+  "elements": [
+    {
+      "name": "Text",
+      "description": "Adds basic text. This tag supports Rich Text",
+      "url": "https://api.tabletopsimulator.com/ui/basicelements/#text",
+      "attributes": [
+        {
+          "name": "text",
+          "type": "string",
+          "description": "This can be used to determine the text that appears. It can also be modified externally by the script.",
+          "default": "(none)"
+        },
+        {
+          "name": "alignment",
+          "type": "enum",
+          "default": "MiddleCenter",
+          "values": [
+            "UpperLeft",
+            "UpperCenter",
+            "UpperRight",
+            "MiddleLeft",
+            "MiddleCenter",
+            "MiddleRight",
+            "LowerLeft",
+            "LowerCenter",
+            "LowerRight",
+            "MiddleCenter"
+          ]
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#323232"
+        },
+        {
+          "name": "fontStyle",
+          "type": "enum",
+          "default": "Normal",
+          "values": [
+            "Normal",
+            "Bold",
+            "Italic",
+            "BoldItalic"
+          ]
+        },
+        {
+          "name": "fontSize",
+          "type": "float",
+          "default": "14"
+        },
+        {
+          "name": "resizeTextForBestFit",
+          "type": "bool",
+          "description": "Resize text to fit?",
+          "default": "false"
+        },
+        {
+          "name": "resizeTextMinSize",
+          "type": "float",
+          "description": "Minimum font size",
+          "default": "10"
+        },
+        {
+          "name": "resizeTextMaxSize",
+          "type": "float",
+          "description": "Maximum font size",
+          "default": "40"
+        },
+        {
+          "name": "horizontalOverflow",
+          "type": "enum",
+          "default": "Overflow",
+          "values": [
+            "Wrap",
+            "Overflow"
+          ]
+        },
+        {
+          "name": "verticalOverflow",
+          "type": "enum",
+          "default": "Truncate",
+          "values": [
+            "Truncate",
+            "Overflow",
+            "Truncate"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Image",
+      "description": "Adds an image.",
+      "url": "https://api.tabletopsimulator.com/ui/basicelements/#image",
+      "attributes": [
+        {
+          "name": "image",
+          "type": "string",
+          "description": "The name of the file in the asset manager (upper right corner of the scripting window in-game).",
+          "default": "(none)"
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#FFFFFF"
+        },
+        {
+          "name": "type",
+          "type": "enum",
+          "description": "Image Type",
+          "default": "Simple",
+          "values": [
+            "Simple",
+            "Sliced",
+            "Filled",
+            "Tiled"
+          ]
+        },
+        {
+          "name": "raycastTarget",
+          "type": "bool",
+          "description": "Should this image block clicks from passing through it?",
+          "default": "true"
+        }
+      ]
+    },
+    {
+      "name": "ProgressBar",
+      "description": "",
+      "url": "",
+      "attributes": []
+    },
+    {
+      "name": "InputField",
+      "description": "",
+      "url": "",
+      "attributes": []
+    },
+    {
+      "name": "Button",
+      "description": "",
+      "url": "",
+      "attributes": []
+    },
+    {
+      "name": "Toggle",
+      "description": "",
+      "url": "",
+      "attributes": []
+    },
+    {
+      "name": "ToggleButton",
+      "description": "",
+      "url": "",
+      "attributes": []
+    },
+    {
+      "name": "ToggleGroup",
+      "description": "",
+      "url": "",
+      "attributes": []
+    },
+    {
+      "name": "Slider",
+      "description": "",
+      "url": "",
+      "attributes": []
+    },
+    {
+      "name": "Dropdown",
+      "description": "",
+      "url": "",
+      "attributes": []
+    },
+    {
+      "name": "Panel",
+      "description": "",
+      "url": "",
+      "attributes": []
+    },
+    {
+      "name": "HorizontalLayout",
+      "description": "",
+      "url": "",
+      "attributes": []
+    },
+    {
+      "name": "VerticalLayout",
+      "description": "",
+      "url": "",
+      "attributes": []
+    },
+    {
+      "name": "GridLayout",
+      "description": "",
+      "url": "",
+      "attributes": []
+    },
+    {
+      "name": "TableLayout",
+      "description": "",
+      "url": "",
+      "attributes": []
+    },
+    {
+      "name": "Row",
+      "description": "",
+      "url": "",
+      "attributes": []
+    },
+    {
+      "name": "Cell",
+      "description": "",
+      "url": "",
+      "attributes": []
+    },
+    {
+      "name": "HorizontalScrollView",
+      "description": "",
+      "url": "",
+      "attributes": []
+    },
+    {
+      "name": "VerticalScrollView",
+      "description": "",
+      "url": "",
+      "attributes": []
+    },
+    {
+      "name": "Defaults",
+      "description": "",
+      "url": "",
+      "attributes": []
+    }
+  ],
+  "attributes": {
+    "/": [
+      {
+        "name": "active",
+        "type": "bool",
+        "description": "Specifies whether or not this element and its children are visible and contribute to layout. Modifying this via script will not trigger animations.",
+        "default": "true",
+        "url": "https://api.tabletopsimulator.com/ui/attributes/#general-attributes"
+      },
+      {
+        "name": "class",
+        "type": "string",
+        "description": "A list of classes, separated by spaces. An element will inherit attributes from any of its classes defined in Defaults.",
+        "url": "https://api.tabletopsimulator.com/ui/attributes/#general-attributes"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "description": "A unique string used to identify the element from Lua scripting.",
+        "url": "https://api.tabletopsimulator.com/ui/attributes/#general-attributes"
+      },
+      {
+        "name": "visibility",
+        "type": "string",
+        "description": "A pipe-separated list of visibility targets. An element is always treated as inactive to players not specified here.",
+        "url": "https://api.tabletopsimulator.com/ui/attributes/#general-attributes"
+      }
+    ],
+    "Text": [
+
+    ]
+  }
+}

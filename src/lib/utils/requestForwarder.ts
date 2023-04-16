@@ -35,13 +35,13 @@ function extract (type: SectionType, document: TextDocument): string {
   let inTargetSection = false
   for (let i = 0; i < document.lineCount; i++) {
     const line = document.lineAt(i).text
-    if (inTargetSection) result += line
     if (line.startsWith('```')) {
       const blockType = line.slice(3).trim()
       inTargetSection = blockType === type
-    }
+    } else if (inTargetSection) result += line
     result += '\n'
   }
+  if (type === SectionType.yaml) result = '# yaml-language-server: $schema=https://tts.swlegion.dev/ObjectState.json' + result
   return result
 }
 

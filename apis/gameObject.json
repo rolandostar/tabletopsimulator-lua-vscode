@@ -1,0 +1,1555 @@
+{
+  "$id": "https://tts.swlegion.dev/ObjectState.json",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "title": "ObjectState",
+  "type": "object",
+  "properties": {
+    "Name": {
+      "type": "string",
+      "default": "",
+      "description": "Internal object name."
+    },
+    "Transform": {
+      "$ref": "#/properties/AttachedDecals/items/properties/Transform",
+      "description": "Position, Rotation, Scale."
+    },
+    "Nickname": {
+      "type": "string",
+      "default": "",
+      "description": "Name supplied in game."
+    },
+    "Description": {
+      "type": "string",
+      "default": ""
+    },
+    "GMNotes": {
+      "type": "string",
+      "default": ""
+    },
+    "IgnoreFoW": {
+      "type": "boolean",
+      "default": false
+    },
+    "ColorDiffuse": {
+      "$ref": "#/properties/Text/properties/colorstate",
+      "description": "Material color tint."
+    },
+    "Locked": {
+      "type": "boolean",
+      "default": false,
+      "description": "Freeze object in place."
+    },
+    "Grid": {
+      "type": "boolean",
+      "default": true,
+      "description": "Object will snap to grid."
+    },
+    "Snap": {
+      "type": "boolean",
+      "default": true,
+      "description": "Object will snap to snap points"
+    },
+    "Autoraise": {
+      "type": "boolean",
+      "default": true,
+      "description": "Object will raise above others and avoid collision."
+    },
+    "Sticky": {
+      "type": "boolean",
+      "default": true,
+      "description": "When picked up objects above this one will be attached to it."
+    },
+    "Tooltip": {
+      "type": "boolean",
+      "default": true,
+      "description": "When hovering object will display tooltips."
+    },
+    "GridProjection": {
+      "type": "boolean",
+      "default": false,
+      "description": "Grid will project on this object."
+    },
+    "HideWhenFaceDown": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "When face down object is question mark hidden."
+    },
+    "Hands": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "Object will enter player hands."
+    },
+    "AltSound": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "Some objects have 2 materials, with two sound sets."
+    },
+    "MaterialIndex": {
+      "type": "number",
+      "default": 0,
+      "enum": [
+        -1,
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "description": "0 = Plastic, 1 = Wood, 2 = Metal, 3 = Cardboard, 4 = Glass"
+    },
+    "MeshIndex": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Some objects can have multiple meshes."
+    },
+    "Layer": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Sound Layer."
+    },
+    "Number": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "CardID": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "SidewaysCard": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "RPGmode": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "RPGdead": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "FogColor": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null
+    },
+    "FogHidePointers": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "FogReverseHiding": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "FogSeethrough": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "DeckIDs": {
+      "items": {
+        "type": "number"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "CustomDeck": {
+      "additionalProperties": {
+        "$id": "https://tts.swlegion.dev/CustomDeckState.json",
+        "$schema": "http://json-schema.org/draft-07/schema",
+        "title": "CustomDeckState",
+        "type": "object",
+        "properties": {
+          "FaceURL": {
+            "type": "string",
+            "default": "",
+            "description": "URL or empty string"
+          },
+          "BackURL": {
+            "type": "string",
+            "default": "",
+            "description": "URL or empty string"
+          },
+          "NumWidth": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "NumHeight": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "BackIsHidden": {
+            "type": "boolean",
+            "default": false,
+            "description": "Back of cards becames the hidden card when in a hand."
+          },
+          "UniqueBack": {
+            "type": "boolean",
+            "default": false,
+            "description": "Each back is a unique card just like the front."
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "FaceURL",
+          "BackURL",
+          "BackIsHidden",
+          "UniqueBack"
+        ]
+      },
+      "type": "object",
+      "description": "Key matches the hundreth place of the id (ex. id = 354, index = 3)."
+    },
+    "CustomMesh": {
+      "$id": "https://tts.swlegion.dev/CustomMeshState.json",
+      "$schema": "http://json-schema.org/draft-07/schema",
+      "title": "CustomMeshState",
+      "type": "object",
+      "properties": {
+        "MeshURL": {
+          "type": "string",
+          "default": "",
+          "description": "URL or empty string"
+        },
+        "DiffuseURL": {
+          "type": "string",
+          "default": "",
+          "description": "URL or empty string"
+        },
+        "NormalURL": {
+          "type": "string",
+          "default": "",
+          "description": "URL or empty string"
+        },
+        "ColliderURL": {
+          "type": "string",
+          "default": "",
+          "description": "URL or empty string"
+        },
+        "Convex": {
+          "type": "boolean",
+          "default": true
+        },
+        "MaterialIndex": {
+          "type": "number",
+          "default": 0,
+          "enum": [
+            -1,
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "description": "0 = Plastic, 1 = Wood, 2 = Metal, 3 = Cardboard, 4 = Glass"
+        },
+        "TypeIndex": {
+          "type": "number",
+          "default": 0,
+          "enum": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "description": "0 = Generic, 1 = Figurine, 2 = Dice, 3 = Coin, 4 = Board, 5 = Chip, 6 = Bag, 7 = Infinite"
+        },
+        "CustomShader": {
+          "description": "Used to override the shader.",
+          "$id": "https://tts.swlegion.dev/CustomShaderState.json",
+          "$schema": "http://json-schema.org/draft-07/schema",
+          "title": "CustomShaderState",
+          "type": "object",
+          "properties": {
+            "SpecularColor": {
+              "$ref": "#/properties/Text/properties/colorstate"
+            },
+            "SpecularIntensity": {
+              "type": "number",
+              "default": 0.1
+            },
+            "SpecularSharpness": {
+              "type": "number",
+              "default": 3,
+              "minimum": 2,
+              "maximum": 8
+            },
+            "FresnelStrength": {
+              "type": "number",
+              "default": 0.1,
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "SpecularColor",
+            "SpecularIntensity",
+            "SpecularSharpness",
+            "FresnelStrength"
+          ]
+        },
+        "CastShadows": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "MeshURL",
+        "DiffuseURL",
+        "NormalURL",
+        "ColliderURL",
+        "Convex",
+        "MaterialIndex",
+        "TypeIndex",
+        "CastShadows"
+      ]
+    },
+    "CustomImage": {
+      "$id": "https://tts.swlegion.dev/CustomImageState.json",
+      "$schema": "http://json-schema.org/draft-07/schema",
+      "title": "CustomImageState",
+      "type": "object",
+      "properties": {
+        "ImageURL": {
+          "type": "string",
+          "default": "",
+          "description": "URL or empty string"
+        },
+        "ImageSecondaryURL": {
+          "type": "string",
+          "default": "",
+          "description": "URL or empty string"
+        },
+        "WidthScale": {
+          "type": "number",
+          "description": "Holds the scaled size of the object based on the image dimensions."
+        },
+        "CustomDice": {
+          "$id": "https://tts.swlegion.dev/CustomDiceState.json",
+          "$schema": "http://json-schema.org/draft-07/schema",
+          "title": "CustomDiceState",
+          "type": "object",
+          "properties": {
+            "Type": {}
+          },
+          "additionalProperties": false,
+          "required": [
+            "Type"
+          ]
+        },
+        "CustomToken": {
+          "$id": "https://tts.swlegion.dev/CustomTokenState.json",
+          "$schema": "http://json-schema.org/draft-07/schema",
+          "title": "CustomTokenState",
+          "type": "object",
+          "properties": {
+            "Thickness": {
+              "type": "number"
+            },
+            "MergeDistancePixels": {
+              "type": "number"
+            },
+            "Stackable": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "Thickness",
+            "MergeDistancePixels",
+            "Stackable"
+          ]
+        },
+        "CustomJigsawPuzzle": {
+          "$id": "https://tts.swlegion.dev/CustomJigsawPuzzleState.json",
+          "$schema": "http://json-schema.org/draft-07/schema",
+          "title": "CustomJigsawPuzzleState",
+          "type": "object",
+          "properties": {
+            "NumPuzzlePieces": {
+              "type": "number",
+              "default": 80
+            },
+            "ImageOnBoard": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "NumPuzzlePiecs",
+            "ImageOnBoard"
+          ]
+        },
+        "CustomTile": {
+          "$id": "https://tts.swlegion.dev/CustomTileState.json",
+          "$schema": "http://json-schema.org/draft-07/schema",
+          "title": "CustomTileState",
+          "type": "object",
+          "properties": {
+            "Type": {
+              "type": "number",
+              "default": 0,
+              "enum": [
+                0,
+                1,
+                2,
+                3
+              ],
+              "description": "0 = Plastic, 1 = Wood, 2 = Metal, 3 = Cardboard"
+            },
+            "Thickness": {
+              "type": "number"
+            },
+            "Stackable": {
+              "type": "boolean",
+              "default": false
+            },
+            "Stretch": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "Type",
+            "Thickness",
+            "Stackable",
+            "Stretch"
+          ]
+        },
+        "ImageScalar": {}
+      },
+      "additionalProperties": false,
+      "required": [
+        "ImageURL",
+        "ImageSecondaryURL"
+      ]
+    },
+    "CustomAssetbundle": {
+      "$id": "https://tts.swlegion.dev/CustomAssetbundleState.json",
+      "$schema": "http://json-schema.org/draft-07/schema",
+      "title": "CustomAssetbundleState",
+      "type": "object",
+      "properties": {
+        "AssetbundleURL": {
+          "type": "string",
+          "default": "",
+          "description": "URL or empty string"
+        },
+        "AssetbundleSecondaryURL": {
+          "type": "string",
+          "default": "",
+          "description": "URL or empty string"
+        },
+        "MaterialIndex": {
+          "type": "number",
+          "default": 0,
+          "enum": [
+            -1,
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "description": "0 = Plastic, 1 = Wood, 2 = Metal, 3 = Cardboard, 4 = Glass"
+        },
+        "TypeIndex": {
+          "type": "number",
+          "default": 0,
+          "enum": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "description": "0 = Generic, 1 = Figurine, 2 = Dice, 3 = Coin, 4 = Board, 5 = Chip, 6 = Bag, 7 = Infinite"
+        },
+        "LoopingEffectIndex": {
+          "type": "number",
+          "default": 0
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "AssetbundleURL",
+        "AssetbundleSecondaryURL",
+        "MaterialIndex",
+        "TypeIndex",
+        "LoopingEffectIndex"
+      ]
+    },
+    "FogOfWar": {
+      "$id": "https://tts.swlegion.dev/FogOfWarSaveState.json",
+      "$schema": "http://json-schema.org/draft-07/schema",
+      "title": "FogOfWarSaveState",
+      "type": "object",
+      "properties": {
+        "HideGmPointer": {
+          "type": "boolean"
+        },
+        "HideObjects": {
+          "type": "boolean"
+        },
+        "Height": {
+          "type": "number"
+        },
+        "RevealedLocations": {
+          "description": "Dictionary<string, HashSet<int>",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "HideGmPointer",
+        "HideObjects",
+        "Height",
+        "RevealedLocations"
+      ]
+    },
+    "FogOfWarRevealer": {
+      "$id": "https://tts.swlegion.dev/FogOfWarRevealerSaveState.json",
+      "$schema": "http://json-schema.org/draft-07/schema",
+      "title": "FogOfWarRevealerSaveState",
+      "type": "object",
+      "properties": {
+        "active": {
+          "type": "boolean"
+        },
+        "range": {
+          "type": "number"
+        },
+        "color": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "active",
+        "range",
+        "color"
+      ]
+    },
+    "Clock": {
+      "$id": "https://tts.swlegion.dev/ClockSaveState.json",
+      "$schema": "http://json-schema.org/draft-07/schema",
+      "title": "ClockSaveState",
+      "type": "object",
+      "properties": {
+        "ClockState": {},
+        "SecondsPassed": {
+          "type": "number",
+          "default": 0
+        },
+        "Paused": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "ClockState",
+        "SecondsPassed",
+        "Paused"
+      ]
+    },
+    "Counter": {
+      "$id": "https://tts.swlegion.dev/CounterState.json",
+      "$schema": "http://json-schema.org/draft-07/schema",
+      "title": "CounterState",
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "number",
+          "default": 0
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "value"
+      ]
+    },
+    "Tablet": {
+      "$id": "https://tts.swlegion.dev/TabletState.json",
+      "$schema": "http://json-schema.org/draft-07/schema",
+      "title": "TabletState",
+      "type": "object",
+      "properties": {
+        "PageURL": {
+          "type": "string",
+          "default": "",
+          "description": "URL or empty string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "PageURL"
+      ]
+    },
+    "Mp3Player": {
+      "$id": "https://tts.swlegion.dev/Mp3PlayerState.json",
+      "$schema": "http://json-schema.org/draft-07/schema",
+      "title": "Mp3PlayerState",
+      "type": "object",
+      "properties": {
+        "songTitle": {
+          "type": "string",
+          "default": ""
+        },
+        "genre": {
+          "type": "string",
+          "default": ""
+        },
+        "volume": {
+          "type": "number",
+          "default": 0.5
+        },
+        "isPlaying": {
+          "type": "boolean",
+          "default": false
+        },
+        "loopOne": {
+          "type": "boolean",
+          "default": false
+        },
+        "menuTitle": {
+          "type": "string",
+          "default": "GENRES"
+        },
+        "menu": {}
+      },
+      "additionalProperties": false,
+      "required": [
+        "songTitle",
+        "genre",
+        "volume",
+        "isPlaying",
+        "loopOne",
+        "menuTitle",
+        "menu"
+      ]
+    },
+    "Calculator": {
+      "$id": "https://tts.swlegion.dev/CalculatorState.json",
+      "$schema": "http://json-schema.org/draft-07/schema",
+      "title": "CalculatorState",
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "string",
+          "default": ""
+        },
+        "memory": {
+          "type": "number",
+          "default": 0
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "memory"
+      ]
+    },
+    "Text": {
+      "$id": "https://tts.swlegion.dev/TextState.json",
+      "$schema": "http://json-schema.org/draft-07/schema",
+      "title": "TextState",
+      "type": "object",
+      "properties": {
+        "Text": {
+          "type": "string"
+        },
+        "colorstate": {
+          "$id": "https://tts.swlegion.dev/ColourState.json",
+          "$schema": "http://json-schema.org/draft-07/schema",
+          "title": "ColourState",
+          "type": "object",
+          "properties": {
+            "r": {
+              "type": "number"
+            },
+            "g": {
+              "type": "number"
+            },
+            "b": {
+              "type": "number"
+            },
+            "a": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "r",
+            "g",
+            "b"
+          ]
+        },
+        "fontSize": {
+          "type": "number",
+          "default": 64
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "Text",
+        "colorstate",
+        "fontSize"
+      ]
+    },
+    "XmlUI": {
+      "type": "string",
+      "default": "",
+      "description": "Custom Xml UI."
+    },
+    "CustomUIAssets": {
+      "type": "array",
+      "items": {
+        "$id": "https://tts.swlegion.dev/CustomAssetState.json",
+        "$schema": "http://json-schema.org/draft-07/schema",
+        "title": "CustomAssetState",
+        "type": "object",
+        "properties": {
+          "Name": {
+            "type": "string"
+          },
+          "URL": {
+            "type": "string",
+            "description": "URL or empty string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "Name",
+          "URL"
+        ]
+      }
+    },
+    "LuaScript": {
+      "type": "string",
+      "default": ""
+    },
+    "LuaScriptState": {
+      "type": "string",
+      "default": "",
+      "description": "Serialized running Lua code."
+    },
+    "ContainedObjects": {
+      "type": "array",
+      "items": {
+        "$id": "https://tts.swlegion.dev/ObjectState.json",
+        "$schema": "http://json-schema.org/draft-07/schema",
+        "title": "ObjectState",
+        "type": "object",
+        "properties": {
+          "Name": {
+            "type": "string",
+            "default": "",
+            "description": "Internal object name."
+          },
+          "Transform": {
+            "$ref": "#/properties/AttachedDecals/items/properties/Transform",
+            "description": "Position, Rotation, Scale."
+          },
+          "Nickname": {
+            "type": "string",
+            "default": "",
+            "description": "Name supplied in game."
+          },
+          "Description": {
+            "type": "string",
+            "default": ""
+          },
+          "GMNotes": {
+            "type": "string",
+            "default": ""
+          },
+          "IgnoreFoW": {
+            "type": "boolean",
+            "default": false
+          },
+          "ColorDiffuse": {
+            "$ref": "#/properties/Text/properties/colorstate",
+            "description": "Material color tint."
+          },
+          "Locked": {
+            "type": "boolean",
+            "default": false,
+            "description": "Freeze object in place."
+          },
+          "Grid": {
+            "type": "boolean",
+            "default": true,
+            "description": "Object will snap to grid."
+          },
+          "Snap": {
+            "type": "boolean",
+            "default": true,
+            "description": "Object will snap to snap points"
+          },
+          "Autoraise": {
+            "type": "boolean",
+            "default": true,
+            "description": "Object will raise above others and avoid collision."
+          },
+          "Sticky": {
+            "type": "boolean",
+            "default": true,
+            "description": "When picked up objects above this one will be attached to it."
+          },
+          "Tooltip": {
+            "type": "boolean",
+            "default": true,
+            "description": "When hovering object will display tooltips."
+          },
+          "GridProjection": {
+            "type": "boolean",
+            "default": false,
+            "description": "Grid will project on this object."
+          },
+          "HideWhenFaceDown": {
+            "type": [
+              "boolean",
+              "null"
+            ],
+            "description": "When face down object is question mark hidden."
+          },
+          "Hands": {
+            "type": [
+              "boolean",
+              "null"
+            ],
+            "description": "Object will enter player hands."
+          },
+          "AltSound": {
+            "type": [
+              "boolean",
+              "null"
+            ],
+            "description": "Some objects have 2 materials, with two sound sets."
+          },
+          "MaterialIndex": {
+            "type": "number",
+            "default": 0,
+            "enum": [
+              -1,
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "description": "0 = Plastic, 1 = Wood, 2 = Metal, 3 = Cardboard, 4 = Glass"
+          },
+          "MeshIndex": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "Some objects can have multiple meshes."
+          },
+          "Layer": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "Sound Layer."
+          },
+          "Number": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "CardID": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "SidewaysCard": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "RPGmode": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "RPGdead": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "FogColor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "FogHidePointers": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "FogReverseHiding": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "FogSeethrough": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "DeckIDs": {
+            "items": {
+              "type": "number"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "CustomDeck": {
+            "additionalProperties": {
+              "$ref": "#/properties/CustomDeck/additionalProperties"
+            },
+            "type": "object",
+            "description": "Key matches the hundreth place of the id (ex. id = 354, index = 3)."
+          },
+          "CustomMesh": {
+            "$ref": "#/properties/CustomMesh"
+          },
+          "CustomImage": {
+            "$ref": "#/properties/CustomImage"
+          },
+          "CustomAssetbundle": {
+            "$ref": "#/properties/CustomAssetbundle"
+          },
+          "FogOfWar": {
+            "$ref": "#/properties/FogOfWar"
+          },
+          "FogOfWarRevealer": {
+            "$ref": "#/properties/FogOfWarRevealer"
+          },
+          "Clock": {
+            "$ref": "#/properties/Clock"
+          },
+          "Counter": {
+            "$ref": "#/properties/Counter"
+          },
+          "Tablet": {
+            "$ref": "#/properties/Tablet"
+          },
+          "Mp3Player": {
+            "$ref": "#/properties/Mp3Player"
+          },
+          "Calculator": {
+            "$ref": "#/properties/Calculator"
+          },
+          "Text": {
+            "$ref": "#/properties/Text"
+          },
+          "XmlUI": {
+            "type": "string",
+            "default": "",
+            "description": "Custom Xml UI."
+          },
+          "CustomUIAssets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/properties/CustomUIAssets/items"
+            }
+          },
+          "LuaScript": {
+            "type": "string",
+            "default": ""
+          },
+          "LuaScriptState": {
+            "type": "string",
+            "default": "",
+            "description": "Serialized running Lua code."
+          },
+          "ContainedObjects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/properties/ContainedObjects/items"
+            },
+            "description": "Objects inside this one."
+          },
+          "PhysicsMaterial": {
+            "$ref": "#/properties/PhysicsMaterial",
+            "description": "Use to modify the physics material (friction, bounce, etc.) http://docs.unity3d.com/Manual/class-PhysicMaterial.html."
+          },
+          "Rigidbody": {
+            "$ref": "#/properties/Rigidbody",
+            "description": "Use to modify the physical properties (mass, drag, etc) http://docs.unity3d.com/Manual/class-Rigidbody.html."
+          },
+          "JointFixed": {
+            "$ref": "#/properties/JointFixed",
+            "description": "Joints can be used to attached/link objects together check the classes below."
+          },
+          "JointHinge": {
+            "$ref": "#/properties/JointHinge"
+          },
+          "JointSpring": {
+            "$ref": "#/properties/JointSpring"
+          },
+          "GUID": {
+            "type": "string",
+            "description": ""
+          },
+          "AttachedSnapPoints": {
+            "type": "array",
+            "items": {
+              "$ref": "#/properties/AttachedSnapPoints/items"
+            },
+            "description": "Snap points that are stuck to this object, happens when placing a snap point on a locked object."
+          },
+          "AttachedVectorLines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/properties/AttachedVectorLines/items"
+            },
+            "description": "Vector lines that are stuck to this object, happens when drawing a vector line on a locked object."
+          },
+          "AttachedDecals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/properties/AttachedDecals/items"
+            },
+            "description": "Decals that are attached to this objects."
+          },
+          "States": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/properties/ContainedObjects/items"
+            },
+            "description": "Objects can have multiple states which can be swapped between."
+          },
+          "RotationValues": {
+            "type": "array",
+            "item": {
+              "$ref": "#/properties/RotationValues/item"
+            },
+            "description": "Rotation values are tooltip values tied to rotations."
+          },
+          "CustomPDF": {
+            "$comment": "Undocumented"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "Name",
+          "Transform",
+          "Nickname",
+          "Description",
+          "GMNotes",
+          "IgnoreFoW",
+          "ColorDiffuse",
+          "Locked",
+          "Grid",
+          "Snap",
+          "Autoraise",
+          "Sticky",
+          "Tooltip"
+        ]
+      },
+      "description": "Objects inside this one."
+    },
+    "PhysicsMaterial": {
+      "description": "Use to modify the physics material (friction, bounce, etc.) http://docs.unity3d.com/Manual/class-PhysicMaterial.html.",
+      "$id": "https://tts.swlegion.dev/PhysicsMaterialState.json",
+      "$schema": "http://json-schema.org/draft-07/schema",
+      "title": "PhysicsMaterialState",
+      "type": "object",
+      "properties": {
+        "StaticFriction": {
+          "type": "number",
+          "default": 0.4,
+          "description": "The friction used when an object is laying still on a surface. Usually a value from 0 to 1. A value of zero feels like ice, a value of 1 will make it very hard to get the object moving."
+        },
+        "DynamicFriction": {
+          "type": "number",
+          "default": 0.4,
+          "description": "The friction used when already moving. Usually a value from 0 to 1. A value of zero feels like ice, a value of 1 will make it come to rest very quickly unless a lot of force or gravity pushes the object."
+        },
+        "Bounciness": {
+          "type": "number",
+          "default": 0,
+          "description": "How bouncy is the surface? A value of 0 will not bounce. A value of 1 will bounce without any loss of energy."
+        },
+        "FrictionCombine": {
+          "type": "number",
+          "enum": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "default": 0,
+          "description": "How the friction of two colliding objects is combined. 0 = Average, 1 = Minimum, 2 = Maximum, 3 = Multiply."
+        },
+        "BounceCombine": {
+          "type": "number",
+          "enum": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "default": 0,
+          "description": "How the friction of two colliding objects is combined. 0 = Average, 1 = Minimum, 2 = Maximum, 3 = Multiply."
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "StaticFriction",
+        "DynamicFriction",
+        "Bounciness",
+        "FrictionCombine",
+        "BounceCombine"
+      ]
+    },
+    "Rigidbody": {
+      "description": "Use to modify the physical properties (mass, drag, etc) http://docs.unity3d.com/Manual/class-Rigidbody.html.",
+      "$id": "https://tts.swlegion.dev/RigidbodyState.json",
+      "$schema": "http://json-schema.org/draft-07/schema",
+      "title": "RigidbodyState",
+      "type": "object",
+      "properties": {
+        "Mass": {
+          "type": "number",
+          "default": 1,
+          "description": "The mass of the object (arbitrary units). You should not make masses more or less than 100 times that of other Rigidbodies."
+        },
+        "Drag": {
+          "type": "number",
+          "default": 0.1,
+          "description": "How much air resistance affects the object when moving from forces. 0 means no air resistance, and infinity makes the object stop moving immediately."
+        },
+        "AngularDrag": {
+          "type": "number",
+          "default": 0.1,
+          "description": "How much air resistance affects the object when rotating from torque. 0 means no air resistance. Note that you cannot make the object stop rotating just by setting its Angular Drag to infinity."
+        },
+        "UseGravity": {
+          "type": "boolean",
+          "default": true,
+          "description": "If enabled, the object is affected by gravity."
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "Mass",
+        "Drag",
+        "AngularDrag",
+        "UseGravity"
+      ]
+    },
+    "JointFixed": {
+      "description": "Joints can be used to attached/link objects together check the classes below.",
+      "$id": "https://tts.swlegion.dev/JointFixedState.json",
+      "$schema": "http://json-schema.org/draft-07/schema",
+      "title": "JointFixedState",
+      "type": "object",
+      "allOf": [
+        {
+          "$id": "https://tts.swlegion.dev/JointState.json",
+          "$schema": "http://json-schema.org/draft-07/schema",
+          "title": "JointState",
+          "type": "object",
+          "description": "http://docs.unity3d.com/ScriptReference/Joint.html",
+          "properties": {
+            "ConnectedBodyGUID": {
+              "description": "A reference to another rigidbody this joint connects to.",
+              "type": "string"
+            },
+            "EnableCollision": {
+              "description": "Enable collision between bodies connected with the joint.",
+              "type": "boolean"
+            },
+            "Axis": {
+              "description": "The Direction of the axis around which the body is constrained.",
+              "$ref": "#/properties/RotationValues/item/properties/Rotation"
+            },
+            "Anchor": {
+              "description": "The Position of the anchor around which the joints motion is constrained.",
+              "$ref": "#/properties/RotationValues/item/properties/Rotation"
+            },
+            "BreakForce": {
+              "description": "The force that needs to be applied for this joint to break.",
+              "type": "number"
+            },
+            "BreakTorgue": {
+              "description": "The torque that needs to be applied for this joint to break.",
+              "type": "number"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "ConnectedBodyGUID",
+            "EnableCollision",
+            "Axis",
+            "Anchor",
+            "BreakForce",
+            "BreakTorgue"
+          ]
+        }
+      ],
+      "additionalProperties": false
+    },
+    "JointHinge": {
+      "$id": "https://tts.swlegion.dev/JointHingeState.json",
+      "$schema": "http://json-schema.org/draft-07/schema",
+      "title": "JointHingeState",
+      "type": "object",
+      "description": "http://docs.unity3d.com/ScriptReference/HingeJoint.html",
+      "additionalProperties": false,
+      "properties": {
+        "UseLimits": {
+          "type": "boolean"
+        },
+        "Limits": {
+          "description": "Limit of angular rotation on the hinge joint. http://docs.unity3d.com/ScriptReference/JointLimits.html.",
+          "type": "object"
+        },
+        "UseMotor": {
+          "type": "boolean"
+        },
+        "Motor": {
+          "description": "Limit of angular rotation on the hinge joint. The motor will apply a force up to a maximum force to achieve the target velocity in degrees per second. http://docs.unity3d.com/ScriptReference/JointMotor.html.",
+          "type": "object"
+        },
+        "UseSpring": {
+          "type": "boolean"
+        },
+        "Spring": {
+          "description": "The spring attempts to reach a target angle by adding spring and damping forces. http://docs.unity3d.com/ScriptReference/JointSpring.html.",
+          "type": "object"
+        }
+      },
+      "required": [
+        "UseLimits",
+        "Limits",
+        "UseMotor",
+        "Motor",
+        "UseSpring",
+        "Spring"
+      ]
+    },
+    "JointSpring": {
+      "$id": "https://tts.swlegion.dev/JointSpringState.json",
+      "$schema": "http://json-schema.org/draft-07/schema",
+      "title": "JointSpringState",
+      "type": "object",
+      "description": "http://docs.unity3d.com/ScriptReference/SpringJoint.html",
+      "additionalProperties": false,
+      "properties": {
+        "Damper": {
+          "description": "The damper force used to dampen the spring force",
+          "type": "number"
+        },
+        "MaxDistance": {
+          "description": "The maximum distance between the bodies relative to their initial distance.",
+          "type": "number"
+        },
+        "MinDistance": {
+          "description": "The minimum distance between the bodies relative to their initial distance.",
+          "type": "number"
+        },
+        "Spring": {
+          "description": "The spring force used to keep the two objects together.",
+          "type": "number"
+        }
+      },
+      "required": [
+        "Damper",
+        "MaxDistance",
+        "MinDistance",
+        "Spring"
+      ]
+    },
+    "GUID": {
+      "type": "string",
+      "description": ""
+    },
+    "AttachedSnapPoints": {
+      "type": "array",
+      "items": {
+        "$id": "https://tts.swlegion.dev/SnapPointState.json",
+        "$schema": "http://json-schema.org/draft-07/schema",
+        "title": "SnapPointState",
+        "type": "object",
+        "properties": {
+          "Position": {
+            "$ref": "#/properties/RotationValues/item/properties/Rotation"
+          },
+          "Rotation": {
+            "$ref": "#/properties/RotationValues/item/properties/Rotation"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "Position"
+        ]
+      },
+      "description": "Snap points that are stuck to this object, happens when placing a snap point on a locked object."
+    },
+    "AttachedVectorLines": {
+      "type": "array",
+      "items": {
+        "$id": "https://tts.swlegion.dev/VectorLineState.json",
+        "$schema": "http://json-schema.org/draft-07/schema",
+        "title": "VectorLineState",
+        "type": "object",
+        "properties": {
+          "points3": {
+            "items": {
+              "$ref": "#/properties/RotationValues/item/properties/Rotation"
+            },
+            "type": "array"
+          },
+          "color": {
+            "$ref": "#/properties/Text/properties/colorstate"
+          },
+          "thickness": {
+            "type": "number",
+            "default": 0.1
+          },
+          "rotation": {
+            "$ref": "#/properties/RotationValues/item/properties/Rotation"
+          },
+          "loop": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "square": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "points3",
+          "color",
+          "thickness",
+          "rotation"
+        ]
+      },
+      "description": "Vector lines that are stuck to this object, happens when drawing a vector line on a locked object."
+    },
+    "AttachedDecals": {
+      "type": "array",
+      "items": {
+        "$id": "https://tts.swlegion.dev/DecalState.json",
+        "$schema": "http://json-schema.org/draft-07/schema",
+        "title": "DecalState",
+        "type": "object",
+        "properties": {
+          "Transform": {
+            "$id": "https://tts.swlegion.dev/TransformState.json",
+            "$schema": "http://json-schema.org/draft-07/schema",
+            "title": "TransformState",
+            "type": "object",
+            "properties": {
+              "posX": {
+                "type": "number"
+              },
+              "posY": {
+                "type": "number"
+              },
+              "posZ": {
+                "type": "number"
+              },
+              "rotX": {
+                "type": "number"
+              },
+              "rotY": {
+                "type": "number"
+              },
+              "rotZ": {
+                "type": "number"
+              },
+              "scaleX": {
+                "type": "number"
+              },
+              "scaleY": {
+                "type": "number"
+              },
+              "scaleZ": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "posX",
+              "posY",
+              "posZ",
+              "rotX",
+              "rotY",
+              "rotZ",
+              "scaleX",
+              "scaleY",
+              "scaleZ"
+            ]
+          },
+          "CustomDecal": {
+            "$id": "https://tts.swlegion.dev/CustomDecalState.json",
+            "$schema": "http://json-schema.org/draft-07/schema",
+            "title": "CustomDecalState",
+            "type": "object",
+            "properties": {
+              "Name": {
+                "type": "string"
+              },
+              "ImageURL": {
+                "type": "string",
+                "description": "URL or empty string"
+              },
+              "Size": {
+                "type": "number",
+                "description": "Size in inches."
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "Name",
+              "ImageURL"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "Transform",
+          "CustomDecal"
+        ]
+      },
+      "description": "Decals that are attached to this objects."
+    },
+    "States": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/properties/ContainedObjects/items"
+      },
+      "description": "Objects can have multiple states which can be swapped between."
+    },
+    "RotationValues": {
+      "type": "array",
+      "item": {
+        "$id": "https://tts.swlegion.dev/RotationValueState.json",
+        "$schema": "http://json-schema.org/draft-07/schema",
+        "title": "RotationValueState",
+        "type": "object",
+        "properties": {
+          "Value": {},
+          "Rotation": {
+            "$id": "https://tts.swlegion.dev/VectorState.json",
+            "$schema": "http://json-schema.org/draft-07/schema",
+            "title": "VectorState",
+            "type": "object",
+            "properties": {
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              },
+              "z": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "x",
+              "y",
+              "z"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "Value",
+          "Rotation"
+        ]
+      },
+      "description": "Rotation values are tooltip values tied to rotations."
+    },
+    "CustomPDF": {
+      "$comment": "Undocumented"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "Name",
+    "Transform",
+    "Nickname",
+    "Description",
+    "GMNotes",
+    "IgnoreFoW",
+    "ColorDiffuse",
+    "Locked",
+    "Grid",
+    "Snap",
+    "Autoraise",
+    "Sticky",
+    "Tooltip"
+  ]
+}

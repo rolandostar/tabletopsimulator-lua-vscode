@@ -7,7 +7,7 @@ import { type Disposable, languages, workspace, extensions, type Uri, window } f
 import { type HScopesAPI } from './hscopes'
 // Completion Providers
 import LuaCompletionProvider from './luaCompletion/provider'
-import XMLCompletionProvider from './XMLCompletion'
+import XMLCompletionProvider from './xmlCompletion/provider'
 import TSOCompletionProvider from './tsoCompletion'
 import YAMLCompletionProvider from './yamlCompletion'
 // Definition Providers
@@ -24,6 +24,13 @@ export const triggers: Record<string, string[]> = {
   lua: ['.', ':', '(', ')', ' '],
   xml: ['<', '/', ' '],
   yaml: [':', ' ']
+}
+
+export interface LineToken {
+  value: string
+  start: number
+  end: number
+  scopes: string[]
 }
 
 const [
@@ -70,6 +77,7 @@ export default function registerProviders (): Disposable[] {
   if (hsExt === undefined) throw new Error('HyperScopes Extension not installed')
   // Expose the HyperScopes API to the rest of the providers
   void hsExt.activate().then((api) => { hs = api })
+  void xmlCompletionProvider.preload()
   luaCompletionProvider.preload().catch((err: Error) => {
     // If it's a type error it's probably because the API changed
     if (err instanceof TypeError) {
@@ -83,8 +91,8 @@ export default function registerProviders (): Disposable[] {
     languages.registerDefinitionProvider('lua', luaDefinitionProvider),
     languages.registerHoverProvider('tso', tsoHoverProvider),
     languages.registerHoverProvider('lua', luaHoverProvider),
-    languages.registerCompletionItemProvider('tso', tsoCompletionProvider, ...triggers.lua, ...triggers.xml),
-    languages.registerCompletionItemProvider('yaml', yamlCompletionProvider),
+    languages.registerCompletionItemProvider('tso', tsoCompletionProvider, ...triggers.lua, ...triggers.xml, ...triggers.yaml),
+    languages.registerCompletionItemProvider('yaml', yamlCompletionProvider, ...triggers.yaml),
     languages.registerCompletionItemProvider('xml', xmlCompletionProvider, ...triggers.xml),
     languages.registerCompletionItemProvider('lua', luaCompletionProvider, ...triggers.lua),
     workspace.registerTextDocumentContentProvider('tts-embedded-content', ttsEmbeddedContentProvider)

@@ -6,14 +6,7 @@ import {
 } from 'vscode'
 import { LuaCompletion } from '.'
 import * as apiManager from './apiManager'
-import { hs } from '..'
-
-interface LineToken {
-  value: string
-  start: number
-  end: number
-  scopes: string[]
-}
+import { type LineToken, hs } from '..'
 
 function snippet (label: string, insert: string, sortText = ''): CompletionItem {
   const result = new CompletionItem(label, CompletionItemKind.Snippet)

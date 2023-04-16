@@ -47,6 +47,7 @@
     "vscode-languageserver-textdocument": "^1.0.8"
   },
   "devDependencies": {
+    "@apidevtools/json-schema-ref-parser": "^10.1.0",
     "@types/node": "^18.15.11",
     "@types/vscode": "^1.77.0",
     "@types/webpack-env": "^1.18.0",
@@ -73,16 +74,7 @@
     "workspaceContains:*.lua",
     "workspaceContains:*.tts",
     "workspaceContains:*.ttslua",
-    "onLanguage:lua",
-    "onCommand:ttslua.openConsole",
-    "onCommand:ttslua.getScripts",
-    "onCommand:ttslua.saveAndPlay",
-    "onCommand:ttslua.installConsole",
-    "onCommand:ttslua.addGlobalInclude",
-    "onCommand:ttslua.updateCompletionItems",
-    "onCommand:ttslua.forceAutocompleteUpdate",
-    "onCommand:ttslua.changeWorkDir",
-    "onCommand:ttslua.downloadAssets"
+    "onLanguage:lua"
   ],
   "contributes": {
     "languages": [

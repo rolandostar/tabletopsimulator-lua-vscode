@@ -5,7 +5,8 @@ end
 ```
 
 ```ui
-
+<Image image=""></Image>
+<Text ></Text>
 ```
 
 ```object

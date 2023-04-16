@@ -18,7 +18,7 @@ export class LuaCompletion {
 
   constructor (public api: DownloadedAPI) {
     for (const sectionName in api.sections) {
-      if (!this.completionStore.has(sectionName)) this.completionStore.set(sectionName, [])
+      // if (!this.completionStore.has(sectionName)) this.completionStore.set(sectionName, [])
       this.completionStore.set(sectionName, this.addMembers(api.sections[sectionName], sectionName))
     }
     this.behaviourStore = api.behaviors
@@ -30,7 +30,9 @@ export class LuaCompletion {
     for (const member of members) {
       // Initialize variables
       const completionKind = StringToCompletionKind[member.kind] ?? CompletionItemKind.Text
-      const funcType = completionKind === CompletionItemKind.Function || completionKind === CompletionItemKind.Event
+      const funcType =
+        completionKind === CompletionItemKind.Function ||
+        completionKind === CompletionItemKind.Event
       let detailString = '('
       const insertText = new SnippetString(`${member.name}(`)
       const docString = new MarkdownString(`<p>${member.description}</p>`, true)
