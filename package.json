@@ -87,8 +87,8 @@
           ".tso"
         ],
         "icon": {
-          "light": "media/tts.svg",
-          "dark": "media/tts.svg"
+          "light": "assets/meedia/tts.svg",
+          "dark": "assets/meedia/tts.svg"
         }
       }
     ],
@@ -104,8 +104,8 @@
         "command": "ttslua.changeObjectView",
         "title": "Toggle TTS view between Lua/XML/Json",
         "icon": {
-          "light": "media/arrow-switch_light.svg",
-          "dark": "media/arrow-switch.svg"
+          "light": "assets/meedia/arrow-switch_light.svg",
+          "dark": "assets/meedia/arrow-switch.svg"
         }
       },
       {
@@ -377,7 +377,7 @@
             "title": "1. Start the Game! 🎯",
             "description": "TTS Lua depends on Tabletop Simulator running, so go ahead, start it up and load an empty save!",
             "media": {
-              "image": "media/docs/banner.png",
+              "image": "assets/media/docs/banner.png",
               "altText": "Banner Image"
             },
             "completionEvents": [
@@ -389,7 +389,7 @@
             "title": "2. Load a Save 📂",
             "description": "This step will change a setting and check off when the setting has changed\n[Change Setting](command:getting-started-sample.changeSetting)",
             "media": {
-              "markdown": "media/markdown.md"
+              "markdown": "assets/media/markdown.md"
             },
             "completionEvents": [
               "onSettingChanged:getting-started-sample.sampleSetting"
@@ -400,7 +400,7 @@
             "title": "3. Get Scripts ⏬",
             "description": "This step will change a setting and check off when the setting has changed\n[Change Setting](command:getting-started-sample.changeSetting)",
             "media": {
-              "markdown": "media/markdown.md"
+              "markdown": "assets/media/markdown.md"
             },
             "completionEvents": [
               "onSettingChanged:getting-started-sample.sampleSetting"
@@ -411,7 +411,7 @@
             "title": "4. Make Changes ⌨️",
             "description": "This step will change a setting and check off when the setting has changed\n[Change Setting](command:getting-started-sample.changeSetting)",
             "media": {
-              "markdown": "media/markdown.md"
+              "markdown": "assets/media/markdown.md"
             },
             "completionEvents": [
               "onSettingChanged:getting-started-sample.sampleSetting"
@@ -422,7 +422,7 @@
             "title": "5. Save and Play! 💾",
             "description": "This step will change a setting and check off when the setting has changed\n[Change Setting](command:getting-started-sample.changeSetting)",
             "media": {
-              "markdown": "media/markdown.md"
+              "markdown": "assets/media/markdown.md"
             },
             "completionEvents": [
               "onSettingChanged:getting-started-sample.sampleSetting"
@@ -433,7 +433,7 @@
             "title": "6. Install Console++ 😎👉👉",
             "description": "This step will change a setting and check off when the setting has changed\n[Change Setting](command:getting-started-sample.changeSetting)",
             "media": {
-              "markdown": "media/markdown.md"
+              "markdown": "assets/media/markdown.md"
             },
             "completionEvents": [
               "onSettingChanged:getting-started-sample.sampleSetting"
@@ -444,7 +444,7 @@
             "title": "7. Include External Files",
             "description": "This step will change a setting and check off when the setting has changed\n[Change Setting](command:getting-started-sample.changeSetting)",
             "media": {
-              "markdown": "media/markdown.md"
+              "markdown": "assets/media/markdown.md"
             },
             "completionEvents": [
               "onSettingChanged:getting-started-sample.sampleSetting"
@@ -455,7 +455,7 @@
             "title": "8. Open Console++",
             "description": "This step will change a setting and check off when the setting has changed\n[Change Setting](command:getting-started-sample.changeSetting)",
             "media": {
-              "markdown": "media/markdown.md"
+              "markdown": "assets/media/markdown.md"
             },
             "completionEvents": [
               "onSettingChanged:getting-started-sample.sampleSetting"
@@ -466,7 +466,7 @@
             "title": "Done 🎉",
             "description": "This step will change a setting and check off when the setting has changed\n[Change Setting](command:getting-started-sample.changeSetting)",
             "media": {
-              "markdown": "media/markdown.md"
+              "markdown": "assets/media/markdown.md"
             },
             "completionEvents": [
               "onSettingChanged:getting-started-sample.sampleSetting"
@@ -477,7 +477,7 @@
     ]
   },
   "qna": "false",
-  "icon": "media/marketplace/icon.png",
+  "icon": "assets/media/marketplace/icon.png",
   "galleryBanner": {
     "color": "#1F1F23",
     "theme": "dark"
