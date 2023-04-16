@@ -96,7 +96,7 @@
       {
         "language": "tso",
         "scopeName": "source.tso",
-        "path": "./syntaxes/tso.tmLanguage.json"
+        "path": ".assets/syntaxes/tso.tmLanguage.json"
       }
     ],
     "commands": [

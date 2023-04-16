@@ -1,3 +1,8 @@
+/**
+ * @file Window Manager
+ * This file is responsible for managing the windows, mainly prompts.
+ */
+
 import * as vscode from 'vscode'
 type Prompt = () => Promise<boolean>
 type PromptMap = Record<string, Prompt>

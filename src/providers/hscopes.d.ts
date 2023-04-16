@@ -1,3 +1,9 @@
+/**
+ * @file HScopes API
+ * This file contains the API for the HScopes extension. It is used to get the scope at a position
+ * in a document. The types are copied from the HScopes extension.
+ */
+
 import type * as vscode from 'vscode'
 
 /**

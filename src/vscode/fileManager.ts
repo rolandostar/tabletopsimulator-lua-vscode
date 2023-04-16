@@ -1,3 +1,10 @@
+/**
+ * @file File Manager
+ * This class is used to manage files. It's used to write files, check if they exist, and more.
+ * By default it uses the workspace directory as the root directory.
+ * This can be changed by passing `false` to the `fromWorkDir` parameter in the constructor.
+ */
+
 import { normalize, join, dirname } from 'path'
 import { Uri, workspace, window, type TextEditor } from 'vscode'
 import { getWorkDir } from './workspaceManager'

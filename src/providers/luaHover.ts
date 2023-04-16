@@ -1,3 +1,9 @@
+/**
+ * @file Lua Hover Provider
+ * This provider is used to provide hovers for lua files. It's currently only used to hightlight
+ * objects in the game when hovering over their GUID.
+ */
+
 import * as fs from 'fs'
 import * as path from 'path'
 import * as vscode from 'vscode'

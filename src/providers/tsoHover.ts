@@ -1,3 +1,9 @@
+/**
+ * @file TSO Hover Provider
+ * This provider is used to provide hovers for TSO files. It's currently only used to hightlight
+ * objects in the game when hovering over their GUID in the embedded lua language.
+ */
+
 import { type HoverProvider, type TextDocument, type Position, type Hover } from 'vscode'
 import executeVirtualCommand from '@utils/requestForwarder'
 

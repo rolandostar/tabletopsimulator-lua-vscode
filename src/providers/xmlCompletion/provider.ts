@@ -15,7 +15,7 @@ export default class XMLCompletionProvider implements CompletionItemProvider {
   public async preload (): Promise<void> {
     const extPath = LSS.get<string>('extensionPath')
     if (extPath === undefined) return
-    const apiFs = new FileManager(join(extPath, 'apis/userInterface.json'), false)
+    const apiFs = new FileManager(join(extPath, 'assets/apis/userInterface.json'), false)
     const api = JSON.parse(await apiFs.read())
     this.xmlCompletion = new XMLCompletion(api)
   }

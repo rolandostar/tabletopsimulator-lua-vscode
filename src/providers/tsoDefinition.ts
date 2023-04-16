@@ -1,3 +1,9 @@
+/**
+ * @file TSO Definition Provider
+ * This provider is used to provide definitions for TSO files. It's currenlty only used to allow
+ * jumping to required files for the embedded lua language.
+ */
+
 import {
   type DefinitionProvider, type TextDocument, type Position, type CancellationToken, type Location,
   type Uri, type LocationLink, type Definition, type DefinitionLink, type Range
@@ -10,7 +16,7 @@ export class TSODefinitionProvider implements DefinitionProvider {
     Promise<Definition | DefinitionLink[] | null> {
     return (await executeVirtualCommand<Location[] | LocationLink[]>({
       command: 'vscode.executeDefinitionProvider',
-      allowedAuthorities: ['lua', 'xml', 'yaml'],
+      allowedAuthorities: ['lua'],
       document,
       position
     }))?.map((loc: Location | LocationLink) => {

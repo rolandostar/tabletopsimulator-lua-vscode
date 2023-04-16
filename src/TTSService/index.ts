@@ -1,3 +1,10 @@
+/**
+ * @file TTSService
+ * This file is the entry point for the TTS Service. It is responsible for:
+ * - Registering listeners which are event driven functions incoming from the game
+ * - Exporting methods which can be called from the extension
+ */
+
 import { Disposable } from 'vscode'
 import EditorApi from './CustomExternalEditorApi'
 import listeners from './listeners'

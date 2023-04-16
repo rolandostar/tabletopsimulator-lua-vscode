@@ -1,3 +1,9 @@
+/**
+ * @file Lua Definition Provider
+ * This provider is used to provide definitions for lua files. It's currenlty only used to allow
+ * jumping to required files.
+ */
+
 import { type DefinitionProvider, type TextDocument, type Position, type CancellationToken, Location, Uri, type Definition, type DefinitionLink, Range } from 'vscode'
 
 export class LuaDefinitionProvider implements DefinitionProvider {

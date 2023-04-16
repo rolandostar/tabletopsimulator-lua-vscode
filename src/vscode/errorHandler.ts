@@ -1,3 +1,7 @@
+/**
+ * @file Error Handler - Handles errors thrown by the extension
+ */
+
 import { type FileSystemError, window } from 'vscode'
 import L from '@/i18n'
 

@@ -10,6 +10,19 @@ import { type IncomingJsonObject } from '@matanlurey/tts-editor'
 import { window } from 'vscode'
 import { getEditorApi } from '..'
 
+export default async function getScripts (): Promise<void> {
+  if (!await prompts.getScriptsConfirmed()) return
+  // Add folder to workspace (if not already there)
+  const res = await getEditorApi().getLuaScripts()
+  // If not in a git workdir, that's all we gotta do
+  if (isWorkdirDefault()) {
+    await addWorkDir()
+    writeFiles(res.scriptStates)
+  } else {
+    console.log('Soemthing else that has to do with git repos')
+  }
+}
+
 // Extend IncomingJsonObject to include an additional prop called, "json"
 type IncomingGameObject = IncomingJsonObject & { json?: string }
 
@@ -60,17 +73,4 @@ function writeFiles (objects: IncomingGameObject[]): void {
   if (autoOpen === 'Global') void (new FileManager('Global.-1.lua').open())
   statusBar.dispose()
   quickStatus(`$(cloud-download) Received ${objects.length} scripts from TTS`)
-}
-
-export default async function getScripts (): Promise<void> {
-  if (!await prompts.getScriptsConfirmed()) return
-  // Add folder to workspace (if not already there)
-  const res = await getEditorApi().getLuaScripts()
-  // If not in a git workdir, that's all we gotta do
-  if (isWorkdirDefault()) {
-    await addWorkDir()
-    writeFiles(res.scriptStates)
-  } else {
-    console.log('Soemthing else that has to do with git repos')
-  }
 }

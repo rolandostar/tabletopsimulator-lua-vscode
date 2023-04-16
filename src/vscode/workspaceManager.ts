@@ -1,3 +1,11 @@
+/**
+ * @file Workspace Manager
+ * This file contains the workspace manager. It is used to manage the workspace directory.
+ * The workspace directory is the directory where all the files are written to.
+ * By default this is the OS's temporary directory.
+ * This can be changed by the user when clicking the status bar item.
+ */
+
 import { tmpdir } from 'os'
 import { basename, join } from 'path'
 import {

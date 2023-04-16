@@ -1,3 +1,8 @@
+/**
+ * @file Status Bar Manager
+ * This file contains functions to create and manage status bar items
+ */
+
 import { type StatusBarItem, StatusBarAlignment, window, MarkdownString, ThemeColor } from 'vscode'
 
 /**

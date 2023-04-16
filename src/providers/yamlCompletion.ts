@@ -1,6 +1,11 @@
+/**
+ * @file YAML Completion Provider
+ * Currently unused
+ */
+
 // import getConfig from '@utils/getConfig'
 import {
-  type CancellationToken, type CompletionContext, CompletionItem, type CompletionList,
+  type CancellationToken, type CompletionContext, type CompletionItem, type CompletionList,
   type Position, type TextDocument, type CompletionItemProvider
 } from 'vscode'
 
@@ -16,7 +21,7 @@ export default class YAMLCompletionProvider implements CompletionItemProvider {
     // const text = document.getText(range)
     // console.log(text)
     return [
-      new CompletionItem('A YAML suggestion')
+      // new CompletionItem('A YAML suggestion')
     ]
   }
 }

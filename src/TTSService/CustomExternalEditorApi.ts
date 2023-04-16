@@ -1,3 +1,10 @@
+/**
+ * @file Custom External Editor API
+ * This file contains the API for the external editor. It is used to communicate with the game.
+ * It is a modified version of the original API, which is located in the @matanlurey/tts-editor package.
+ * I've added some error handling to make it easier to debug when things are going wrong.
+ */
+
 import getConfig from '@/lib/utils/getConfig'
 import { handleMultipleInstances, handleGameNotRunning } from '@/vscode/errorHandler'
 import ExternalEditorApi, { type JsonMessage, type Options } from '@matanlurey/tts-editor'

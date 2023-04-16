@@ -1,3 +1,9 @@
+/**
+ * @file TSO Completion Provider
+ * This provider is used to provide completion items for the root scope of a TSO document.
+ * It will delegate to the appropriate language server when the cursor is in an embedded scope.
+ */
+
 import {
   type CancellationToken, type CompletionContext, type CompletionItem, type CompletionList,
   type Position, type TextDocument, type CompletionItemProvider
