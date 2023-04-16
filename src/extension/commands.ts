@@ -1,16 +1,19 @@
-import type * as vscode from 'vscode'
-// import ttsLuaCompletionProvider from '@/providers/luaCompletion'
-import { getScripts, saveAndPlay } from '@/TTSService'
-import { changeWorkDir } from '@/vscode/workspaceManager'
-
 /**
+ * @file Command Manager
  * Commands are functions which are called when the user invokes a command.
  * They are registered in the `package.json` file.
+ *
+ * This file defines a command array which is used to register all commands.
  *
  * For commands being called within classes, make sure to wrap the function call
  * instead of passing the function itself, e.g. `() => { myInstance.myMethod() }`.
  * This ensures that the correct `this` context is used.
  */
+
+import type * as vscode from 'vscode'
+import { getScripts, saveAndPlay } from '@/TTSService'
+import { changeWorkDir } from '@/vscode/workspaceManager'
+
 export default [
   // {
   //   id: 'ttslua.forceAutocompleteUpdate',

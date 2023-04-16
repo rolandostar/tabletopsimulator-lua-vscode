@@ -1,16 +1,22 @@
+/**
+ * @file Request Forwarder
+ * This file contains the logic for forwarding requests to the correct language server,
+ * used to resolve references, definitions, for embedded languages. It also contains
+ * the logic for extracting sections from a document, and creating a virutal document
+ * to forward to any available language server.
+ */
+
 import { hs, triggers, virtualDocumentContents } from '@/providers'
 import { Uri, type Position, commands, type TextDocument } from 'vscode'
 
-/**
- * Available types of sections
- */
+// Available types of sections
 enum SectionType {
   Lua = 'script',
   XML = 'ui',
   yaml = 'object',
 }
 
-// export some type where the key is a string and the value is a SectionType
+// Export some type where the key is a string and the value is a SectionType
 const AuthorityToType: Record<string, SectionType> = {
   lua: SectionType.Lua,
   xml: SectionType.XML,
@@ -39,6 +45,12 @@ function extract (type: SectionType, document: TextDocument): string {
   return result
 }
 
+/**
+ * By specifiying the command, authority, and document related information, a virtual document
+ * is created and forwarded to the correct language server depending on authority.
+ *
+ * @returns The result of the command, or null if the command was not allowed
+ */
 export default async function executeVirtualCommand<T> ({
   command,
   allowedAuthorities,

@@ -1,3 +1,9 @@
+/**
+ * @file Table Generator
+ * This file generates an html table based on behaviour found in the api.json file.
+ * It is used to generate the tables in the documentation section of autocompletion items
+ */
+
 /* eslint-disable no-multi-spaces */
 /* eslint-disable @typescript-eslint/key-spacing */
 // Acording to: https://api.tabletopsimulator.com/types/#common-standards

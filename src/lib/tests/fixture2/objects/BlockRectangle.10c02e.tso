@@ -20,10 +20,9 @@ function onLoad()
     end
 end
 
-function wdwda()
-  Player.
+function onLoad()
+  local hello = getObnjectFromGUID("something")
 end
-
 ```
 
 ```ui

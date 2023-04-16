@@ -1,5 +1,13 @@
+/**
+ * @file Local Storage Service
+ * This file exports utility functions used to read and write to the extension's storage.
+ * The storage is used to store the extension's state between sessions.
+ * This could be a Key-Value store, with get, set, querySet, upsert and clear functions.
+ * Or file-based storage, with read, write and erase functions.
+ */
+
 import { FileManager } from '@/vscode/fileManager'
-import { Uri, type Memento, type ExtensionContext } from 'vscode'
+import { Uri, type Memento } from 'vscode'
 
 let kvStorage: Memento | undefined
 let storageUri: Uri | undefined

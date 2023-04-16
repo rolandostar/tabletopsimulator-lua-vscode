@@ -1,3 +1,12 @@
+/** UNUSED
+ * @file Language Client Builder
+ * This file defines a language client builder function which is used to create a language client.
+ * The language client is used to communicate with the language server, to provide features like
+ * diagnostics, completion, etc.
+ *
+ * This is all now handled directly with providers instead of having to communicate in this way.
+ */
+
 import {
   RevealOutputChannelOn, LanguageClient, TransportKind, type LanguageClientOptions
 } from 'vscode-languageclient/node'
@@ -41,3 +50,12 @@ export default (context: ExtensionContext): LanguageClient => {
     throw err
   }
 }
+
+/**
+ * USAGE:
+ *
+ * import langClientBuilder from './langClient'
+ * const langClient = langClientBuilder(context)
+ * context.subscriptions.push(new Disposable(langClient.dispose))
+ * await langClient.start()
+ */

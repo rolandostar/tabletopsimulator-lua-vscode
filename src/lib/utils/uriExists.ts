@@ -1,3 +1,8 @@
+/**
+ * @file Uri Exists Utility
+ * Simply checks if the given Uri exists, throws if not
+ */
+
 import { workspace, type FileSystemError, type Uri } from 'vscode'
 import L from '@/i18n'
 
