@@ -1,0 +1,39 @@
+Name: HandTrigger
+Transform:
+  posX: -12.39975
+  posY: 3.66349649
+  posZ: 12.1996841
+  rotX: 0
+  rotY: 135.000015
+  rotZ: 0
+  scaleX: 9.413996
+  scaleY: 8.961139
+  scaleZ: 5.465843
+Nickname: ""
+Description: ""
+GMNotes: ""
+AltLookAngle:
+  x: 0
+  y: 0
+  z: 0
+ColorDiffuse:
+  r: 0.905
+  g: 0.898
+  b: 0.171999961
+  a: 0
+LayoutGroupSortIndex: 0
+Value: 0
+Locked: true
+Grid: false
+Snap: true
+IgnoreFoW: false
+MeasureMovement: false
+DragSelectable: true
+Autoraise: true
+Sticky: true
+Tooltip: true
+GridProjection: false
+HideWhenFaceDown: false
+Hands: false
+FogColor: Yellow
+LuaScriptState: ""

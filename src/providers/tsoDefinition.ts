@@ -8,7 +8,7 @@ import {
   type DefinitionProvider, type TextDocument, type Position, type CancellationToken, type Location,
   type Uri, type LocationLink, type Definition, type DefinitionLink, type Range
 } from 'vscode'
-import executeVirtualCommand from '@utils/requestForwarder'
+import executeVirtualCommand from '@/utils/requestForwarder'
 
 export class TSODefinitionProvider implements DefinitionProvider {
   public async provideDefinition (

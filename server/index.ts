@@ -1,3 +1,8 @@
+/** UNUSED
+ * @file Sample server
+ * This file contains a sample server that can be used to test the language client
+ */
+
 import {
   CodeAction, CodeActionKind, Command, createConnection, Diagnostic, DiagnosticSeverity, Position,
   Range, TextDocumentEdit, TextDocuments, TextDocumentSyncKind, TextEdit

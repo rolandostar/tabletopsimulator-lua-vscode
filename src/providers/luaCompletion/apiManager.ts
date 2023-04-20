@@ -5,7 +5,7 @@
  */
 
 import L from '@/i18n'
-import * as LSS from '@utils/LocalStorageService'
+import * as LSS from '@/utils/LocalStorageService'
 import fetch from 'node-fetch'
 
 interface Basic {
@@ -39,11 +39,9 @@ export interface DownloadedAPI {
 const defaultDownloadedApiPath = 'completion/luaApi.json'
 
 export async function loadApi (): Promise<DownloadedAPI> {
-  console.log('Loading API')
   return await LSS.read(defaultDownloadedApiPath).then(async r => JSON.parse(r))
 }
 
 export async function downloadApi (): Promise<DownloadedAPI> {
-  console.log('Downloading API')
   return await fetch(L.urls.luaCompletionApi()).then(async r => await r.json() as DownloadedAPI)
 }

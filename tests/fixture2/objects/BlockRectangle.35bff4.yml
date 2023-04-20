@@ -1,0 +1,37 @@
+Name: BlockRectangle
+Transform:
+  posX: 3.92278457
+  posY: 1.497485
+  posZ: -12.3212528
+  rotX: 2.169016
+  rotY: 359.973053
+  rotZ: 0.001833515
+  scaleX: 1
+  scaleY: 1
+  scaleZ: 1
+Nickname: ""
+Description: ""
+GMNotes: ""
+AltLookAngle:
+  x: 0
+  y: 0
+  z: 0
+ColorDiffuse:
+  r: 0
+  g: 0.201567829
+  b: 0.8235294
+LayoutGroupSortIndex: 0
+Value: 0
+Locked: false
+Grid: true
+Snap: true
+IgnoreFoW: false
+MeasureMovement: false
+DragSelectable: true
+Autoraise: true
+Sticky: true
+Tooltip: true
+GridProjection: false
+HideWhenFaceDown: false
+Hands: false
+LuaScriptState: ""

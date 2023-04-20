@@ -3,7 +3,7 @@
  * Currently unused
  */
 
-// import getConfig from '@utils/getConfig'
+// import getConfig from '@/utils/getConfig'
 import {
   type CancellationToken, type CompletionContext, type CompletionItem, type CompletionList,
   type Position, type TextDocument, type CompletionItemProvider

@@ -10,7 +10,7 @@ import {
 } from 'vscode'
 import { hs } from '.'
 import { SnippetString } from 'vscode'
-import executeVirtualCommand from '@utils/requestForwarder'
+import executeVirtualCommand from '@/utils/requestForwarder'
 /**
  * Provides completion items for the root scope of a TSO document
  * @implements {CompletionItemProvider}

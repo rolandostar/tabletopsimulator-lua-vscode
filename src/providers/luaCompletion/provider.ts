@@ -1,4 +1,4 @@
-import getConfig from '@utils/getConfig'
+import getConfig from '@/utils/getConfig'
 import {
   type CompletionItemProvider, type TextDocument, type Position, type CancellationToken,
   type CompletionContext, CompletionItem, type CompletionList, CompletionItemKind, SnippetString,

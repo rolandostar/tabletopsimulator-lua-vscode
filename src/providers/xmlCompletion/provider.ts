@@ -1,10 +1,10 @@
-import getConfig from '@utils/getConfig'
+import getConfig from '@/utils/getConfig'
 import {
   type CompletionItem, type CompletionList, type Position, type TextDocument,
   type CompletionItemProvider
 } from 'vscode'
 import { type LineToken, hs } from '..'
-import * as LSS from '@utils/LocalStorageService'
+import * as LSS from '@/utils/LocalStorageService'
 import { FileManager } from '@/vscode/fileManager'
 import { join } from 'path'
 import { XMLCompletion } from '.'

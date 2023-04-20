@@ -1,0 +1,41 @@
+Name: Bag
+Transform:
+  posX: 6.41818428
+  posY: 0.774968565
+  posZ: -9.853162
+  rotX: 0.00006934488
+  rotY: -0.005096735
+  rotZ: -0.0000571925775
+  scaleX: 1
+  scaleY: 1
+  scaleZ: 1
+Nickname: AnotherBag
+Description: ""
+GMNotes: ""
+AltLookAngle:
+  x: 0
+  y: 0
+  z: 0
+ColorDiffuse:
+  r: 0.7058823
+  g: 0.366520882
+  b: 0
+LayoutGroupSortIndex: 0
+Value: 0
+Locked: false
+Grid: true
+Snap: true
+IgnoreFoW: false
+MeasureMovement: false
+DragSelectable: true
+Autoraise: true
+Sticky: true
+Tooltip: true
+GridProjection: false
+HideWhenFaceDown: false
+Hands: false
+MaterialIndex: -1
+MeshIndex: -1
+Bag:
+  Order: 0
+LuaScriptState: ""

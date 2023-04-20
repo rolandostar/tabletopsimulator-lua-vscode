@@ -1,0 +1,37 @@
+Name: BlockSquare
+Transform:
+  posX: -6.97556448
+  posY: 1.46000087
+  posZ: -6.50315332
+  rotX: 0.000004832771
+  rotY: 2.297129
+  rotZ: 180.000015
+  scaleX: 1
+  scaleY: 1
+  scaleZ: 1
+Nickname: Red
+Description: ""
+GMNotes: ""
+AltLookAngle:
+  x: 0
+  y: 0
+  z: 0
+ColorDiffuse:
+  r: 0.9264706
+  g: 0
+  b: 0
+LayoutGroupSortIndex: 0
+Value: 0
+Locked: false
+Grid: true
+Snap: true
+IgnoreFoW: false
+MeasureMovement: false
+DragSelectable: true
+Autoraise: true
+Sticky: true
+Tooltip: true
+GridProjection: false
+HideWhenFaceDown: false
+Hands: false
+LuaScriptState: ""

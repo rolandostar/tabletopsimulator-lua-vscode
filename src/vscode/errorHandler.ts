@@ -27,3 +27,20 @@ export function handleMultipleInstances (): void {
   })
   throw new Error('Multiple instances')
 }
+
+export function handleWorkDirNotPresent (): void {
+  void window.showErrorMessage(
+    'The workspace does not contain the selected Working Directory.\n' +
+      'Get Lua Scripts from game before trying to Save and Play.',
+    { modal: true }
+  )
+  throw new Error('WorkDir not present')
+}
+
+export function handleNoSavePathStored (): void {
+  void window.showErrorMessage(
+    'Error occured while saving, please reload your game before trying to Save and Play.',
+    { modal: true }
+  )
+  throw new Error('No save path stored')
+}

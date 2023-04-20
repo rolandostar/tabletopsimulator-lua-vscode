@@ -1,0 +1,88 @@
+Name: BlockTriangle
+Transform:
+  posX: 2.40659976
+  posY: 1.17424655
+  posZ: -9.110181
+  rotX: 0.000149305939
+  rotY: 0.000302430039
+  rotZ: -0.000012292624
+  scaleX: 1
+  scaleY: 1
+  scaleZ: 1
+Nickname: ""
+Description: ""
+GMNotes: ""
+AltLookAngle:
+  x: 0
+  y: 0
+  z: 0
+ColorDiffuse:
+  r: 0.00539905
+  g: 0.772058845
+  b: 0
+LayoutGroupSortIndex: 0
+Value: 0
+Locked: false
+Grid: true
+Snap: true
+IgnoreFoW: false
+MeasureMovement: false
+DragSelectable: true
+Autoraise: true
+Sticky: true
+Tooltip: true
+GridProjection: false
+HideWhenFaceDown: false
+Hands: false
+LuaScriptState: ""
+ChildObjects:
+  - GUID: "729151"
+    Name: Custom_Token
+    Transform:
+      posX: -3.94343019
+      posY: 0.6197422
+      posZ: -2.88400221
+      rotX: 0.001176927
+      rotY: 326.490723
+      rotZ: 342.1884
+      scaleX: 1
+      scaleY: 1
+      scaleZ: 0.9999998
+    Nickname: ""
+    Description: ""
+    GMNotes: ""
+    AltLookAngle:
+      x: 0
+      y: 0
+      z: 0
+    ColorDiffuse:
+      r: 1
+      g: 1
+      b: 1
+    LayoutGroupSortIndex: 0
+    Value: 0
+    Locked: false
+    Grid: true
+    Snap: true
+    IgnoreFoW: false
+    MeasureMovement: false
+    DragSelectable: true
+    Autoraise: true
+    Sticky: true
+    Tooltip: true
+    GridProjection: false
+    HideWhenFaceDown: false
+    Hands: false
+    CustomImage:
+      ImageURL: https://i.guim.co.uk/img/media/26392d05302e02f7bf4eb143bb84c8097d09144b/446_167_3683_2210/master/3683.jpg?width=1200&quality=85&auto=format&fit=max&s=a52bbe202f57ac0f5ff7f47166906403
+      ImageSecondaryURL: ""
+      ImageScalar: 1
+      WidthScale: 0
+      CustomToken:
+        Thickness: 0.2
+        MergeDistancePixels: 15
+        StandUp: false
+        Stackable: false
+    LuaScript: ""
+    LuaScriptState: ""
+    XmlUI: ""

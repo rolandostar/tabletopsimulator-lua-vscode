@@ -1,4 +1,4 @@
-import { TableGenerator } from '@utils/tableGen'
+import { TableGenerator } from '@/utils/tableGen'
 import {
   CompletionItem,
   CompletionItemKind, MarkdownString, SnippetString

@@ -1,0 +1,109 @@
+TabStates:
+  "0":
+    title: Rules
+    body: ""
+    color: Grey
+    visibleColor:
+      r: 0.5
+      g: 0.5
+      b: 0.5
+    id: 0
+  "1":
+    title: White
+    body: ""
+    color: White
+    visibleColor:
+      r: 1
+      g: 1
+      b: 1
+    id: 1
+  "2":
+    title: Brown
+    body: ""
+    color: Brown
+    visibleColor:
+      r: 0.443
+      g: 0.231
+      b: 0.09
+    id: 2
+  "3":
+    title: Red
+    body: ""
+    color: Red
+    visibleColor:
+      r: 0.856
+      g: 0.1
+      b: 0.094
+    id: 3
+  "4":
+    title: Orange
+    body: ""
+    color: Orange
+    visibleColor:
+      r: 0.956
+      g: 0.392
+      b: 0.113
+    id: 4
+  "5":
+    title: Edited Title
+    body: This tab was edited via script.
+    color: Yellow
+    visibleColor:
+      r: 0.905
+      g: 0.898
+      b: 0.172
+    id: 5
+  "6":
+    title: Green
+    body: ""
+    color: Green
+    visibleColor:
+      r: 0.192
+      g: 0.701
+      b: 0.168
+    id: 6
+  "7":
+    title: Blue
+    body: ""
+    color: Blue
+    visibleColor:
+      r: 0.118
+      g: 0.53
+      b: 1
+    id: 7
+  "8":
+    title: Teal
+    body: ""
+    color: Teal
+    visibleColor:
+      r: 0.129
+      g: 0.694
+      b: 0.607
+    id: 8
+  "9":
+    title: Purple
+    body: ""
+    color: Purple
+    visibleColor:
+      r: 0.627
+      g: 0.125
+      b: 0.941
+    id: 9
+  "10":
+    title: Pink
+    body: ""
+    color: Pink
+    visibleColor:
+      r: 0.96
+      g: 0.439
+      b: 0.807
+    id: 10
+  "11":
+    title: Black
+    body: ""
+    color: Black
+    visibleColor:
+      r: 0.25
+      g: 0.25
+      b: 0.25
+    id: 11

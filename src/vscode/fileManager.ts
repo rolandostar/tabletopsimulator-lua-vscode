@@ -6,9 +6,9 @@
  */
 
 import { normalize, join, dirname } from 'path'
-import { Uri, workspace, window, type TextEditor } from 'vscode'
+import { Uri, workspace, window, type TextEditor, Position } from 'vscode'
 import { getWorkDir } from './workspaceManager'
-import uriExists from '@utils/uriExists'
+import uriExists from '@/utils/uriExists'
 
 export class FileManager {
   private readonly FileUri: Uri
@@ -32,8 +32,17 @@ export class FileManager {
     return (await Promise.resolve(workspace.fs.readFile(this.FileUri))).toString()
   }
 
-  public async open ({ preserveFocus = true, preview = false } = {}): Promise<TextEditor> {
+  public async show ({ preserveFocus = true, preview = false } = {}): Promise<TextEditor> {
     return await Promise.resolve(window.showTextDocument(this.FileUri, { preserveFocus, preview }))
+  }
+
+  public async open (content: string, { preserveFocus = true, preview = false } = {}): Promise<TextEditor> {
+    const doc = await workspace.openTextDocument(this.FileUri.with({ scheme: 'untitled' }))
+    const editor = await window.showTextDocument(doc, { preserveFocus, preview })
+    await editor.edit((edit) => {
+      edit.insert(new Position(0, 0), content)
+    })
+    return editor
   }
 
   public async erase (): Promise<void> {

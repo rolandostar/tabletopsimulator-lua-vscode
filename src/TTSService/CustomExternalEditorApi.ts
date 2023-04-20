@@ -5,11 +5,19 @@
  * I've added some error handling to make it easier to debug when things are going wrong.
  */
 
-import getConfig from '@/lib/utils/getConfig'
+import getConfig from '@/utils/getConfig'
 import { handleMultipleInstances, handleGameNotRunning } from '@/vscode/errorHandler'
 import ExternalEditorApi, { type JsonMessage, type Options } from '@matanlurey/tts-editor'
 import { Socket } from 'net'
-// import { handleGameNotRunning, handleMultipleInstances } from '../utils/errorHandling';
+
+export interface GameObject {
+  objectProps?: string
+  location?: string
+  script?: string
+  ui?: string
+  name: string
+  guid: string
+}
 
 export default class CustomExternalEditorApi extends ExternalEditorApi {
   constructor (options: Options = {}) {

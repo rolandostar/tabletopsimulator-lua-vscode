@@ -13,7 +13,7 @@ import {
   type WorkspaceFoldersChangeEvent,
   type WorkspaceFolder, Disposable
 } from 'vscode'
-import * as LSS from '@utils/LocalStorageService'
+import * as LSS from '@/utils/LocalStorageService'
 import { changeTheme, createStatusBarItem } from './statusBarManager'
 import L from '@/i18n'
 import { workDirCreateFailed } from './errorHandler'
@@ -26,7 +26,7 @@ const statusBarItem = createStatusBarItem({
   tooltip: L.workDir.hover()
 })
 let workDirUri = Uri.file(defaultWorkDir)
-export function getWorkDir (): Uri { return workDirUri }
+
 /**
  * @returns True if currently selected workDir is the default workDir
  */
@@ -35,6 +35,12 @@ export function isWorkdirDefault (): boolean {
     sensitivity: 'accent'
   }) === 0
 }
+
+/**
+ * This function will return the current workDir as URI
+ * @returns The current workDir
+ */
+export function getWorkDir (): Uri { return workDirUri }
 
 /**
  * Calling this function will reset the workDir to the default workDir
@@ -183,8 +189,16 @@ export async function addWorkDir (): Promise<void> {
 export async function addDir (dir: string, name?: string): Promise<void> {
   const uri = Uri.file(dir)
   const vsFolders = workspace.workspaceFolders
-  console.log(workspace.updateWorkspaceFolders(vsFolders?.length ?? 0, null, {
+  workspace.updateWorkspaceFolders(vsFolders?.length ?? 0, null, {
     uri,
     name: name ?? basename(uri.fsPath)
-  }))
+  })
+}
+
+export function isPresentInWorkspace (dirUri: Uri): boolean {
+  const vsFolders = workspace.workspaceFolders
+  // If there are no folders in the workspace,
+  // OR the requested dir in the workspace do not match any vscode folders path...
+  return (vsFolders !== undefined) &&
+    vsFolders.findIndex(vsDir => vsDir.uri.fsPath === dirUri.fsPath) !== -1
 }

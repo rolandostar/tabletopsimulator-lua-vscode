@@ -32,28 +32,23 @@
   ],
   "dependencies": {
     "@matanlurey/tts-editor": "github:rolandostar/tts-editor#dist",
+    "@matanlurey/tts-save-files": "github:matanlurey/tts-save-format",
     "@vscode/codicons": "^0.0.32",
     "axios": "^1.1.2",
     "glob": "^8.0.3",
     "html-escaper": "^3.0.3",
-    "js-yaml": "^4.1.0",
     "luabundle": "^1.6.0",
     "node-fetch": "^3.3.1",
     "nodejs-file-downloader": "^4.10.2",
-    "require-module-from-string": "^1.0.19",
     "typesafe-i18n": "^5.24.3",
-    "vscode-languageclient": "^8.1.0",
-    "vscode-languageserver": "^8.1.0",
-    "vscode-languageserver-textdocument": "^1.0.8"
+    "yaml": "^2.2.1"
   },
   "devDependencies": {
-    "@apidevtools/json-schema-ref-parser": "^10.1.0",
     "@types/node": "^18.15.11",
     "@types/vscode": "^1.77.0",
     "@types/webpack-env": "^1.18.0",
     "@typescript-eslint/eslint-plugin": "^5.57.0",
     "@typescript-eslint/parser": "^5.57.0",
-    "concurrently": "^8.0.1",
     "copy-webpack-plugin": "^11.0.0",
     "eslint": "^8.37.0",
     "eslint-config-standard-with-typescript": "^34.0.1",
@@ -87,8 +82,8 @@
           ".tso"
         ],
         "icon": {
-          "light": "assets/meedia/tts.svg",
-          "dark": "assets/meedia/tts.svg"
+          "light": "assets/media/tts.svg",
+          "dark": "assets/media/tts.svg"
         }
       }
     ],
@@ -96,7 +91,7 @@
       {
         "language": "tso",
         "scopeName": "source.tso",
-        "path": ".assets/syntaxes/tso.tmLanguage.json"
+        "path": "assets/syntaxes/tso.tmLanguage.json"
       }
     ],
     "commands": [
@@ -104,8 +99,8 @@
         "command": "ttslua.changeObjectView",
         "title": "Toggle TTS view between Lua/XML/Json",
         "icon": {
-          "light": "assets/meedia/arrow-switch_light.svg",
-          "dark": "assets/meedia/arrow-switch.svg"
+          "light": "assets/media/arrow-switch_light.svg",
+          "dark": "assets/media/arrow-switch.svg"
         }
       },
       {
@@ -217,14 +212,12 @@
             ]
           },
           "ttslua.fileManagement.createXML": {
-            "title": "Create XML UI file when object sent from Tabletop Simulator",
             "description": "When an individual object is sent from Tabletop Simulator which has no XML UI, generate a blank XML file for it.",
             "type": "boolean",
             "default": false
           },
           "ttslua.fileManagement.includePaths": {
-            "title": "Additional paths to search for files",
-            "markdownDescription": "Both `~/Documents/Tabletop Simulator` and currently opened Folders in workspace are always included in search path. [Learn More](https://tts-vscode.rolandostar.com/extension/moduleResolution)\n\neg. `C:\\Users\\<YourName>\\MyTTSFiles\\`",
+            "markdownDescription": "Additional paths to search for files\nBoth `~/Documents/Tabletop Simulator` and currently opened Folders in workspace are always included in search path. [Learn More](https://tts-vscode.rolandostar.com/extension/moduleResolution)\n\neg. `C:\\Users\\<YourName>\\MyTTSFiles\\`",
             "type": "array",
             "items": {
               "type": "string"
@@ -232,8 +225,7 @@
             "default": []
           },
           "ttslua.fileManagement.luaSearchPattern": {
-            "title": "Pattern used to look for require'd files",
-            "markdownDescription": "`?.lua` is always searched for.\n\nDescribed in Lua's [search path patterns](https://www.lua.org/pil/8.1.html).",
+            "markdownDescription": "Pattern used to look for require'd files\n\n`?.lua` is always searched for.\n\nDescribed in Lua's [search path patterns](https://www.lua.org/pil/8.1.html).",
             "type": "array",
             "items": {
               "type": "string"
@@ -244,11 +236,10 @@
             ],
             "minItems": 1
           },
-          "ttslua.fileManagement.saveName": {
-            "title": "How to name saved files",
-            "markdownDescription": "When using version control, how should the save file be named.\n\nExtension will always be `.json`",
-            "type": "string",
-            "default": "savegame"
+          "ttslua.fileManagement.TSO.enabled": {
+            "markdownDescription": "This will allow you to use .tso files in your workspace. This is an experimental feature and may not work as expected. [Learn More](https://tts-vscode.rolandostar.com/extension/tsoFiles)",
+            "type": "boolean",
+            "default": false
           }
         }
       },

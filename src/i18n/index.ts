@@ -1,7 +1,7 @@
 import { loadAllLocales } from '@/i18n/i18n-util.sync'
 import { i18n } from '@/i18n/i18n-util'
 import { type TranslationFunctions, type Locales } from './i18n-types'
-import getConfig from '@/lib/utils/getConfig'
+import getConfig from '@/utils/getConfig'
 
 loadAllLocales()
 

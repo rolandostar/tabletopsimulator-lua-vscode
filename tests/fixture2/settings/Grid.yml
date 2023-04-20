@@ -1,0 +1,18 @@
+Grid:
+  Type: 0
+  Lines: false
+  Color:
+    r: 0
+    g: 0
+    b: 0
+  Opacity: 0.75
+  ThickLines: false
+  Snapping: false
+  Offset: false
+  BothSnapping: false
+  xSize: 2
+  ySize: 2
+  PosOffset:
+    x: 0
+    y: 1
+    z: 0

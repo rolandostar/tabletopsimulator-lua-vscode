@@ -10,12 +10,16 @@
 			"args": [
         "--extensionDevelopmentPath=${workspaceFolder}",
         "--profile=Ext Dev",
-        "${workspaceFolder}/src/lib/tests/fixture2/"
+        "${workspaceFolder}/tests/fixture2/"
       ],
 			"autoAttachChildProcesses": true,
 			"sourceMaps": true,
 			"outFiles": ["${workspaceFolder}/out/**/*.js"],
-			"preLaunchTask": "npm: watch"
+			"preLaunchTask": "npm: watch",
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**/*.js"
+      ]
 		},
     {
 			"name": "Extension Tests",

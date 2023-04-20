@@ -15,7 +15,7 @@ import { type ExtensionContext, commands } from 'vscode'
 
 import myCommands from './commands'
 import { start as TTSServiceInit } from '@/TTSService'
-import { setStorage, set } from '@utils/LocalStorageService'
+import { setStorage, set } from '@/utils/LocalStorageService'
 import { initWorkspace } from '@/vscode/workspaceManager'
 import registerProviders from '@/providers'
 import L from '@/i18n'

@@ -1,0 +1,47 @@
+Name: Custom_Token
+Transform:
+  posX: 7.547165
+  posY: 2.85477328
+  posZ: -9.610309
+  rotX: 356.8825
+  rotY: 150.660919
+  rotZ: 24.891964
+  scaleX: 1
+  scaleY: 1
+  scaleZ: 1
+Nickname: ""
+Description: ""
+GMNotes: ""
+AltLookAngle:
+  x: 0
+  y: 0
+  z: 0
+ColorDiffuse:
+  r: 1
+  g: 1
+  b: 1
+LayoutGroupSortIndex: 0
+Value: 0
+Locked: false
+Grid: true
+Snap: true
+IgnoreFoW: false
+MeasureMovement: false
+DragSelectable: true
+Autoraise: true
+Sticky: true
+Tooltip: true
+GridProjection: false
+HideWhenFaceDown: false
+Hands: false
+CustomImage:
+  ImageURL: placedog.net/150/400
+  ImageSecondaryURL: ""
+  ImageScalar: 1
+  WidthScale: 0
+  CustomToken:
+    Thickness: 0.2
+    MergeDistancePixels: 15
+    StandUp: false
+    Stackable: false
+LuaScriptState: ""

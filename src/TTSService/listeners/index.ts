@@ -2,7 +2,7 @@
  *  This file exports all other files in this directory making use of the importFolder function.
  */
 
-import importFolder from '@utils/importFolder'
+import importFolder from '@/utils/importFolder'
 import {
   type CustomMessage,
   type ErrorMessage,

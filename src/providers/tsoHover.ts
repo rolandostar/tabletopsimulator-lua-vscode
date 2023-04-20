@@ -5,7 +5,7 @@
  */
 
 import { type HoverProvider, type TextDocument, type Position, type Hover } from 'vscode'
-import executeVirtualCommand from '@utils/requestForwarder'
+import executeVirtualCommand from '@/utils/requestForwarder'
 
 /**
  * Provides hover information for embedded lua code
