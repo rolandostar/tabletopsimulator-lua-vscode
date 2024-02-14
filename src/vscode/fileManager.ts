@@ -36,7 +36,19 @@ export class FileManager {
     return await Promise.resolve(window.showTextDocument(this.FileUri, { preserveFocus, preview }))
   }
 
-  public async open (content: string, { preserveFocus = true, preview = false } = {}): Promise<TextEditor> {
+  /**
+   * Open will create a new file with the given content and open it in the editor.
+   * @param content The content to write to the file
+   * @param options Options for the editor
+   * @returns
+   */
+  public async open (
+    content: string,
+    {
+      preserveFocus = true,
+      preview = false
+    } = {}
+  ): Promise<TextEditor> {
     const doc = await workspace.openTextDocument(this.FileUri.with({ scheme: 'untitled' }))
     const editor = await window.showTextDocument(doc, { preserveFocus, preview })
     await editor.edit((edit) => {

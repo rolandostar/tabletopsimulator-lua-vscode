@@ -8,13 +8,13 @@ import { type HScopesAPI } from './hscopes'
 // Completion Providers
 import LuaCompletionProvider from './luaCompletion/provider'
 import XMLCompletionProvider from './xmlCompletion/provider'
-import TSOCompletionProvider from './tsoCompletion'
+// import TSOCompletionProvider from './tsoCompletion'
 import YAMLCompletionProvider from './yamlCompletion'
 // Definition Providers
-import { TSODefinitionProvider } from './tsoDefinition'
+// import { TSODefinitionProvider } from './tsoDefinition'
 import { LuaDefinitionProvider } from './luaDefinition'
 // Hover Providers
-import TSOHoverProvider from './tsoHover'
+// import TSOHoverProvider from './tsoHover'
 import LuaHoverProvider from './luaHover'
 
 // Expose a map of virtual documents to the rest of the providers
@@ -35,21 +35,21 @@ export interface LineToken {
 
 const [
   luaCompletionProvider,
-  tsoCompletionProvider,
+  // tsoCompletionProvider,
   xmlCompletionProvider,
   yamlCompletionProvider,
-  tsoHoverProvider,
+  // tsoHoverProvider,
   luaHoverProvider,
-  tsoDefinitionProvider,
+  // tsoDefinitionProvider,
   luaDefinitionProvider
 ] = [
   new LuaCompletionProvider(),
-  new TSOCompletionProvider(),
+  // new TSOCompletionProvider(),
   new XMLCompletionProvider(),
   new YAMLCompletionProvider(),
-  new TSOHoverProvider(),
+  // new TSOHoverProvider(),
   new LuaHoverProvider(),
-  new TSODefinitionProvider(),
+  // new TSODefinitionProvider(),
   new LuaDefinitionProvider()
 ]
 
@@ -87,11 +87,11 @@ export default function registerProviders (): Disposable[] {
     throw err
   })
   return [
-    languages.registerDefinitionProvider('tso', tsoDefinitionProvider),
+    // languages.registerDefinitionProvider('tso', tsoDefinitionProvider),
     languages.registerDefinitionProvider('lua', luaDefinitionProvider),
-    languages.registerHoverProvider('tso', tsoHoverProvider),
+    // languages.registerHoverProvider('tso', tsoHoverProvider),
     languages.registerHoverProvider('lua', luaHoverProvider),
-    languages.registerCompletionItemProvider('tso', tsoCompletionProvider, ...triggers.lua, ...triggers.xml, ...triggers.yaml),
+    // languages.registerCompletionItemProvider('tso', tsoCompletionProvider, ...triggers.lua, ...triggers.xml, ...triggers.yaml),
     languages.registerCompletionItemProvider('yaml', yamlCompletionProvider, ...triggers.yaml),
     languages.registerCompletionItemProvider('xml', xmlCompletionProvider, ...triggers.xml),
     languages.registerCompletionItemProvider('lua', luaCompletionProvider, ...triggers.lua),

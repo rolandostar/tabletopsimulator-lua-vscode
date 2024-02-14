@@ -2,34 +2,39 @@
  * @file TTSService
  * This file is the entry point for the TTS Service. It is responsible for:
  * - Registering listeners which are event driven functions incoming from the game
- * - Exporting methods which can be called from the extension
+ * The class is a Singleton, so no matter where it is imported, it will always be the same instance.
  */
 
 import { Disposable } from 'vscode'
 import EditorApi from './CustomExternalEditorApi'
 import listeners from './listeners'
 
-import getScripts from './methods/getScripts'
-import saveAndPlay from './methods/saveAndPlay'
+export default class TTSService {
+  private static instance: TTSService
+  private ready: boolean = false
+  public readonly api: EditorApi
+  private readonly disposables: Disposable[]
 
-type InGameObjectsList = Record<string, { name?: string, type?: string, iname?: string }>
+  private constructor () {
+    this.api = new EditorApi()
+    this.disposables = listeners.map(listener => {
+      return new Disposable(this.api.on(listener.file, listener.content.default))
+    })
+  }
 
-const api = new EditorApi()
-const disposables: Disposable[] = listeners.map(listener => {
-  return new Disposable(api.on(listener.file, listener.content.default))
-})
+  public static getInstance (): TTSService {
+    if (TTSService.instance === undefined) TTSService.instance = new TTSService()
+    else if (!TTSService.instance.ready) throw new Error('TTSService is not ready yet')
+    return TTSService.instance
+  }
 
-export function getEditorApi (): EditorApi { return api }
+  public async init (): Promise<Disposable[]> {
+    await this.api.listen()
+    this.ready = true
+    return this.disposables
+  }
 
-export async function start (): Promise<Disposable[]> {
-  await api.listen()
-  return disposables
+  public static getApi (): EditorApi {
+    return TTSService.getInstance().api
+  }
 }
-
-export function getInGameObjects (): InGameObjectsList {
-  return {}
-}
-
-export function executeLuaCode (script: string, guid: string): void {
-}
-export { getScripts, saveAndPlay }

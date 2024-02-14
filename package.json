@@ -8,7 +8,7 @@
   "license": "MIT",
   "engines": {
     "node": ">=12.9.0",
-    "vscode": "^1.77.0"
+    "vscode": "^1.86.0"
   },
   "repository": {
     "type": "git",
@@ -32,37 +32,27 @@
   ],
   "dependencies": {
     "@matanlurey/tts-editor": "github:rolandostar/tts-editor#dist",
-    "@matanlurey/tts-save-files": "github:matanlurey/tts-save-format",
-    "@vscode/codicons": "^0.0.32",
-    "axios": "^1.1.2",
-    "glob": "^8.0.3",
+    "@tts-tools/savefile": "file:../tts-tools/packages/savefile",
+    "@vscode/codicons": "^0.0.35",
     "html-escaper": "^3.0.3",
     "luabundle": "^1.6.0",
-    "node-fetch": "^3.3.1",
-    "nodejs-file-downloader": "^4.10.2",
-    "typesafe-i18n": "^5.24.3",
-    "yaml": "^2.2.1"
+    "node-fetch": "^3.3.2",
+    "typesafe-i18n": "^5.26.2"
   },
   "devDependencies": {
-    "@types/node": "^18.15.11",
-    "@types/vscode": "^1.77.0",
-    "@types/webpack-env": "^1.18.0",
-    "@typescript-eslint/eslint-plugin": "^5.57.0",
-    "@typescript-eslint/parser": "^5.57.0",
-    "copy-webpack-plugin": "^11.0.0",
-    "eslint": "^8.37.0",
-    "eslint-config-standard-with-typescript": "^34.0.1",
-    "eslint-plugin-import": "^2.27.5",
-    "eslint-plugin-n": "^15.7.0",
-    "eslint-plugin-promise": "^6.1.1",
-    "merge-options": "^3.0.4",
-    "rimraf": "^4.4.1",
-    "terser-webpack-plugin": "^5.3.7",
-    "ts-loader": "^9.4.2",
-    "tsconfig-paths-webpack-plugin": "^4.0.1",
-    "typescript": "^5.0.3",
-    "webpack": "^5.77.0",
-    "webpack-cli": "^5.0.1"
+    "@types/node": "^20.11.17",
+    "@types/vscode": "^1.86.0",
+    "@types/webpack-env": "^1.18.4",
+    "@typescript-eslint/parser": "^6.21.0",
+    "copy-webpack-plugin": "^12.0.2",
+    "eslint": "^8.56.0",
+    "eslint-config-standard-with-typescript": "^43.0.1",
+    "terser-webpack-plugin": "^5.3.10",
+    "ts-loader": "^9.5.1",
+    "tsconfig-paths-webpack-plugin": "^4.1.0",
+    "typescript": "^5.3.3",
+    "webpack": "^5.90.1",
+    "webpack-cli": "^5.1.4"
   },
   "activationEvents": [
     "onWebviewPanel:TTSConsole",
@@ -72,37 +62,7 @@
     "onLanguage:lua"
   ],
   "contributes": {
-    "languages": [
-      {
-        "id": "tso",
-        "aliases": [
-          "Tabletop Simulator Object"
-        ],
-        "extensions": [
-          ".tso"
-        ],
-        "icon": {
-          "light": "assets/media/tts.svg",
-          "dark": "assets/media/tts.svg"
-        }
-      }
-    ],
-    "grammars": [
-      {
-        "language": "tso",
-        "scopeName": "source.tso",
-        "path": "assets/syntaxes/tso.tmLanguage.json"
-      }
-    ],
     "commands": [
-      {
-        "command": "ttslua.changeObjectView",
-        "title": "Toggle TTS view between Lua/XML/Json",
-        "icon": {
-          "light": "assets/media/arrow-switch_light.svg",
-          "dark": "assets/media/arrow-switch.svg"
-        }
-      },
       {
         "command": "ttslua.updateCompletionItems",
         "title": "Update IntelliSense with latest TTS API",
@@ -167,7 +127,7 @@
       ],
       "editor/title": [
         {
-          "command": "ttslua.changeObjectView",
+          "command": "ttslua.executeLua",
           "group": "navigation"
         }
       ]
@@ -349,7 +309,7 @@
             "default": false
           },
           "ttslua.misc.host": {
-            "markdownDescription": "The host to use for the extension. [Learn More](http://tts-vscode.rolandostar.com/support/host)",
+            "markdownDescription": "The host to use for the extension.",
             "type": "string",
             "default": "localhost",
             "minLength": 1
@@ -464,6 +424,23 @@
             ]
           }
         ]
+      }
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "ttslua-explorer",
+          "name": "TTS Objects",
+          "icon": "assets/media/tts.svg",
+          "contextualTitle": "TTS Objects",
+          "visibility": "visible"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "ttslua-explorer",
+        "contents": "In order to edit TTS Objects, you must have a Tabletop Simulator game running and a save loaded.\nYou can then load the scripts from the game and start editing!\n[Get Scripts](command:ttslua.getScripts)\nTo learn more about the extension, visit the [documentation](https://tts-vscode.rolandostar.com/)"
       }
     ]
   },

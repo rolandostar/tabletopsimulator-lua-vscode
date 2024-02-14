@@ -10,9 +10,12 @@
  * This ensures that the correct `this` context is used.
  */
 
-import type * as vscode from 'vscode'
-import { getScripts, saveAndPlay } from '@/TTSService'
+import * as vscode from 'vscode'
+// import { getScripts, saveAndPlay } from '@/TTSService'
 import { changeWorkDir } from '@/vscode/workspaceManager'
+import getScripts from '@/TTSService/commands/getScripts'
+import saveAndPlay from '@/TTSService/commands/saveAndPlay'
+import { installConsole } from '@/vendor/installConsolePlusPlus'
 
 export default [
   // {
@@ -31,14 +34,12 @@ export default [
   //   id: 'ttslua.openConsole',
   //   fn: () => TTSConsolePanel.createOrShow(context.extensionUri),
   // },
-  // {
-  //   id: 'ttslua.installConsole',
-  //   fn: () => workspace.installConsole(context.extensionPath),
-  // },
   {
-    id: 'ttslua.changeObjectView',
-    fn: () => {
-      console.log('changeToXML')
+    id: 'ttslua.installConsole',
+    fn: async () => {
+      const ext = vscode.extensions.getExtension('rolandostar.tabletopsimulator-lua')
+      if (ext === undefined) return
+      await installConsole(ext.extensionPath)
     }
   },
   { id: 'ttslua.saveAndPlay', fn: saveAndPlay },

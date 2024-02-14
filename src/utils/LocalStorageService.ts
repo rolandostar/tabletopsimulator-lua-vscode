@@ -16,7 +16,7 @@ let storageUri: Uri | undefined
  * Sets the storage to be used by the service
  * @param newStorage The storage to be used by the service
  */
-export function setStorage (KVStorage: Memento, GlobalStorageUri: Uri): void {
+export function setStorageRef (KVStorage: Memento, GlobalStorageUri: Uri): void {
   kvStorage = KVStorage
   storageUri = GlobalStorageUri
   // console.log('Storage Uri: ' + storageUri.fsPath)

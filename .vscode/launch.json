@@ -10,11 +10,13 @@
 			"args": [
         "--extensionDevelopmentPath=${workspaceFolder}",
         "--profile=Ext Dev",
-        "${workspaceFolder}/tests/fixture2/"
+        "${workspaceFolder}/tests/fixtures/repo"
       ],
 			"autoAttachChildProcesses": true,
 			"sourceMaps": true,
-			"outFiles": ["${workspaceFolder}/out/**/*.js"],
+			"outFiles": [
+        "${workspaceFolder}/out/**/*.js"
+      ],
 			"preLaunchTask": "npm: watch",
       "skipFiles": [
         "<node_internals>/**",
@@ -29,7 +31,7 @@
 				"--profile=extensionContext",
 				"--extensionDevelopmentPath=${workspaceFolder}",
 				"--extensionTestsPath=${workspaceFolder}/dist/test/runner.js",
-				"${workspaceFolder}/src/test/fixture/"
+				"${workspaceFolder}/tests/fixtures/repo"
 			],
 			"preLaunchTask": "npm: test-compile"
 		}

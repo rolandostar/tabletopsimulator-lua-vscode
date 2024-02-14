@@ -60,7 +60,7 @@ export class TableGenerator {
   private readonly padding = 2
   private html = '<table><tbody>'
 
-  public addRow (type: string, name?: string, description?: string): TableGenerator {
+  public addRow (type: string, name?: string, description?: string): this {
     const localType = StringToType[type] !== undefined
       ? StringToType[type]
       : { style: Styles.var, display: type }

@@ -4,6 +4,8 @@
  */
 
 import * as vscode from 'vscode'
+import L from '@/i18n'
+
 type Prompt = () => Promise<boolean>
 type PromptMap = Record<string, Prompt>
 /**
@@ -19,11 +21,10 @@ export const prompts: PromptMap = {
   getScriptsConfirmed: async () => {
     return await vscode.window
       .showInformationMessage(
-        'Get Lua Scripts from game?\n\n This will erase any changes that you have made since' +
-            'the last Save & Play.',
+        L.prompts.getScriptsConfirm() as string,
         { modal: true },
-        'Get Scripts'
-      ) === 'Get Scripts'
+        L.prompts.getScriptsConfirmButton() as string
+      ) === L.prompts.getScriptsConfirmButton()
   },
   anotherThing: async () => {
     return true

@@ -14,20 +14,24 @@
 import { type ExtensionContext, commands } from 'vscode'
 
 import myCommands from './commands'
-import { start as TTSServiceInit } from '@/TTSService'
-import { setStorage, set } from '@/utils/LocalStorageService'
+import TTSService from '@/TTSService'
+import * as state from '@/utils/LocalStorageService'
 import { initWorkspace } from '@/vscode/workspaceManager'
 import registerProviders from '@/providers'
 import L from '@/i18n'
 
 export async function activate (context: ExtensionContext): Promise<void> {
+  // L is the i18n object, which is used to get localized strings
   console.info(L.activation())
-  setStorage(context.globalState, context.globalStorageUri)
-  await set('extensionPath', context.extensionPath)
 
+  // Storage is a persistent storage the extension uses for settings and state across sessions
+  state.setStorageRef(context.globalState, context.globalStorageUri)
+  await state.set('extensionPath', context.extensionPath)
+
+  // All of these must return disposable objects, which will unload along with the extension
   context.subscriptions.push(
     await initWorkspace(),
-    ...await TTSServiceInit(),
+    ...await TTSService.getInstance().init(),
     ...myCommands.map(cmd => commands.registerCommand(cmd.id, cmd.fn, context)),
     ...registerProviders()
   )

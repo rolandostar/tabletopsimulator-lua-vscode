@@ -7,7 +7,8 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as vscode from 'vscode'
-import { executeLuaCode, getInGameObjects } from '@/TTSService'
+import getInGameObjs from '@/TTSService/commands/getInGameObjects'
+import TTSService from '@/TTSService'
 
 export default class LuaHoverProvider implements vscode.HoverProvider {
   async provideHover (
@@ -18,7 +19,7 @@ export default class LuaHoverProvider implements vscode.HoverProvider {
     const range = document.getWordRangeAtPosition(position)
     const text = document.getText(range)
     // check if hovered text is GUID format
-    const igObjs = getInGameObjects()
+    const igObjs = getInGameObjs()
     if (text in Object.keys(igObjs)) {
       // If so, return a hover with the object name
       const obj = igObjs[text]
@@ -26,7 +27,7 @@ export default class LuaHoverProvider implements vscode.HoverProvider {
       const script = fs
         .readFileSync(path.resolve(__dirname, '../lua/highlightVsCode.lua.template'), 'utf8')
         .replace('%guid%', text)
-      executeLuaCode(script, '-1')
+      await TTSService.getApi().executeLuaCode(script, '-1')
       return new vscode.Hover(name)
     // } else if (text.match(/[a-z0-9]{6}/) != null) return new vscode.Hover('No matching object found')
     }
