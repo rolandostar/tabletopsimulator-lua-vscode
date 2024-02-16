@@ -34,6 +34,7 @@
     "@matanlurey/tts-editor": "github:rolandostar/tts-editor#dist",
     "@tts-tools/savefile": "file:../tts-tools/packages/savefile",
     "@vscode/codicons": "^0.0.35",
+    "@vscode/webview-ui-toolkit": "^1.4.0",
     "html-escaper": "^3.0.3",
     "luabundle": "^1.6.0",
     "node-fetch": "^3.3.2",

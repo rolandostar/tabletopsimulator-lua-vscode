@@ -18,7 +18,8 @@ const enUS = {
   workDir: {
     hover: `Click to select TTSLua working directory [[Learn More]](${urls.versionControl})`,
     createFailed: 'Failed to create temporary folder: {0:string}',
-    defaultTag: 'Default',
+    defaultTag: 'TTS [Default]',
+    removedTag: 'TTS [Removed]',
     noGitReposInWorkspace: 'No git repositories found in workspace',
     quickPickPlaceHolder: 'Select working directory to store TTS scripts',
     failedToSelect: 'Failed to select workspace folder, please try again',
@@ -30,9 +31,16 @@ const enUS = {
   explorer: {
     defaultWorkDirName: 'Tabletop Simulator Files'
   },
+  TTSConsole: {
+    viewType: 'TTSConsole',
+    title: 'Tabletop Simulator Console++'
+  },
+  // Prompts are special, since promptFactory is used to create functions to call them
+  // Check windowManager.ts for more information
   prompts: {
-    getScriptsConfirm: 'Get Lua Scripts from game?\n\n This will erase any changes that you have made since the last Save & Play.',
-    getScriptsConfirmButton: 'Get Scripts'
+    getScriptsCanceled: 'Get Lua Scripts from game?\n\nThis will erase any changes that you have made since the last Save & Play.',
+    getScriptsCanceledButton: 'Get Scripts',
+    getScriptsTest: 'Test Prompt without button'
   },
   urls,
   errors: {

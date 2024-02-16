@@ -25,13 +25,13 @@ const statusBarItem = createStatusBarItem({
   command: 'ttslua.changeWorkDir',
   tooltip: L.workDir.hover()
 })
-let defaultWorkDirUri = Uri.file(defaultWorkDir)
-
+const defaultWorkDirUri = Uri.file(defaultWorkDir)
+let currentWorkDirUri = defaultWorkDirUri
 /**
  * @returns True if currently selected workDir is the default workDir
  */
 export function isWorkdirDefault (): boolean {
-  return defaultWorkDirUri.fsPath.localeCompare(defaultWorkDir, undefined, {
+  return currentWorkDirUri.fsPath.localeCompare(defaultWorkDir, undefined, {
     sensitivity: 'accent'
   }) === 0
 }
@@ -40,13 +40,13 @@ export function isWorkdirDefault (): boolean {
  * This function will return the current workDir as URI
  * @returns The current workDir
  */
-export function getWorkDir (): Uri { return defaultWorkDirUri }
+export function getWorkDir (): Uri { return currentWorkDirUri }
 
 /**
  * Calling this function will reset the workDir to the default workDir
  */
 function reset (): void {
-  defaultWorkDirUri = Uri.file(defaultWorkDir)
+  currentWorkDirUri = defaultWorkDirUri
   void LSS.set('workDir', defaultWorkDirUri.fsPath)
   statusBarItem.text = `$(root-folder) TTS [${L.workDir.defaultTag()}]`
 }
@@ -84,11 +84,11 @@ async function updateStatusBar (_e?: WorkspaceFoldersChangeEvent): Promise<void>
   // Get all git repos in workspace
   const gitFolders = await getGitFolders()
   // Get currently selected workspace folder Uri
-  const folder = workspace.getWorkspaceFolder(Uri.file(defaultWorkDirUri.fsPath))
+  const folder = workspace.getWorkspaceFolder(Uri.file(currentWorkDirUri.fsPath))
   // Update Status bar accordingly
-  statusBarItem.text = `$(root-folder) TTS [${
-    !isWorkdirDefault() ? folder?.name ?? 'Removed' : L.workDir.defaultTag()
-  }]`
+  statusBarItem.text = `$(root-folder) ${
+    !isWorkdirDefault() ? folder?.name ?? L.workDir.removedTag() : L.workDir.defaultTag()
+  }`
   const _isDefault = isWorkdirDefault()
   switch (true) {
     case gitFolders.length > 0 && !_isDefault:
@@ -115,11 +115,11 @@ async function updateStatusBar (_e?: WorkspaceFoldersChangeEvent): Promise<void>
  */
 export async function initWorkspace (): Promise<Disposable> {
   // Check if workDir is set in localStorage
-  defaultWorkDirUri = Uri.file(LSS.querySet('workDir', defaultWorkDir))
+  currentWorkDirUri = Uri.file(LSS.querySet('workDir', defaultWorkDir))
   // Check if the workDir is currently opened in the workspace
   // If not, return to default
   if (workspace.workspaceFolders?.some(
-    folder => folder.uri.fsPath === defaultWorkDirUri.fsPath
+    folder => folder.uri.fsPath === currentWorkDirUri.fsPath
   ) === false) reset()
   // Check if Temp folder exists, if not create it
   if (isWorkdirDefault()) {
@@ -130,7 +130,7 @@ export async function initWorkspace (): Promise<Disposable> {
   // Update on new workspaces
   workspace.onDidChangeWorkspaceFolders(updateStatusBar)
   void updateStatusBar()
-  return new Disposable(statusBarItem.dispose)
+  return new Disposable(statusBarItem.dispose.bind(statusBarItem))
 }
 
 /**
@@ -165,7 +165,7 @@ export async function changeWorkDir (): Promise<void> {
       return
     }
     void LSS.set('workDir', newWorkDir.uri.fsPath)
-    defaultWorkDirUri = newWorkDir.uri
+    currentWorkDirUri = newWorkDir.uri
     statusBarItem.text = `$(root-folder) TTS [${newWorkDir.name}]`
   } else reset()
   void updateStatusBar()
@@ -178,7 +178,7 @@ export async function changeWorkDir (): Promise<void> {
  */
 export async function readFile (filename: string): Promise<Uint8Array> {
   return await Promise.resolve(workspace.fs.readFile(
-    Uri.file(join(defaultWorkDirUri.fsPath, filename))
+    Uri.file(join(currentWorkDirUri.fsPath, filename))
   ))
 }
 

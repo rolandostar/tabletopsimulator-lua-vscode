@@ -15,7 +15,7 @@ export type Translations = RootTranslation
 
 type RootTranslation = {
 	/**
-	 * [​T​T​S​L​u​a​]​ ​A​c​t​i​v​a​t​i​n​g​ ​e​x​t​e​n​s​i​o​n
+	 * [​T​T​S​]​ ​A​c​t​i​v​a​t​i​n​g​ ​e​x​t​e​n​s​i​o​n
 	 */
 	activation: string
 	TTSService: {
@@ -36,9 +36,13 @@ type RootTranslation = {
 		 */
 		createFailed: RequiredParams<'0'>
 		/**
-		 * D​e​f​a​u​l​t
+		 * T​T​S​ ​[​D​e​f​a​u​l​t​]
 		 */
 		defaultTag: string
+		/**
+		 * T​T​S​ ​[​R​e​m​o​v​e​d​]
+		 */
+		removedTag: string
 		/**
 		 * N​o​ ​g​i​t​ ​r​e​p​o​s​i​t​o​r​i​e​s​ ​f​o​u​n​d​ ​i​n​ ​w​o​r​k​s​p​a​c​e
 		 */
@@ -65,9 +69,41 @@ type RootTranslation = {
 		 */
 		learnMore: string
 	}
+	explorer: {
+		/**
+		 * T​a​b​l​e​t​o​p​ ​S​i​m​u​l​a​t​o​r​ ​F​i​l​e​s
+		 */
+		defaultWorkDirName: string
+	}
+	TTSConsole: {
+		/**
+		 * T​T​S​C​o​n​s​o​l​e
+		 */
+		viewType: string
+		/**
+		 * T​a​b​l​e​t​o​p​ ​S​i​m​u​l​a​t​o​r​ ​C​o​n​s​o​l​e​+​+
+		 */
+		title: string
+	}
+	prompts: {
+		/**
+		 * G​e​t​ ​L​u​a​ ​S​c​r​i​p​t​s​ ​f​r​o​m​ ​g​a​m​e​?​
+	​
+	​T​h​i​s​ ​w​i​l​l​ ​e​r​a​s​e​ ​a​n​y​ ​c​h​a​n​g​e​s​ ​t​h​a​t​ ​y​o​u​ ​h​a​v​e​ ​m​a​d​e​ ​s​i​n​c​e​ ​t​h​e​ ​l​a​s​t​ ​S​a​v​e​ ​&​ ​P​l​a​y​.
+		 */
+		getScriptsCanceled: string
+		/**
+		 * G​e​t​ ​S​c​r​i​p​t​s
+		 */
+		getScriptsCanceledButton: string
+		/**
+		 * T​e​s​t​ ​P​r​o​m​p​t​ ​w​i​t​h​o​u​t​ ​b​u​t​t​o​n
+		 */
+		getScriptsTest: string
+	}
 	urls: {
 		/**
-		 * h​t​t​p​s​:​/​/​r​a​w​.​g​i​t​.​c​o​m​/​B​e​r​s​e​r​k​-​G​a​m​e​s​/​a​t​o​m​-​t​a​b​l​e​t​o​p​s​i​m​u​l​a​t​o​r​-​l​u​a​/​m​a​s​t​e​r​/​l​i​b​/​a​p​i​.​j​s​o​n
+		 * h​t​t​p​s​:​/​/​r​a​w​.​g​i​t​h​u​b​u​s​e​r​c​o​n​t​e​n​t​.​c​o​m​/​B​e​r​s​e​r​k​-​G​a​m​e​s​/​a​t​o​m​-​t​a​b​l​e​t​o​p​s​i​m​u​l​a​t​o​r​-​l​u​a​/​m​a​s​t​e​r​/​l​i​b​/​a​p​i​.​j​s​o​n
 		 */
 		luaCompletionApi: string
 		/**
@@ -83,6 +119,24 @@ type RootTranslation = {
 	}
 	errors: {
 		/**
+		 * [​T​T​S​]​ ​U​n​e​x​p​e​c​t​e​d​ ​S​e​r​v​e​r​ ​E​r​r​o​r​:
+		 */
+		serverError: string
+		/**
+		 * U​n​a​b​l​e​ ​t​o​ ​c​o​n​n​e​c​t​ ​t​o​ ​T​a​b​l​e​t​o​p​ ​S​i​m​u​l​a​t​o​r​.​
+	​
+	​C​h​e​c​k​ ​t​h​a​t​ ​t​h​e​ ​g​a​m​e​ ​i​s​ ​r​u​n​n​i​n​g​ ​a​n​d​ ​a​ ​s​a​v​e​ ​h​a​s​ ​b​e​e​n​ ​l​o​a​d​e​d​.
+		 */
+		gameNotRunning: string
+		/**
+		 * A​n​o​t​h​e​r​ ​i​n​s​t​a​n​c​e​ ​o​f​ ​V​S​C​o​d​e​ ​o​r​ ​A​t​o​m​ ​i​s​ ​a​l​r​e​a​d​y​ ​r​u​n​n​i​n​g
+		 */
+		anotherInstanceRunning: string
+		/**
+		 * P​l​e​a​s​e​ ​c​l​o​s​e​ ​t​h​e​ ​o​t​h​e​r​ ​i​n​s​t​a​n​c​e​ ​a​n​d​ ​t​r​y​ ​a​g​a​i​n​.
+		 */
+		anotherInstanceRunningDetail: string
+		/**
 		 * U​n​e​x​p​e​c​t​e​d​ ​e​r​r​o​r​ ​w​h​i​l​e​ ​c​h​e​c​k​i​n​g​ ​i​f​ ​"​{​0​}​"​ ​e​x​i​s​t​s​:​ ​{​1​}
 		 * @param {string} 0
 		 * @param {string} 1
@@ -93,7 +147,7 @@ type RootTranslation = {
 
 export type TranslationFunctions = {
 	/**
-	 * [TTSLua] Activating extension
+	 * [TTS] Activating extension
 	 */
 	activation: () => LocalizedString
 	TTSService: {
@@ -113,9 +167,13 @@ export type TranslationFunctions = {
 		 */
 		createFailed: (arg0: string) => LocalizedString
 		/**
-		 * Default
+		 * TTS [Default]
 		 */
 		defaultTag: () => LocalizedString
+		/**
+		 * TTS [Removed]
+		 */
+		removedTag: () => LocalizedString
 		/**
 		 * No git repositories found in workspace
 		 */
@@ -142,9 +200,41 @@ export type TranslationFunctions = {
 		 */
 		learnMore: () => LocalizedString
 	}
+	explorer: {
+		/**
+		 * Tabletop Simulator Files
+		 */
+		defaultWorkDirName: () => LocalizedString
+	}
+	TTSConsole: {
+		/**
+		 * TTSConsole
+		 */
+		viewType: () => LocalizedString
+		/**
+		 * Tabletop Simulator Console++
+		 */
+		title: () => LocalizedString
+	}
+	prompts: {
+		/**
+		 * Get Lua Scripts from game?
+
+	This will erase any changes that you have made since the last Save & Play.
+		 */
+		getScriptsCanceled: () => LocalizedString
+		/**
+		 * Get Scripts
+		 */
+		getScriptsCanceledButton: () => LocalizedString
+		/**
+		 * Test Prompt without button
+		 */
+		getScriptsTest: () => LocalizedString
+	}
 	urls: {
 		/**
-		 * https://raw.git.com/Berserk-Games/atom-tabletopsimulator-lua/master/lib/api.json
+		 * https://raw.githubusercontent.com/Berserk-Games/atom-tabletopsimulator-lua/master/lib/api.json
 		 */
 		luaCompletionApi: () => LocalizedString
 		/**
@@ -159,6 +249,24 @@ export type TranslationFunctions = {
 		}
 	}
 	errors: {
+		/**
+		 * [TTS] Unexpected Server Error:
+		 */
+		serverError: () => LocalizedString
+		/**
+		 * Unable to connect to Tabletop Simulator.
+
+	Check that the game is running and a save has been loaded.
+		 */
+		gameNotRunning: () => LocalizedString
+		/**
+		 * Another instance of VSCode or Atom is already running
+		 */
+		anotherInstanceRunning: () => LocalizedString
+		/**
+		 * Please close the other instance and try again.
+		 */
+		anotherInstanceRunningDetail: () => LocalizedString
 		/**
 		 * Unexpected error while checking if "{0}" exists: {1}
 		 */

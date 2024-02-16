@@ -1,18 +1,18 @@
 import { window } from 'vscode'
 import { FileManager } from '@/vscode/fileManager'
 import { quickStatus } from '@/vscode/statusBarManager'
-import { prompts } from '@/vscode/windowManager'
 import { addDefaultWorkDir, getWorkDir, isWorkdirDefault } from '@/vscode/workspaceManager'
 import TTSService from '@/TTSService'
 import getConfig from '@/utils/getConfig'
 import { extractSave, readSave } from '@tts-tools/savefile'
-import FileTree from '@/utils/saveFileToFileTree'
-import L from '@/i18n'
+import SaveFileTree from '@/utils/SaveFileTree'
+import { type LoadingANewGame } from '@matanlurey/tts-editor'
+import { prompts } from '@/vscode/windowManager'
 
-export default async function getScripts (): Promise<void> {
-  if (!await prompts.getScriptsConfirmed()) return
+export default async function getScripts (gameResponse?: LoadingANewGame): Promise<void> {
+  if (await prompts.getScriptsTest()) return
   const statusBar = window.setStatusBarMessage('$(sync~spin) Receiving scripts')
-  const gameResponse = await TTSService.getApi().getLuaScripts()
+  gameResponse = gameResponse ?? await TTSService.getApi().getLuaScripts()
 
   // Add folder to workspace (Only if default workspace is used, since non-default workspaces are added by the user)
   if (isWorkdirDefault()) await addDefaultWorkDir()
@@ -27,7 +27,7 @@ export default async function getScripts (): Promise<void> {
   if (openConfig !== 'None') {
     void new FileManager('Script.lua').show()
     if (openConfig === 'All') {
-      for (const path of new FileTree(saveFile).getScriptPaths()) {
+      for (const path of new SaveFileTree(saveFile).getScriptPaths()) {
         void new FileManager(path).show()
       }
     }
