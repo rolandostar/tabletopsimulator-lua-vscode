@@ -11,6 +11,7 @@ import getExtensionUri from '@/utils/getExtensionUri'
 import getNonce from '@/utils/getNonce'
 import { readFileSync as fsReadFileSync } from 'fs'
 import getConfig from '@/utils/getConfig'
+import BBCodeParse from '@/TTSConsole/bbcode'
 
 export default class TTSConsolePanel {
   public static currentPanel: TTSConsolePanel | undefined
@@ -152,5 +153,13 @@ export default class TTSConsolePanel {
       undefined,
       this._disposables
     )
+  }
+
+  public async append (rawText: string, extras?: object): Promise<boolean> {
+    return await this._panel.webview.postMessage({
+      command: 'append',
+      htmlString: BBCodeParse(rawText),
+      ...(extras ?? {})
+    })
   }
 }
