@@ -1,4 +1,9 @@
-body {
+/*
+ * This file is part of the TTS Lua for VSCode extension.
+ * It contains the necessary CSS for the console++ layout.
+ */
+
+ body {
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -12,24 +17,20 @@ body {
   overflow-y: auto;
 }
 
-#commandInput {
+#commandInputWrapper {
   display: flex;
   gap: 10px;
-  justify-content: stretch;
-  padding-bottom: 7px;
+  margin-bottom: 10px;
 }
 
-#send {
-  width: 40px;
+#commandInputWrapper > *:first-child {
+  flex: 1;
 }
 
 #clear {
   position: fixed;
   right: 10px;
-  bottom: 60px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  top: 10px;
 }
 
 .callout {

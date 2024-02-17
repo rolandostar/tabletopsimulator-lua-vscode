@@ -5,6 +5,7 @@ import { FileManager } from '@/vscode/fileManager'
 import TTSService from '@/TTSService'
 import { embedSave } from '@tts-tools/savefile'
 import SaveFileTree from '@/utils/SaveFileTree'
+import docsFolder from '@/utils/docsFolder'
 
 export default async function saveAndPlay (): Promise<void> {
   // When sending scripts, the workdir must be present in workspace
@@ -16,7 +17,8 @@ export default async function saveAndPlay (): Promise<void> {
   const saveFile = embedSave(getWorkDir().fsPath, {
     scriptExtension: 'lua',
     includePaths: [
-      getWorkDir().fsPath
+      getWorkDir().fsPath,
+      docsFolder
     ]
   })
   await saveFs.write(JSON.stringify(saveFile, null, 2))

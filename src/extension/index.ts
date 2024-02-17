@@ -11,7 +11,7 @@
  * 5. Register completion providers
  */
 
-import { type ExtensionContext, commands } from 'vscode'
+import { type ExtensionContext, commands, window } from 'vscode'
 
 import myCommands from './commands'
 import TTSService from '@/TTSService'
@@ -19,6 +19,7 @@ import * as state from '@/utils/LocalStorageService'
 import { initWorkspace } from '@/vscode/workspaceManager'
 import registerProviders from '@/providers'
 import L from '@/i18n'
+import TTSConsolePanel from '@/TTSConsole'
 
 export async function activate (context: ExtensionContext): Promise<void> {
   // L is the i18n object, which is used to get localized strings
@@ -35,6 +36,16 @@ export async function activate (context: ExtensionContext): Promise<void> {
     ...myCommands.map(cmd => commands.registerCommand(cmd.id, cmd.fn, context)),
     ...registerProviders()
   )
+
+  // Register the TTS Console Serializer
+  // window.registerWebviewPanelSerializer(
+  //   L.TTSConsole.viewType() as string,
+  //   {
+  //     async deserializeWebviewPanel (webviewPanel, state) {
+  //       // TTSConsolePanel.revive(webviewPanel, context.extensionUri)
+  //     }
+  //   }
+  // )
 }
 
 export function deactivate (): void {

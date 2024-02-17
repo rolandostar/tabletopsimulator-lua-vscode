@@ -1,6 +1,6 @@
 import { workspace, window, Uri, env } from 'vscode'
 import { join } from 'path'
-import docsFolder from '@/utils/getDocsFolder'
+import docsFolder from '@/utils/docsFolder'
 
 /**
  * This method "installs" the console++ extension into TTS.

@@ -65,7 +65,7 @@ const insertColor = (input: string, hexMatch: StackItem): string => {
  */
 export default function parse (input: string): string {
   // First we direct replace all known BBCode with HTML
-  let html = bbCodeParse(escape(input) as string)
+  let html = bbCodeParse(escape(input))
   // Then we do color, find all instances of [hexColor] or [-]
   const pattern = /\[([0-9a-fA-F]{6})\]|\[-\]/g
   const stack = Array<StackItem>()

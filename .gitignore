@@ -1,6 +1,6 @@
 node_modules
 .vscode-test/
 *.vsix
-out
+dist
 
 tests/fixtures/repo/

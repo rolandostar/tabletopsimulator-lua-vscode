@@ -18,7 +18,7 @@
     "Programming Languages",
     "Other"
   ],
-  "main": "./out/client.bundle.js",
+  "main": "./dist/client.bundle.js",
   "scripts": {
     "compile": "webpack --mode development",
     "watch": "webpack --mode development --watch",
@@ -33,6 +33,7 @@
   "dependencies": {
     "@matanlurey/tts-editor": "github:rolandostar/tts-editor#dist",
     "@tts-tools/savefile": "file:../tts-tools/packages/savefile",
+    "@types/html-escaper": "^3.0.2",
     "@vscode/codicons": "^0.0.35",
     "@vscode/webview-ui-toolkit": "^1.4.0",
     "html-escaper": "^3.0.3",
