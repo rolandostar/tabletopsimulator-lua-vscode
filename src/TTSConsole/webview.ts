@@ -19,7 +19,7 @@ import {
 } from '@vscode/webview-ui-toolkit'
 
 type MessageFromExtension =
-  | { command: 'append', htmlString: string, class?: string }
+  | { command: 'append', htmlString: string, classes?: string[] }
   | { command: 'clear' }
   | { command: 'commandState', state: boolean }
 
@@ -69,7 +69,7 @@ window.addEventListener('message', (event: MessageEvent) => {
     newDiv.append(...Array.from(parsedHtml.body.childNodes))
 
     // Add class (if applicable)
-    if (eventMessage.class !== undefined) newDiv.classList.add(eventMessage.class)
+    if (eventMessage.classes !== undefined) newDiv.classList.add(...eventMessage.classes)
     dataElement.append(newDiv)
     vscode.setState(dataElement.innerHTML)
     if (wasAtBottom) dataElement.scrollTop = dataElement.scrollHeight

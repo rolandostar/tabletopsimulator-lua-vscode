@@ -146,4 +146,8 @@ export default class TTSConsolePanel {
   public isVisible = (): boolean => this._panel.visible
 
   public clear = async (): Promise<boolean> => await this._panel.webview.postMessage({ command: 'clear' })
+
+  public static revive (panel: WebviewPanel, _state: unknown): void {
+    TTSConsolePanel.currentPanel = new TTSConsolePanel(panel)
+  }
 }

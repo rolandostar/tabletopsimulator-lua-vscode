@@ -119,6 +119,10 @@ type RootTranslation = {
 	}
 	errors: {
 		/**
+		 * G​o​ ​t​o​ ​E​r​r​o​r
+		 */
+		goToErrorButton: string
+		/**
 		 * [​T​T​S​]​ ​U​n​e​x​p​e​c​t​e​d​ ​S​e​r​v​e​r​ ​E​r​r​o​r​:
 		 */
 		serverError: string
@@ -249,6 +253,10 @@ export type TranslationFunctions = {
 		}
 	}
 	errors: {
+		/**
+		 * Go to Error
+		 */
+		goToErrorButton: () => LocalizedString
 		/**
 		 * [TTS] Unexpected Server Error:
 		 */

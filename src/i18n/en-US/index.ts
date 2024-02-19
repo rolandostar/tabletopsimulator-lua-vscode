@@ -44,6 +44,7 @@ const enUS = {
   },
   urls,
   errors: {
+    goToErrorButton: 'Go to Error',
     serverError: `[${extLabel}] Unexpected Server Error:`,
     gameNotRunning: 'Unable to connect to Tabletop Simulator.\n\nCheck that the game is running and a save has been loaded.',
     anotherInstanceRunning: 'Another instance of VSCode or Atom is already running',

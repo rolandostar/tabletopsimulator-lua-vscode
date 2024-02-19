@@ -32,20 +32,20 @@ export async function activate (context: ExtensionContext): Promise<void> {
   // All of these must return disposable objects, which will unload along with the extension
   context.subscriptions.push(
     await initWorkspace(),
-    ...await TTSService.getInstance().init(),
+    ...await TTSService.getInstance().open(),
     ...myCommands.map(cmd => commands.registerCommand(cmd.id, cmd.fn, context)),
     ...registerProviders()
   )
 
   // Register the TTS Console Serializer
-  // window.registerWebviewPanelSerializer(
-  //   L.TTSConsole.viewType() as string,
-  //   {
-  //     async deserializeWebviewPanel (webviewPanel, state) {
-  //       // TTSConsolePanel.revive(webviewPanel, context.extensionUri)
-  //     }
-  //   }
-  // )
+  window.registerWebviewPanelSerializer(
+    L.TTSConsole.viewType() as string,
+    {
+      async deserializeWebviewPanel (webviewPanel, state) {
+        TTSConsolePanel.revive(webviewPanel, state)
+      }
+    }
+  )
 }
 
 export function deactivate (): void {
