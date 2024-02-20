@@ -10,7 +10,7 @@ import { Uri, workspace, window, type TextEditor, Position } from 'vscode'
 import { getWorkDir } from './workspaceManager'
 import uriExists from '@/utils/uriExists'
 
-export class FileManager {
+export default class FileManager {
   private readonly FileUri: Uri
 
   public constructor (public filename: string | Uri, fromWorkDir = true) {

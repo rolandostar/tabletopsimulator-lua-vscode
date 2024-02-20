@@ -55,12 +55,12 @@ export default class TTSConsolePanel {
    * Renders the current webview panel if it exists otherwise a new webview panel
    * will be created and displayed.
    */
-  public static render (): void {
+  public static render (): WebviewPanel {
     const column = window.activeTextEditor !== undefined ? ViewColumn.Beside : undefined
     if (TTSConsolePanel.currentPanel !== undefined) {
       // If the webview panel already exists reveal it
       TTSConsolePanel.currentPanel._panel.reveal(column)
-      return
+      return TTSConsolePanel.currentPanel._panel
     }
     // If a webview panel does not already exist create and show a new one
     const panel = window.createWebviewPanel(
@@ -84,6 +84,7 @@ export default class TTSConsolePanel {
     )
 
     TTSConsolePanel.currentPanel = new TTSConsolePanel(panel)
+    return TTSConsolePanel.currentPanel._panel
   }
 
   /**

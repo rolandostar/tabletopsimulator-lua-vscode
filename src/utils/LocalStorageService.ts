@@ -6,7 +6,7 @@
  * Or file-based storage, with read, write and erase functions.
  */
 
-import { FileManager } from '@/vscode/fileManager'
+import FileManager from '@/vscode/fileManager'
 import { Uri, type Memento } from 'vscode'
 
 let kvStorage: Memento | undefined

@@ -23,6 +23,11 @@ export default class TTSService {
   private constructor () {
     this.api = new EditorApi()
     this.disposables = listeners.map(l => new Disposable(this.api.on(l.eventName, l.handler)))
+    this.disposables.push(new Disposable(() => {
+      this.disposables.forEach(d => d.dispose())
+      this.api.close()
+      console.log('TTSService Resources Freed')
+    }))
   }
 
   // Singleton Pattern and Guardrail

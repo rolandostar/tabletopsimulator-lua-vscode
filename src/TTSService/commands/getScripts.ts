@@ -1,5 +1,5 @@
 import { window } from 'vscode'
-import { FileManager } from '@/vscode/fileManager'
+import FileManager from '@/vscode/fileManager'
 import { quickStatus } from '@/vscode/statusBarManager'
 import { addDefaultWorkDir, getWorkDir, isWorkdirDefault } from '@/vscode/workspaceManager'
 import TTSService from '@/TTSService'
@@ -18,6 +18,7 @@ export default async function getScripts (gameResponse?: LoadingANewGame): Promi
   if (isWorkdirDefault()) await addDefaultWorkDir()
 
   // Perform the extraction
+  if (gameResponse.savePath === '') throw new Error('No save path was provided by TTS')
   const saveFile = readSave(gameResponse.savePath)
 
   extractSave(saveFile, { output: getWorkDir().fsPath, withState: true, scriptExtension: 'lua' })

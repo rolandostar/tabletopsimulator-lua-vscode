@@ -5,7 +5,7 @@ import {
 } from 'vscode'
 import { type LineToken, hs } from '..'
 import * as LSS from '@/utils/LocalStorageService'
-import { FileManager } from '@/vscode/fileManager'
+import FileManager from '@/vscode/fileManager'
 import { join } from 'path'
 import { XMLCompletion } from '.'
 

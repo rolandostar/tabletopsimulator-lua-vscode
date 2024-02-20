@@ -15,6 +15,7 @@ import type * as vscode from 'vscode'
 import { changeWorkDir } from '@/vscode/workspaceManager'
 import getScripts from '@/TTSService/commands/getScripts'
 import saveAndPlay from '@/TTSService/commands/saveAndPlay'
+import executeSelectedLua from '@/TTSService/commands/executeSelectedLua'
 import { installConsole } from '@/vendor/installConsolePlusPlus'
 import getExtensionUri from '@/utils/getExtensionUri'
 import TTSConsolePanel from '@/TTSConsole'
@@ -44,7 +45,7 @@ export default [
   },
   { id: 'ttslua.saveAndPlay', fn: saveAndPlay },
   { id: 'ttslua.getScripts', fn: getScripts },
-  // { id: 'ttslua.executeLua', fn: () => TTSAdapter.executeSelectedLua() },
+  { id: 'ttslua.executeLua', fn: executeSelectedLua },
   { id: 'ttslua.changeWorkDir', fn: changeWorkDir }
   // { id: 'ttslua.downloadAssets', fn: () => TTSAssetGen.downloadAssets() },
 ] as Array<{

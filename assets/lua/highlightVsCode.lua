@@ -1,7 +1,7 @@
 if __vscode_highlight_guids == nil then
   __vscode_highlight_guids = {}
 end
-__vscode_highlight_guids.next_guid = '%guid%'
+__vscode_highlight_guids.next_guid = '{{guid}}'
 __vscode_highlight_guids.end_time  = os.clock() + 3
 if __vscode_highlight_guid == nil then
   __vscode_highlight_guid = function()

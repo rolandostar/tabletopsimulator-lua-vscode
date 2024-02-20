@@ -1,4 +1,4 @@
-import { FileManager } from '@/vscode/fileManager'
+import FileManager from '@/vscode/fileManager'
 import { type PushingNewObject } from '@matanlurey/tts-editor'
 import getDirectoryName from '@/utils/getDirectoryNameFromTTSObject'
 import { type TextEditor } from 'vscode'
