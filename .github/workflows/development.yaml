@@ -32,3 +32,12 @@ jobs:
         with:
           name: ttslua-dev-${{ steps.vars.outputs.sha_short }}
           path: '*.vsix'
+      - name: Update Pre-Release
+        uses: softprops/action-gh-release@v1
+        with:
+          prerelease: true
+          files: '*.vsix'
+          tag_name: dev
+          name: 'Development Build'
+          body: 'This is a development build. It may contain bugs and incomplete features. Use at your own risk.'
+          generate_release_notes: true
