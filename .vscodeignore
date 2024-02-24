@@ -1,0 +1,10 @@
+**
+!dist/
+!package.json
+!LICENSE
+!assets/media/marketplace/icon.png
+!node_modules/@vscode/codicons/dist/codicon.css
+!node_modules/@vscode/codicons/dist/codicon.ttf
+!assets/web
+!assets/scripts
+!assets/lua
