@@ -4,6 +4,8 @@ name: Dev Build
 on:
   push:
     branches: [ dev ]
+    paths:
+      - "src/**"
 
 jobs:
   Compile-VSIX:
@@ -37,7 +39,6 @@ jobs:
         with:
           prerelease: true
           files: '*.vsix'
-          tag_name: dev
           name: 'Development Build'
           body: 'This is a development build. It may contain bugs and incomplete features. Use at your own risk.'
           generate_release_notes: true
