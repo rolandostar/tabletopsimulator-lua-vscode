@@ -4,10 +4,11 @@ on:
   push:
     branches:
     - 'main'
+    - 'dev'
     paths:
     - 'docs/**.md'
 
-name: Build Documentation
+name: Publish Documentation
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -23,7 +24,7 @@ jobs:
           node-version: lts/*
           cache: npm
       - name: Install Dependencies
-        run: npm install --frozen-lockfile 
+        run: npm install --frozen-lockfile
       - name: Build Documentation
         run: npm run build
       - name: Upload Artifact

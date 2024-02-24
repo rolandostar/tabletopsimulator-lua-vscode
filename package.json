@@ -32,7 +32,7 @@
   ],
   "dependencies": {
     "@matanlurey/tts-editor": "github:rolandostar/tts-editor#dist",
-    "@tts-tools/savefile": "file:../tts-tools/packages/savefile",
+    "@tts-tools/savefile": "https://gitpkg.now.sh/rolandostar/tts-tools/packages/savefile?dev",
     "@types/html-escaper": "^3.0.2",
     "@vscode/codicons": "^0.0.35",
     "@vscode/webview-ui-toolkit": "^1.4.0",

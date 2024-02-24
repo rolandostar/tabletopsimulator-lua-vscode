@@ -1,25 +1,37 @@
+name: Publish to Visual Studio Marketplace
 on:
-  push:
-    tags:
-      - "*"
-
-name: Deploy Extension
+  workflow_dispatch:
+  # release:
+#     types: [released]
 jobs:
-  deploy:
+  publish_to_marketplace:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - name: Download VSIX file from latest release
+        id: download_release
+        uses: robinraju/release-downloader@v1.9
         with:
-          node-version: lts/*
-          cache: npm
-      - run: npm install --frozen-lockfile
-      - run: |
-          export DISPLAY=:99
-          sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 &
-          pnpm test
-      - name: Publish to Visual Studio Marketplace
+          latest: true
+          fileName: "*.vsix"
+
+      # - uses: actions/setup-node@v3
+      #   with:
+      #     node-version: lts/*
+      #     cache: npm
+      # - run: npm install --frozen-lockfile
+      # - run: |
+      #     export DISPLAY=:99
+      #     sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 &
+      #     pnpm test
+      - name: Publish to VS Marketplace
         uses: HaaLeo/publish-vscode-extension@v1
         with:
           pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
           registryUrl: https://marketplace.visualstudio.com
+          extensionFile: ${{ fromJson(steps.download_release.outputs.downloaded_files)[0] }}
+      - name: Publish to Open VSX Registry
+        uses: HaaLeo/publish-vscode-extension@v1
+        with:
+          pat: ${{ secrets.OPEN_VSX_TOKEN }}
+          extensionFile: ${{ fromJson(steps.download_release.outputs.downloaded_files)[0] }}
