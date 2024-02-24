@@ -1,4 +1,4 @@
-name: Compile Dev Branch to VSIX
+name: Dev Build
 
 # The workflow will trigger only when changes are pushed to the 'dev' branch
 on:

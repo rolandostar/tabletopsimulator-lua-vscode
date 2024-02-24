@@ -12,12 +12,23 @@ Extension for VSCode to make writing Lua scripts for  <a href="https://store.ste
 
 <div align="center">
 
-[![Build Documentation](https://github.com/rolandostar/tabletopsimulator-lua-vscode/actions/workflows/build-docs.yaml/badge.svg?branch=main)](https://github.com/rolandostar/tabletopsimulator-lua-vscode/actions/workflows/build-docs.yaml)
-[![Deploy Extension](https://github.com/rolandostar/tabletopsimulator-lua-vscode/actions/workflows/deploy-to-marketplace.yaml/badge.svg?branch=main)](https://github.com/rolandostar/tabletopsimulator-lua-vscode/actions/workflows/deploy-to-marketplace.yaml)
 </div>
+
 <div align="center">
-<img src="https://badgen.net/badge/uses/TS/blue"/>
-<img src="https://badgen.net/badge/designed in/MS Paint/yellow"/>
+
+[![Development Builds](https://github.com/rolandostar/tabletopsimulator-lua-vscode/actions/workflows/development.yaml/badge.svg?branch=dev)](https://github.com/rolandostar/tabletopsimulator-lua-vscode/actions/workflows/development.yaml)
+[![Release Builds](https://github.com/rolandostar/tabletopsimulator-lua-vscode/actions/workflows/release.yaml/badge.svg?branch=main)](https://github.com/rolandostar/tabletopsimulator-lua-vscode/releases)
+</div>
+
+<div align="center">
+
+<img src="https://badgen.net/github/tag/rolandostar/tabletopsimulator-lua-vscode?icon=github"/>
+<img src="https://badgen.net/vs-marketplace/d/rolandostar.tabletopsimulator-lua"/>
+</div>
+
+<div align="center">
+<img src="https://badgen.net/badge/built with/TS/blue?icon"/>
+<img src="https://badgen.net/badge/designed in/MS Paint/orange"/>
 <img src="https://badgen.net/badge/made%20with/%E2%9D%A4/red"/>
 </div>
 
