@@ -1,12 +1,23 @@
 import { type SaveFile, type TTSObject } from '@tts-tools/savefile'
 import getDirectoryName from '@/utils/getDirectoryNameFromTTSObject'
-import { type OutgoingJsonObject } from '@matanlurey/tts-editor'
 
-export default class SaveFileTree {
-  constructor (private readonly saveFile: SaveFile) {
+export default class SaveFileStorage {
+  private static instance: SaveFileStorage
+  private constructor (public readonly saveFile: SaveFile) {
+  }
+
+  public static set (saveFile: SaveFile): SaveFileStorage {
+    SaveFileStorage.instance = new SaveFileStorage(saveFile)
+    return SaveFileStorage.instance
+  }
+
+  public static get (): SaveFileStorage {
+    if (SaveFileStorage.instance === undefined) throw new Error('No save file loaded')
+    return SaveFileStorage.instance
   }
 
   public getScriptPaths (): Set<string> {
+    if (this.saveFile === undefined) throw new Error('No save file loaded')
     const result = new Set<string>()
     if ((this.saveFile.LuaScript?.length ?? 0) > 0) result.add('Script.lua')
 
@@ -24,14 +35,5 @@ export default class SaveFileTree {
       getContainedObjectScripts(obj, descriptor)
     })
     return result
-  }
-
-  public getAPIFormattedObjects (): OutgoingJsonObject[] {
-    const OutgoingObjects: OutgoingJsonObject[] = this.saveFile.ObjectStates.map(obj =>
-      ({ guid: obj.GUID, script: obj.LuaScript, ui: obj.XmlUI })
-    )
-    // Don't forget the global script :)
-    OutgoingObjects.push({ guid: '-1', script: this.saveFile.LuaScript, ui: this.saveFile.XmlUI })
-    return OutgoingObjects
   }
 }

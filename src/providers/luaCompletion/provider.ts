@@ -80,11 +80,7 @@ export default class luaCompletionProvider implements CompletionItemProvider {
   private luaCompletion: LuaCompletion | undefined
 
   public async preload (): Promise<void> {
-    const latestApi = await apiManager.loadApi().catch(async err => {
-      // Unable to read from disk, let's download it instead
-      if (err.code !== 'FileNotFound') throw err
-      return await apiManager.downloadApi()
-    })
+    const latestApi = await apiManager.loadApi()
     this.luaCompletion = new LuaCompletion(latestApi)
   }
 

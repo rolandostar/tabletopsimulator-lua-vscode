@@ -36,6 +36,7 @@
     "@types/html-escaper": "^3.0.2",
     "@vscode/codicons": "^0.0.35",
     "@vscode/webview-ui-toolkit": "^1.4.0",
+    "compare-versions": "^6.1.0",
     "html-escaper": "^3.0.3",
     "luabundle": "^1.6.0",
     "node-fetch": "^3.3.2",
@@ -116,6 +117,11 @@
       {
         "command": "ttslua.downloadAssets",
         "title": "Download assets",
+        "category": "TTS Lua"
+      },
+      {
+        "command": "ttslua.refresh",
+        "title": "Refresh",
         "category": "TTS Lua"
       }
     ],

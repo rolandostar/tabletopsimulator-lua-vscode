@@ -1,9 +1,9 @@
-import { TableGenerator } from '@/utils/TableGenerator'
+import { TableGenerator } from '@/providers/luaCompletion/TableGenerator'
 import {
   CompletionItem,
   CompletionItemKind, MarkdownString, SnippetString
 } from 'vscode'
-import type { DownloadedAPI, Member } from './apiManager'
+import type { LuaAPI, Member } from './apiManager'
 
 const StringToCompletionKind: Record<string, CompletionItemKind> = {
   function: CompletionItemKind.Function,
@@ -16,7 +16,7 @@ export class LuaCompletion {
   public readonly completionStore = new Map<string, CompletionItem[]>()
   public readonly behaviourStore: string[] = []
 
-  constructor (public api: DownloadedAPI) {
+  constructor (public api: LuaAPI) {
     for (const sectionName in api.sections) {
       // if (!this.completionStore.has(sectionName)) this.completionStore.set(sectionName, [])
       this.completionStore.set(sectionName, this.addMembers(api.sections[sectionName], sectionName))

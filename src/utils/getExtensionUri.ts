@@ -5,3 +5,9 @@ export default function getExtensionUri (): Uri {
   if (ext === undefined) throw new Error('Extension not found')
   return ext.extensionUri
 }
+
+// export function getExtensionPath (): string {
+//   const ext = extensions.getExtension('rolandostar.tabletopsimulator-lua')
+//   if (ext === undefined) throw new Error('Extension not found')
+//   return ext.extensionPath
+// }

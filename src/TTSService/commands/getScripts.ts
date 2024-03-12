@@ -5,7 +5,7 @@ import { addDefaultWorkDir, getWorkDir, isWorkdirDefault } from '@/vscode/worksp
 import TTSService from '@/TTSService'
 import getConfig from '@/utils/getConfig'
 import { extractSave, readSave } from '@tts-tools/savefile'
-import SaveFileTree from '@/utils/SaveFileTree'
+import SaveFileStorage from '@/utils/SaveFileTree'
 import { type LoadingANewGame } from '@matanlurey/tts-editor'
 import { prompts } from '@/vscode/windowManager'
 
@@ -20,7 +20,8 @@ export default async function getScripts (gameResponse?: LoadingANewGame): Promi
   // Perform the extraction
   if (gameResponse.savePath === '') throw new Error('No save path was provided by TTS')
   const saveFile = readSave(gameResponse.savePath)
-
+  // Store the save data to our Tree Singleton
+  const saveStore = SaveFileStorage.set(saveFile)
   extractSave(saveFile, { output: getWorkDir().fsPath, withState: true, scriptExtension: 'lua' })
 
   // With the scripts extracted, we can now open them in the editor
@@ -28,7 +29,7 @@ export default async function getScripts (gameResponse?: LoadingANewGame): Promi
   if (openConfig !== 'None') {
     void new FileManager('Script.lua').show()
     if (openConfig === 'All') {
-      for (const path of new SaveFileTree(saveFile).getScriptPaths()) {
+      for (const path of saveStore.getScriptPaths()) {
         void new FileManager(path).show()
       }
     }

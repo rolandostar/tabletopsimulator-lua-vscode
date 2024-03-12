@@ -15,7 +15,7 @@ interface Element {
   attributes: Attribute[]
 }
 
-interface XMLAPI {
+export interface XMLAPI {
   elements: Element[]
   attributes: any
 }

@@ -7,7 +7,7 @@ import { type LineToken, hs } from '..'
 import * as LSS from '@/utils/LocalStorageService'
 import FileManager from '@/vscode/fileManager'
 import { join } from 'path'
-import { XMLCompletion } from '.'
+import { XMLCompletion, type XMLAPI } from '.'
 
 export default class XMLCompletionProvider implements CompletionItemProvider {
   private xmlCompletion: XMLCompletion | undefined
@@ -16,7 +16,7 @@ export default class XMLCompletionProvider implements CompletionItemProvider {
     const extPath = LSS.get<string>('extensionPath')
     if (extPath === undefined) return
     const apiFs = new FileManager(join(extPath, 'assets/apis/userInterface.json'), false)
-    const api = JSON.parse(await apiFs.read())
+    const api = JSON.parse(await apiFs.read()) as XMLAPI
     this.xmlCompletion = new XMLCompletion(api)
   }
 

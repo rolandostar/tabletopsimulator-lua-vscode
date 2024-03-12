@@ -3,27 +3,23 @@
  * Providers are used to provide features like completion, hover, etc.
  */
 
-import { type Disposable, languages, workspace, extensions, type Uri, window } from 'vscode'
+import { type Disposable, languages, workspace, extensions, type Uri, window, commands } from 'vscode'
 import { type HScopesAPI } from './hscopes'
 // Completion Providers
 import LuaCompletionProvider from './luaCompletion/provider'
 import XMLCompletionProvider from './xmlCompletion/provider'
-// import TSOCompletionProvider from './tsoCompletion'
-import YAMLCompletionProvider from './yamlCompletion'
 // Definition Providers
-// import { TSODefinitionProvider } from './tsoDefinition'
 import { LuaDefinitionProvider } from './luaDefinition'
 // Hover Providers
-// import TSOHoverProvider from './tsoHover'
 import LuaHoverProvider from './luaHover'
+import TTSElementTreeDataProvider from './elementTreeData'
 
 // Expose a map of virtual documents to the rest of the providers
 export const virtualDocumentContents = new Map<string, string>()
 export let hs: HScopesAPI
 export const triggers: Record<string, string[]> = {
   lua: ['.', ':', '(', ')', ' '],
-  xml: ['<', '/', ' '],
-  yaml: [':', ' ']
+  xml: ['<', '/', ' ']
 }
 
 export interface LineToken {
@@ -35,37 +31,17 @@ export interface LineToken {
 
 const [
   luaCompletionProvider,
-  // tsoCompletionProvider,
   xmlCompletionProvider,
-  yamlCompletionProvider,
-  // tsoHoverProvider,
   luaHoverProvider,
-  // tsoDefinitionProvider,
-  luaDefinitionProvider
+  luaDefinitionProvider,
+  ttsElementTreeDataProvider
 ] = [
   new LuaCompletionProvider(),
-  // new TSOCompletionProvider(),
   new XMLCompletionProvider(),
-  new YAMLCompletionProvider(),
-  // new TSOHoverProvider(),
   new LuaHoverProvider(),
-  // new TSODefinitionProvider(),
-  new LuaDefinitionProvider()
+  new LuaDefinitionProvider(),
+  new TTSElementTreeDataProvider()
 ]
-
-/**
- * This provider is used to create virtual documents for embedded scopes
- * When a command is executed with a virtual document uri, the contents of the virtual document
- * are resolved using this function. Which is performed via simple Map lookup.
- */
-const ttsEmbeddedContentProvider = {
-  provideTextDocumentContent: (uri: Uri) => {
-    // Remove the last extension from uri.path (Authority), and first slash character at beggining
-    // This is done to recreate the key used to store the virtual document contents
-    const originalUri = uri.path.slice(1).slice(0, uri.path.lastIndexOf('.') - 1)
-    return virtualDocumentContents.get(decodeURIComponent(originalUri))
-  }
-}
 
 /**
  * Registers all providers for this extension
@@ -86,15 +62,12 @@ export default function registerProviders (): Disposable[] {
     }
     throw err
   })
+  commands.registerCommand('ttslua.refresh', () => { ttsElementTreeDataProvider.refresh() })
   return [
-    // languages.registerDefinitionProvider('tso', tsoDefinitionProvider),
     languages.registerDefinitionProvider('lua', luaDefinitionProvider),
-    // languages.registerHoverProvider('tso', tsoHoverProvider),
     languages.registerHoverProvider('lua', luaHoverProvider),
-    // languages.registerCompletionItemProvider('tso', tsoCompletionProvider, ...triggers.lua, ...triggers.xml, ...triggers.yaml),
-    languages.registerCompletionItemProvider('yaml', yamlCompletionProvider, ...triggers.yaml),
     languages.registerCompletionItemProvider('xml', xmlCompletionProvider, ...triggers.xml),
     languages.registerCompletionItemProvider('lua', luaCompletionProvider, ...triggers.lua),
-    workspace.registerTextDocumentContentProvider('tts-embedded-content', ttsEmbeddedContentProvider)
+    window.registerTreeDataProvider('ttslua-explorer', ttsElementTreeDataProvider)
   ]
 }

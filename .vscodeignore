@@ -2,9 +2,11 @@
 !dist/
 !package.json
 !LICENSE
+!CHANGELOG.md
 !assets/media/marketplace/icon.png
 !node_modules/@vscode/codicons/dist/codicon.css
 !node_modules/@vscode/codicons/dist/codicon.ttf
+!assets/apis
 !assets/web
 !assets/scripts
 !assets/lua

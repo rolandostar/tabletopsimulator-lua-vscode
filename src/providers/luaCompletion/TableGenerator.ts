@@ -61,9 +61,7 @@ export class TableGenerator {
   private html = '<table><tbody>'
 
   public addRow (type: string, name?: string, description?: string): this {
-    const localType = StringToType[type] !== undefined
-      ? StringToType[type]
-      : { style: Styles.var, display: type }
+    const localType = StringToType[type] ?? { style: Styles.var, display: type }
     // Bubble up to User
     if (localType === undefined) { throw new Error(`Type ${type} not found`) }
     // pad on both sides with &nbsp; according to pad prop localType.display should be centered

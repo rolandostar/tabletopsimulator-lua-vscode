@@ -9,7 +9,7 @@ export const luaPatterns = ['?.lua', '?.ttslua']
 export const getIncludePaths = (): string[] => [
   // Global Include folder has higher priority
   docsFolder,
-  // Config Paths...,
+  // TODO: Config Paths...,
   // Workspace Paths, starting by current workdir
   getWorkDir().fsPath,
   ...(

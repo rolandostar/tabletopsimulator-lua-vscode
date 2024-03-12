@@ -7,7 +7,7 @@ import {
 } from 'vscode'
 import L from '@/i18n'
 import getExtensionUri from '@/utils/getExtensionUri'
-import getNonce from '@/utils/getNonce'
+import getNonce from '@/TTSConsole/getNonce'
 import { readFileSync as fsReadFileSync } from 'fs'
 import getConfig from '@/utils/getConfig'
 import BBCodeParse from '@/TTSConsole/bbcode'
